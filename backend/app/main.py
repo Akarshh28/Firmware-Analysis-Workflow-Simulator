@@ -1,4 +1,5 @@
 import asyncio
+import time
 import os
 import datetime
 from fastapi import UploadFile, File
@@ -39,18 +40,61 @@ app.add_middleware(
 
 # Define pipeline workflow stages in chronological order
 PIPELINE_STAGES = [
-    {"stage": "Firmware", "tool": "upload", "desc": "Upload smart meter binary"},
-    {"stage": "Identification", "tool": "strings", "desc": "Identify compiler and CPU architecture details"},
-    {"stage": "Extraction", "tool": "binwalk", "desc": "Scan and extract compressed file structures"},
-    {"stage": "Static Analysis", "tool": "cutter", "desc": "Locate DLMS parser entry points"},
-    {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Decompile target DLMS/COSEM parser flow"},
-    {"stage": "Secret Detection", "tool": "trufflehog", "desc": "Scan for hardcoded security keys/credentials"},
-    {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Examine entropy maps for hidden encryption"},
-    {"stage": "Protocol Analysis", "tool": "wireshark", "desc": "Scan simulated packets and handshake cycles"},
-    {"stage": "Symbolic Execution", "tool": "angr", "desc": "Solve branch assertions using symbolic analysis"},
-    {"stage": "Fuzzing", "tool": "afl", "desc": "Fuzz smart meter message structures"},
-    {"stage": "Risk Assessment", "tool": "scorecard", "desc": "Produce CVSS vulnerability mappings"},
-    {"stage": "Report Generation", "tool": "pdf_report", "desc": "Render final security audit summary"}
+
+    {
+        "stage":"Upload & Ingestion",
+        "tool":"upload",
+        "desc":"Upload Smart Meter Firmware"
+    },
+
+    {
+        "stage":"Identification",
+        "tool":"strings",
+        "desc":"Identify firmware architecture"
+    },
+
+    {
+        "stage":"Extraction",
+        "tool":"binwalk",
+        "desc":"Extract embedded filesystem"
+    },
+
+    {
+        "stage":"Static & Credential Analysis",
+        "tool":"cutter",
+        "desc":"Static code + secret analysis"
+    },
+
+    {
+        "stage":"Cryptographic Analysis",
+        "tool":"entropy",
+        "desc":"Entropy + crypto detection"
+    },
+
+    {
+        "stage":"Reverse Engineering",
+        "tool":"ghidra",
+        "desc":"Decompiler analysis"
+    },
+
+    {
+        "stage":"Symbolic Execution",
+        "tool":"angr",
+        "desc":"Path exploration"
+    },
+
+    {
+        "stage":"Risk Scoring",
+        "tool":"scorecard",
+        "desc":"CVSS scoring"
+    },
+
+    {
+        "stage":"Report Generation",
+        "tool":"pdf_report",
+        "desc":"Generate report"
+    }
+
 ]
 
 @app.get("/")
@@ -130,9 +174,11 @@ async def upload_firmware(
             detail="Only .bin, .hex, .elf and .img firmware files are allowed."
         )
 
+    filename = f"{project_id}_{firmware.filename}"
+
     save_path = os.path.join(
         settings.ARTIFACTS_DIR,
-        firmware.filename
+        filename
     )
 
     with open(save_path, "wb") as buffer:
@@ -142,9 +188,11 @@ async def upload_firmware(
     db.commit()
 
     return {
+        "success": True,
         "message": "Firmware uploaded successfully",
         "filename": firmware.filename,
         "path": save_path,
+        "project_id": project_id,
     }
 
 # --- PIPELINE ROUTING AND CONTROL ---
@@ -191,7 +239,7 @@ def get_pipeline(project_id: int, db: Session = Depends(get_db)):
         "stages": stages_with_status
     }
 
-async def run_pipeline_task(session_id: int, db_url: str):
+def run_pipeline_task(session_id: int, db_url: str):
     # Run in background to process each stage
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
@@ -242,8 +290,16 @@ async def run_pipeline_task(session_id: int, db_url: str):
             
             if plugin:
                 # We simulate execution
-                tool_input = ToolInput(target_filepath="flash.bin", extra_args={})
-                output = await plugin.execute_simulated(tool_input)
+                project = session.query(models.Project).filter(
+    models.Project.id == db_session.project_id
+).first()
+
+                tool_input = ToolInput(
+                    target_filepath=project.firmware_filepath,
+                    extra_args={}
+                )
+                # plugin.execute_simulated is async; run it in event loop
+                output = asyncio.run(plugin.execute_simulated(tool_input))
                 
                 # Write logs
                 for log_line in output.logs:
@@ -275,7 +331,7 @@ async def run_pipeline_task(session_id: int, db_url: str):
                     break
             else:
                 # Mock fallback if plugin file isn't created yet
-                await asyncio.sleep(1.5)
+                time.sleep(1.5)
                 le_info = models.LogEntry(
                     tool_run_id=tool_run.id,
                     log_type="STDOUT",
@@ -290,15 +346,15 @@ async def run_pipeline_task(session_id: int, db_url: str):
                 session.add(le_success)
                 
                 tool_run.exit_code = 0
-                tool_run.ended_at = datetime.datetime.utcnow()
+                tool_run.ended_at = datetime.datetime.now(datetime.UTC)
                 
             session.commit()
             
         else:
             db_session.status = "SUCCESS"
-            db_session.current_stage = "Report Generation"
+            db_session.current_stage = PIPELINE_STAGES[-1]["stage"]
             
-        db_session.ended_at = datetime.datetime.utcnow()
+        db_session.ended_at = datetime.datetime.now(datetime.UTC)
         session.commit()
         
     except Exception as e:
@@ -321,6 +377,19 @@ def start_pipeline(project_id: int, background_tasks: BackgroundTasks, db: Sessi
     # Clear past runs for this session to restart fresh
     db.query(models.ToolRun).filter(models.ToolRun.session_id == session.id).delete()
     db.commit()
+
+    project = db.query(models.Project).filter(
+        models.Project.id == project_id
+    ).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if not project.firmware_filepath:
+        raise HTTPException(
+            status_code=400,
+            detail="Upload firmware before starting analysis."
+        )
     
     background_tasks.add_task(run_pipeline_task, session.id, settings.DATABASE_URL)
     return {"message": "Pipeline started in background"}
@@ -344,7 +413,7 @@ def stop_pipeline(project_id: int, db: Session = Depends(get_db)):
     ).all()
     for run in running_runs:
         run.exit_code = -999
-        run.ended_at = datetime.datetime.utcnow()
+        run.ended_at = datetime.datetime.now(datetime.UTC)
         
     db.commit()
     return {"message": "Pipeline stopped"}
@@ -403,3 +472,18 @@ def get_project_logs(project_id: int, db: Session = Depends(get_db)):
             "timestamp": log.timestamp
         } for log in logs
     ]
+
+@app.get("/api/health")
+def health():
+
+    return {
+
+        "status":"online",
+
+        "database":"connected",
+
+        "pipeline":"ready",
+
+        "plugins":len(plugin_manager.plugins)
+
+    }
