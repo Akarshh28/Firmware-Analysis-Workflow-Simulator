@@ -293,7 +293,7 @@ export const KnowledgeBase: React.FC = () => {
                 border: "1px solid",
                 cursor: "pointer",
                 background: activeCategory === cat ? "var(--accent-blue)" : "transparent",
-                color: activeCategory === cat ? "#fff" : "var(--text-secondary)",
+                color: activeCategory === cat ? "var(--text-primary)" : "var(--text-secondary)",
                 borderColor: activeCategory === cat ? "var(--accent-blue)" : "var(--border-subtle)",
                 fontFamily: "var(--font-sans)",
               }}

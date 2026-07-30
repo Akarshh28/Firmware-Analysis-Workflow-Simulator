@@ -6,7 +6,9 @@ import type {
   ToolDetails,
 } from "../Types/project";
 
-const API_BASE = "http://localhost:8000/api";
+import api from "../services/api";
+
+
 
 interface ProjectState {
   projects: Project[];
@@ -39,6 +41,13 @@ interface ProjectState {
     projectId: number,
     file: File
   ) => Promise<void>;
+  
+  addLog: (log: LogEntry) => void;
+  updateActivePipelineStatus: (status: string) => void;
+  clearActiveProject: () => void;
+  
+  toolExplorerState: { toolName: string | null; activeTab: 'overview' | 'commands' | 'console' | 'troubleshoot' };
+  setToolExplorerState: (toolName: string, activeTab: 'overview' | 'commands' | 'console' | 'troubleshoot') => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -48,21 +57,31 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   logs: [],
   tools: [],
   isLoading: false,
+  
+  toolExplorerState: { toolName: null, activeTab: 'overview' },
+  setToolExplorerState: (toolName, activeTab) => set({ toolExplorerState: { toolName, activeTab } }),
+  
+  addLog: (log) => set((state) => ({ logs: [...state.logs, log] })),
+  
+  updateActivePipelineStatus: (status) => set((state) => ({
+    activePipeline: state.activePipeline ? { ...state.activePipeline, status } : null
+  })),
+
+  clearActiveProject: () => {
+    set({
+      activeProject: null,
+      activePipeline: null,
+      logs: [],
+    });
+  },
 
   fetchProjects: async () => {
     set({ isLoading: true });
-
     try {
-      const res = await fetch(`${API_BASE}/projects`);
-
-      if (res.ok) {
-        const data = await res.json();
-
-        set({ projects: data });
-
-        if (data.length > 0 && !get().activeProject) {
-          get().selectProject(data[0]);
-        }
+      const res = await api.get(`/projects`);
+      set({ projects: res.data });
+      if (res.data.length > 0 && !get().activeProject) {
+        get().selectProject(res.data[0]);
       }
     } catch (e) {
       console.error(e);
@@ -76,28 +95,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     description,
     targetArch
   ) => {
-    const res = await fetch(`${API_BASE}/projects`, {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
+    const res = await api.post(`/projects`, {
         name,
         description,
         target_architecture: targetArch,
-      }),
     });
-
-    if (!res.ok) {
-      throw new Error("Project creation failed");
-    }
-
-    const project = await res.json();
-
+    
+    const project = res.data;
     await get().fetchProjects();
-
     get().selectProject(project);
 
     return project;
@@ -117,53 +122,31 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   fetchPipelineStatus: async (projectId) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/projects/${projectId}/pipeline`
-      );
-
-      if (res.ok) {
-        set({
-          activePipeline: await res.json(),
-        });
-      }
+      const res = await api.get(`/projects/${projectId}/pipeline`);
+      set({
+        activePipeline: res.data,
+      });
     } catch (e) {
       console.error(e);
     }
   },
 
   startPipeline: async (projectId) => {
-    await fetch(
-      `${API_BASE}/projects/${projectId}/pipeline/run`,
-      {
-        method: "POST",
-      }
-    );
-
+    await api.post(`/projects/${projectId}/pipeline/run`);
     await get().fetchPipelineStatus(projectId);
   },
 
   stopPipeline: async (projectId) => {
-    await fetch(
-      `${API_BASE}/projects/${projectId}/pipeline/stop`,
-      {
-        method: "POST",
-      }
-    );
-
+    await api.post(`/projects/${projectId}/pipeline/stop`);
     await get().fetchPipelineStatus(projectId);
   },
 
   fetchLogs: async (projectId) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/projects/${projectId}/logs`
-      );
-
-      if (res.ok) {
-        set({
-          logs: await res.json(),
-        });
-      }
+      const res = await api.get(`/projects/${projectId}/logs`);
+      set({
+        logs: res.data,
+      });
     } catch (e) {
       console.error(e);
     }
@@ -171,13 +154,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   fetchTools: async () => {
     try {
-      const res = await fetch(`${API_BASE}/tools`);
-
-      if (res.ok) {
-        set({
-          tools: await res.json(),
-        });
-      }
+      const res = await api.get(`/tools`);
+      set({
+        tools: res.data,
+      });
     } catch (e) {
       console.error(e);
     }
@@ -188,19 +168,27 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     file: File
   ) => {
     const formData = new FormData();
-
     formData.append("firmware", file);
 
-    const res = await fetch(
-      `${API_BASE}/projects/${projectId}/upload`,
-      {
-        method: "POST",
-        body: formData,
+    const res = await api.post(`/projects/${projectId}/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
       }
-    );
-
-    if (!res.ok) {
-      throw new Error("Firmware upload failed");
-    }
+    });
+    
+    // Update active project with the new details
+    set((state) => {
+        if (state.activeProject && state.activeProject.id === projectId) {
+            return {
+                activeProject: {
+                    ...state.activeProject,
+                    checksum: res.data.checksum,
+                    file_size: res.data.filesize,
+                    firmware_filepath: res.data.filepath
+                }
+            };
+        }
+        return state;
+    });
   },
 }));

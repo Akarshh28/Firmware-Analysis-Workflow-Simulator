@@ -1,5 +1,8 @@
 "use client";
 
+import api from "../services/api";
+import { ThemeToggle } from "./ThemeToggle";
+
 import React, { useState } from "react";
 import {
   LayoutDashboard,
@@ -10,11 +13,12 @@ import {
   Shield,
   Activity,
   ChevronRight,
-  Zap,
+  Cpu,
   AlertTriangle,
 } from "lucide-react";
 
 export type PageId =
+  | "upload"
   | "dashboard"
   | "pipeline"
   | "tools"
@@ -77,9 +81,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   React.useEffect(() => {
-    fetch("http://localhost:8000/")
-      .then((r) => r.ok && setBackendOnline(true))
-      .catch(() => setBackendOnline(false));
+    const checkHealth = () => {
+        api.get("/health")
+          .then(() => setBackendOnline(true))
+          .catch(() => setBackendOnline(false));
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const sections = Array.from(
@@ -92,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
       <div className="sidebar-brand">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div className="sidebar-brand-logo">
-            <Zap size={16} />
+            <Cpu size={20} />
           </div>
           <div className="sidebar-brand-text">
             <h1>FAWS</h1>
@@ -206,12 +215,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
                 : "Checking API…"}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-              localhost:8000
+              127.0.0.1:8000
             </div>
           </div>
           {backendOnline === false && (
             <AlertTriangle size={12} style={{ marginLeft: "auto", color: "var(--accent-red)" }} />
           )}
+        </div>
+
+        {/* Theme Switcher */}
+        <div style={{ marginBottom: 12 }}>
+          <ThemeToggle />
         </div>
 
         {/* Sim Mode */}

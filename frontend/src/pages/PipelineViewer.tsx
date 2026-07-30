@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePipelineStore } from "../store/pipelineStore";
+import { useProjectStore } from "../store/projectStore";
 
 const getColor = (status: string) => {
   switch (status) {
@@ -21,9 +22,10 @@ const getColor = (status: string) => {
 export const PipelineViewer: React.FC = () => {
   const {
     pipeline,
-    simulatePipeline,
+    runPipeline,
     resetPipeline,
   } = usePipelineStore();
+  const { activeProject } = useProjectStore();
 
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 
@@ -79,8 +81,9 @@ export const PipelineViewer: React.FC = () => {
               alert("Please upload firmware first.");
               return;
             }
+            if (!activeProject) return;
 
-            simulatePipeline();
+            runPipeline(activeProject.id);
           }}
           style={{
             padding: "10px 20px",

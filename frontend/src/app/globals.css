@@ -70,6 +70,53 @@
   --shadow-panel: 0 8px 32px rgba(0,0,0,0.5);
 }
 
+[data-theme='light'] {
+  --bg-base:       #f8fafc;
+  --bg-primary:    #ffffff;
+  --bg-secondary:  #f1f5f9;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-tertiary:   #e2e8f0;
+  --bg-input:      #f8fafc;
+
+  --border-subtle: rgba(99, 120, 255, 0.2);
+  --border-dim:    rgba(99, 120, 255, 0.4);
+  --border-glow:   rgba(99, 120, 255, 0.6);
+
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
+  --text-code:      #0284c7;
+
+  --shadow-card:  0 4px 24px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-glow:  0 0 40px rgba(99,120,255,0.1);
+  --shadow-panel: 0 8px 32px rgba(0,0,0,0.1);
+
+  --gradient-card:  linear-gradient(135deg, rgba(99,120,255,0.03) 0%, rgba(168,85,247,0.02) 100%);
+}
+
+[data-theme='midnight'] {
+  --bg-base:       #000000;
+  --bg-primary:    #020202;
+  --bg-secondary:  #050505;
+  --bg-card:       #080808;
+  --bg-card-hover: #0c0c0c;
+  --bg-tertiary:   #111111;
+  --bg-input:      #050505;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-dim:    rgba(255, 255, 255, 0.1);
+  --border-glow:   rgba(255, 255, 255, 0.2);
+
+  --text-primary:   #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted:     #52525b;
+
+  --shadow-card:  0 4px 24px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.6);
+  --shadow-glow:  0 0 40px rgba(255,255,255,0.05);
+  --shadow-panel: 0 8px 32px rgba(0,0,0,0.9);
+}
+
 /* =====================================================
    RESET & BASE
    ===================================================== */
@@ -165,16 +212,15 @@ body {
 .sidebar-brand-logo {
   width: 36px;
   height: 36px;
-  background: var(--gradient-brand);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-dim);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 14px;
-  color: #fff;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 20px rgba(99,120,255,0.4);
+  color: var(--text-primary);
 }
 
 .sidebar-brand-text h1 {

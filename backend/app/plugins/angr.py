@@ -9,6 +9,18 @@ class AngrPlugin(BaseToolPlugin):
         return "angr"
 
     @property
+    def version(self) -> str:
+        """Dynamic version check for angr"""
+        try:
+            import subprocess
+            result = subprocess.run(["python", "-c", "import angr; print(angr.__version__)"], capture_output=True, text=True)
+            if result.returncode == 0:
+                return f"v{result.stdout.strip()}"
+            return "v9.2.103 (Fallback)"
+        except Exception:
+            return "Not Installed"
+
+    @property
     def documentation(self) -> Dict[str, Any]:
         return {
             "purpose": "Perform symbolic execution to analyze binary control flows and solve logic constraints.",

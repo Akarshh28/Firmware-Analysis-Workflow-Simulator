@@ -16,6 +16,9 @@ import {
   Key,
 } from "lucide-react";
 
+import api from "../services/api";
+import { useProjectStore } from "../store/projectStore";
+
 interface Finding {
   id: string;
   title: string;
@@ -29,7 +32,7 @@ interface Finding {
   remediation: string;
 }
 
-const FINDINGS: Finding[] = [
+const FALLBACK_FINDINGS: Finding[] = [
   {
     id: "CVE-SIM-001",
     title: "Hardcoded DLMS Authentication Key in libcosem.so",
@@ -161,22 +164,51 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const Reports: React.FC = () => {
-  const [selectedFinding, setSelectedFinding] = useState<Finding | null>(FINDINGS[0]);
+  const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
+  const [findings, setFindings] = useState<Finding[]>([]);
+  const { activeProject } = useProjectStore();
   const [severityFilter, setSeverityFilter] = useState<string>("all");
 
-  const filtered = FINDINGS.filter(
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchFindings = async () => {
+        if (!activeProject) return;
+        try {
+            const res = await api.get(`/projects/${activeProject.id}/dashboard`);
+            if (isMounted) {
+                const fetchedFindings = res.data.findings || [];
+                setFindings(fetchedFindings.length > 0 ? fetchedFindings : FALLBACK_FINDINGS);
+                if (fetchedFindings.length > 0) {
+                    setSelectedFinding(fetchedFindings[0]);
+                } else {
+                    setSelectedFinding(FALLBACK_FINDINGS[0]);
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            if (isMounted) {
+                setFindings(FALLBACK_FINDINGS);
+                setSelectedFinding(FALLBACK_FINDINGS[0]);
+            }
+        }
+    };
+    fetchFindings();
+    return () => { isMounted = false; };
+  }, [activeProject]);
+
+  const filtered = findings.filter(
     (f) => severityFilter === "all" || f.severity === severityFilter
   );
 
   const stats = {
-    critical: FINDINGS.filter((f) => f.severity === "critical").length,
-    high:     FINDINGS.filter((f) => f.severity === "high").length,
-    medium:   FINDINGS.filter((f) => f.severity === "medium").length,
-    low:      FINDINGS.filter((f) => f.severity === "low").length,
+    critical: findings.filter((f) => f.severity === "critical").length,
+    high:     findings.filter((f) => f.severity === "high").length,
+    medium:   findings.filter((f) => f.severity === "medium").length,
+    low:      findings.filter((f) => f.severity === "low").length,
   };
 
   const handleExport = () => {
-    const md = FINDINGS.map((f) =>
+    const md = findings.map((f) =>
       `## ${f.id}: ${f.title}\n**Severity:** ${f.severity.toUpperCase()} | **CVSS:** ${f.cvss} | **CWE:** ${f.cwe} | **Stage:** ${f.stage}\n\n**Description:**\n${f.description}\n\n**PoC:**\n\`\`\`\n${f.poc}\n\`\`\`\n\n**Remediation:**\n${f.remediation}\n\n---\n`
     ).join("\n");
     const blob = new Blob([`# FAWS Security Report\nGenerated: ${new Date().toISOString()}\n\n` + md], { type: "text/markdown" });
@@ -246,7 +278,7 @@ export const Reports: React.FC = () => {
         >
           <div style={{ color: "var(--accent-blue)" }}><Shield size={14} /></div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--accent-blue)" }}>{FINDINGS.length}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "var(--accent-blue)" }}>{findings.length}</div>
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Total</div>
           </div>
         </div>
@@ -260,7 +292,7 @@ export const Reports: React.FC = () => {
           className="card"
           style={{ width: 320, padding: 0, overflow: "auto", flexShrink: 0 }}
         >
-          {filtered.map((f, i) => {
+          {filtered.map((f) => {
             const cfg = SEVERITY_CONFIG[f.severity];
             return (
               <div
@@ -414,7 +446,7 @@ export const Reports: React.FC = () => {
 
               {/* External Reference */}
               <a
-                href={`https://cwe.mitre.org/data/definitions/${selectedFinding.cwe.replace("CWE-", "")}.html`}
+                href={`https://cwe.mitre.org/data/definitions/${(selectedFinding.cwe || "").replace("CWE-", "")}.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

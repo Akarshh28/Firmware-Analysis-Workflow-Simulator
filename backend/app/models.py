@@ -13,6 +13,8 @@ class Project(Base):
     description = Column(String, nullable=True)
     target_architecture = Column(String, default="ARM Cortex-M4")
     firmware_filepath = Column(String, nullable=True)
+    checksum = Column(String, nullable=True)
+    file_size = Column(Integer, nullable=True)
     status = Column(String, default="ACTIVE")  # ACTIVE, COMPLETED, ARCHIVED
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -24,8 +26,8 @@ class PipelineSession(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
-    status = Column(String, default="IDLE")  # IDLE, RUNNING, FAILED, SUCCESS
-    current_stage = Column(String, default="Firmware Upload")
+    status = Column(String, default="WAITING_UPLOAD")  # WAITING_UPLOAD, FILE_VALIDATED, READY, RUNNING, COMPLETED, REPORT_GENERATED, FAILED
+    current_stage = Column(String, default="Upload")
     started_at = Column(DateTime, nullable=True)
     ended_at = Column(DateTime, nullable=True)
 

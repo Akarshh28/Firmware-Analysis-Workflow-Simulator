@@ -1,11 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { ScrollText, Download, RefreshCw, Filter, AlertCircle, Terminal, Info, CheckCircle } from "lucide-react";
+import { Download, RefreshCw, Filter, AlertCircle, Terminal, Info, CheckCircle } from "lucide-react";
 import { useProjectStore } from "../store/projectStore";
 
+interface LogItem {
+  id?: number;
+  tool_name: string;
+  log_type: string;
+  message: string;
+  timestamp: string;
+}
+
 /* ─────────── Simulated logs (used when backend is offline) ─────────── */
-const SIMULATED_LOGS = [
+const SIMULATED_LOGS: LogItem[] = [
   { id: 1, tool_name: "binwalk",    log_type: "SYSTEM", message: "Initializing simulated scan on 'flash.bin'...",               timestamp: "2026-07-28T09:32:01Z" },
   { id: 2, tool_name: "binwalk",    log_type: "STDOUT", message: "DECIMAL       HEXADECIMAL     DESCRIPTION",                     timestamp: "2026-07-28T09:32:01Z" },
   { id: 3, tool_name: "binwalk",    log_type: "STDOUT", message: "0             0x0             TRX firmware header, length: 4194304 bytes", timestamp: "2026-07-28T09:32:02Z" },
@@ -56,50 +64,55 @@ const LOG_TYPE_STYLES: Record<string, { color: string; label: string; icon: Reac
 const ALL_TOOLS = Array.from(new Set(SIMULATED_LOGS.map((l) => l.tool_name)));
 
 export const Logs: React.FC = () => {
+  const { logs: storeLogs, fetchLogs, activeProject } = useProjectStore();
   const [filter, setFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [autoScroll, setAutoScroll] = useState(true);
-  const [backendLogs, setBackendLogs] = useState<typeof SIMULATED_LOGS | null>(null);
   const [loading, setLoading] = useState(false);
   const logContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const { logs: storeLogs } = useProjectStore();
+  const activeLogs = storeLogs.length > 0 ? storeLogs : SIMULATED_LOGS;
 
-  const activeLogs = backendLogs ?? SIMULATED_LOGS;
-
-  const filteredLogs = activeLogs.filter((log) => {
+  const filteredLogs = activeLogs.filter((log: LogItem) => {
     const matchTool = filter === "all" || log.tool_name === filter;
     const matchType = typeFilter === "all" || log.log_type === typeFilter;
     return matchTool && matchType;
   });
 
+  // Auto-scroll
   React.useEffect(() => {
     if (autoScroll && logContainerRef.current) {
-      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+      logContainerRef.current.scrollTop =
+        logContainerRef.current.scrollHeight;
     }
   }, [filteredLogs, autoScroll]);
 
+  // Fetch logs from backend
   const fetchFromBackend = async () => {
+    if (!activeProject) return;
     setLoading(true);
-    try {
-      const res = await fetch("http://localhost:8000/api/projects/1/logs");
-      if (res.ok) {
-        const data = await res.json();
-        setBackendLogs(data);
-      }
-    } catch {
-      // Use simulated logs
-    } finally {
-      setLoading(false);
-    }
+    await fetchLogs(activeProject.id);
+    setLoading(false);
   };
+
+  // Load logs once when page opens
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchFromBackend();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject]);
 
   const handleExport = () => {
     const text = filteredLogs
-      .map((l) => `[${l.timestamp}] [${l.tool_name}] [${l.log_type}] ${l.message}`)
+      .map(
+        (l) =>
+          `[${l.timestamp}] [${l.tool_name}] [${l.log_type}] ${l.message}`
+      )
       .join("\n");
+
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "faws_execution_logs.txt";
@@ -259,7 +272,7 @@ export const Logs: React.FC = () => {
               >
                 {/* Timestamp */}
                 <span style={{ color: "var(--text-muted)", flexShrink: 0, fontSize: 10, paddingTop: 1 }}>
-                  {new Date(log.timestamp).toLocaleTimeString()}
+                  {new Date(log.timestamp.endsWith("Z") ? log.timestamp : log.timestamp + "Z").toLocaleTimeString()}
                 </span>
 
                 {/* Tool */}

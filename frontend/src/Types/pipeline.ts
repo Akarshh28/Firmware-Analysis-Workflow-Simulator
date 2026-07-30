@@ -6,10 +6,13 @@ export type NodeStatus =
   | "failed";
 
 export interface PipelineNode {
-
   id: string;
 
   toolName: string;
+
+  stage: string;
+
+  description: string;
 
   status: NodeStatus;
 
@@ -18,25 +21,19 @@ export interface PipelineNode {
   startedAt?: string;
 
   finishedAt?: string;
-
 }
 
-export interface PipelineEdge{
-
-  from:string;
-
-  to:string;
-
+export interface PipelineEdge {
+  from: string;
+  to: string;
 }
 
-export interface Pipeline{
+export interface Pipeline {
+  id: string;
 
-  id:string;
+  name: string;
 
-  name:string;
+  nodes: PipelineNode[];
 
-  nodes:PipelineNode[];
-
-  edges:PipelineEdge[];
-
+  edges: PipelineEdge[];
 }

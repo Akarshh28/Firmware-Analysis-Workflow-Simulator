@@ -1,6 +1,7 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
+import { useProjectStore } from "../store/projectStore";
+import api from "../services/api";
 import {
   AreaChart,
   Area,
@@ -211,39 +212,29 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export const Dashboard: React.FC = () => {
+  const { activeProject } = useProjectStore();
   const [dashboardData, setDashboardData] = useState<DashboardData>(() => buildDashboardData());
-  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const loadDashboardData = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/api/projects/1/dashboard");
-        if (!response.ok) {
-          throw new Error("offline");
+    let isMounted = true;
+    const fetchDashboard = async () => {
+        if (!activeProject) return;
+        try {
+            const res = await api.get(`/projects/${activeProject.id}/dashboard`);
+            if (isMounted) {
+                setDashboardData(buildDashboardData(res.data));
+            }
+        } catch(e) {
+            console.error(e);
         }
-
-        const payload = await response.json().catch(() => null);
-
-        if (!cancelled) {
-          setBackendOnline(true);
-          setDashboardData(buildDashboardData(payload));
-        }
-      } catch {
-        if (!cancelled) {
-          setBackendOnline(false);
-          setDashboardData(buildDashboardData());
-        }
-      }
     };
-
-    loadDashboardData();
-
+    
+    fetchDashboard();
+    
     return () => {
-      cancelled = true;
+      isMounted = false;
     };
-  }, []);
+  }, [activeProject]);
 
   const summary = dashboardData.summary ?? {};
   const metrics = dashboardData.metrics ?? {};
@@ -274,7 +265,7 @@ export const Dashboard: React.FC = () => {
   const riskLabel = summary?.riskLabel ?? "CRITICAL RISK";
   const riskSummary = summary?.riskSummary ?? "Firmware poses significant security risk. 4 critical vulnerabilities must be patched before deployment.";
   const findingsCount = findings?.length ?? 0;
-  const isSimulationMode = backendOnline === false || backendOnline === null;
+
 
   const statCards = [
     {
@@ -639,7 +630,7 @@ export const Dashboard: React.FC = () => {
       >
         <Zap size={16} color="var(--accent-blue)" />
         <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-          <strong style={{ color: "var(--accent-blue)" }}>{isSimulationMode ? "Simulation Mode:" : "Live Mode:"}</strong>{" "}
+          <strong style={{ color: "var(--accent-blue)" }}>Live Mode:</strong>{" "}
           All findings and metrics are pre-recorded digital twin outputs based on realistic DLMS/COSEM firmware vulnerability scenarios. Start the Pipeline Simulator to run the full analysis workflow.
         </p>
       </div>

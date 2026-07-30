@@ -7,8 +7,8 @@ from app.config import settings
 # Create database engine
 engine = create_engine(
     settings.DATABASE_URL, 
-    connect_args={"check_same_thread": False}  # Required for SQLite multithreading
-)
+    connect_args={"check_same_thread": False, "timeout": 15}
+)  # Required for SQLite multithreading
 
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -24,6 +24,11 @@ class BaseToolPlugin(ABC):
         pass
 
     @property
+    def version(self) -> str:
+        """Dynamically fetched version of the tool on the local system."""
+        return "Not Installed"
+
+    @property
     @abstractmethod
     def documentation(self) -> Dict[str, Any]:
         """Returns structured helper info: purpose, commands, common errors, troubleshooting, best practices, references."""

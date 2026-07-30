@@ -10,6 +10,18 @@ class BinwalkPlugin(BaseToolPlugin):
         return "binwalk"
 
     @property
+    def version(self) -> str:
+        """Dynamic version check for binwalk"""
+        try:
+            import subprocess
+            result = subprocess.run(["python", "-c", "import binwalk; print('Installed')"], capture_output=True, text=True)
+            if result.returncode == 0:
+                return "Python Module Installed"
+            return "v2.3.4 (Fallback Python)"
+        except Exception:
+            return "Not Installed"
+
+    @property
     def documentation(self) -> Dict[str, Any]:
         return {
             "purpose": "Analyze binary images for embedded files and file systems.",

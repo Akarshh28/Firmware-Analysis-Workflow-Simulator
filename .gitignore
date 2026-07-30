@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+faws.db
+data/projects/
+backend/data/projects/
+dummy_firmware.bin
+backend/data/dummy_firmware.txt
+node_modules/
+.next/
+*.zip

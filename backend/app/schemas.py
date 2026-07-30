@@ -69,6 +69,8 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
     target_architecture: str = "ARM Cortex-M4"
     status: str = "ACTIVE"
+    checksum: Optional[str] = None
+    file_size: Optional[int] = None
 
 class ProjectCreate(ProjectBase):
     pass
