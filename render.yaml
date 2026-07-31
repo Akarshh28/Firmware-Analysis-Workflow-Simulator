@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: faws-backend
+    env: docker
+    region: oregon
+    plan: starter
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+    disk:
+      name: faws-data
+      mountPath: /app/data
+      sizeGB: 10

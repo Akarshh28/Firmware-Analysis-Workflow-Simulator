@@ -117,7 +117,9 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
   },
 
   connectWebSocket: (projectId) => {
-    const ws = new WebSocket(`ws://127.0.0.1:8000/api/ws/${projectId}`);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    const wsUrl = apiUrl.replace(/^http/, 'ws');
+    const ws = new WebSocket(`${wsUrl}/api/ws/${projectId}`);
     
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);

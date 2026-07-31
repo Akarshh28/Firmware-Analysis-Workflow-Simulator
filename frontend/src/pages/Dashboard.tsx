@@ -164,27 +164,23 @@ const fallbackPipeline: DashboardPipeline = {
 };
 
 const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardData => ({
-  summary: { ...fallbackSummary, ...(payload?.summary ?? {}) },
-  metrics: { ...fallbackMetrics, ...(payload?.metrics ?? {}) },
-  findings: Array.isArray(payload?.findings) && payload?.findings?.length
-    ? payload.findings.map((item) => ({
+  summary: payload?.summary ?? {
+    critical: 0, high: 0, medium: 0, low: 0, riskScore: 0, riskLabel: "NO ISSUES", riskSummary: "No data available."
+  },
+  metrics: payload?.metrics ?? {
+    totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 12", duration: "0 min"
+  },
+  findings: Array.isArray(payload?.findings) ? payload.findings.map((item) => ({
         id: item?.id ?? undefined,
         title: item?.title ?? undefined,
         severity: item?.severity ?? undefined,
         stage: item?.stage ?? undefined,
         tool: item?.tool ?? undefined,
-      }))
-    : fallbackFindings,
+      })) : [],
   pipeline: {
-    vulnerabilities: Array.isArray(payload?.pipeline?.vulnerabilities) && payload.pipeline.vulnerabilities.length
-      ? payload.pipeline.vulnerabilities
-      : fallbackPipeline.vulnerabilities,
-    timeline: Array.isArray(payload?.pipeline?.timeline) && payload.pipeline.timeline.length
-      ? payload.pipeline.timeline
-      : fallbackPipeline.timeline,
-    severity: Array.isArray(payload?.pipeline?.severity) && payload.pipeline.severity.length
-      ? payload.pipeline.severity
-      : fallbackPipeline.severity,
+    vulnerabilities: Array.isArray(payload?.pipeline?.vulnerabilities) ? payload.pipeline.vulnerabilities : [],
+    timeline: Array.isArray(payload?.pipeline?.timeline) ? payload.pipeline.timeline : [],
+    severity: Array.isArray(payload?.pipeline?.severity) ? payload.pipeline.severity : [],
   },
   logs: Array.isArray(payload?.logs) ? payload.logs : [],
 });

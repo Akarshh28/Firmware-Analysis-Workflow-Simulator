@@ -96,7 +96,7 @@ const FALLBACK_FINDINGS: Finding[] = [
     cvss: 6.5,
     cwe: "CWE-134",
     stage: "Fuzzing",
-    tool: "afl",
+    tool: "afl++",
     description:
       "The meter's diagnostic logging function passes user-supplied DLMS request data directly to printf() without a format string. This is a classic format string vulnerability that allows attackers to read arbitrary memory locations or crash the meter.",
     poc: "$ echo -n '%p %p %p %p %p %p %p %p' | dlms_send --target 192.168.1.100\nResponse log: 0x7fffe320 0x401234 0x7fffe200 0x0 0x41414141 0xbffff5f4 0x7f3d2a18 0x7fffe310\n# Stack addresses leaked — enables ASLR bypass",
@@ -159,7 +159,7 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   angr:       <Cpu size={14} />,
   wireshark:  <Network size={14} />,
   entropy:    <Lock size={14} />,
-  afl:        <Bug size={14} />,
+  "afl++":        <Bug size={14} />,
   cutter:     <FileText size={14} />,
 };
 

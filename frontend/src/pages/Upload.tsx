@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, X, Play, RefreshCw, Hash, HardDrive } from "lucide-react";
 import { useProjectStore } from "../store/projectStore";
-
-
-import { Project } from "../Types/project";
+import toast from "react-hot-toast";
 
 const ALLOWED_EXTS = [
   ".bin", ".img", ".zip", ".tar", ".tar.gz", ".hex",
-  ".elf", ".axf", ".out", ".srec", ".mot", ".bin.gz"
+  ".elf", ".axf", ".out", ".srec", ".mot", ".bin.gz", ".7z"
 ];
 const MAX_SIZE = 500 * 1024 * 1024; // 500MB
 
 export const Upload: React.FC = () => {
-  const { createProject, uploadFirmware, activePipeline, activeProject } = useProjectStore();
+  const { createProject, uploadFirmware, activeProject, activePipeline, startPipeline } = useProjectStore();
   
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadedProject, setUploadedProject] = useState<Project | null>(null);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!activeProject) {
-      // eslint-disable-next-line
-      setUploadedProject(null);
       setFile(null);
+      setProgress(0);
+      setError(null);
     }
   }, [activeProject]);
 
@@ -46,7 +44,7 @@ export const Upload: React.FC = () => {
     return true;
   };
 
-  const handleDrag = (e: React.DragEvent) => {
+  const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -54,9 +52,9 @@ export const Upload: React.FC = () => {
     } else if (e.type === "dragleave") {
       setDragActive(false);
     }
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -66,153 +64,254 @@ export const Upload: React.FC = () => {
         setFile(droppedFile);
       }
     }
-  };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      const selected = e.target.files[0];
-      if (validateFile(selected)) {
-        setFile(selected);
+      const selectedFile = e.target.files[0];
+      if (validateFile(selectedFile)) {
+        setFile(selectedFile);
       }
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
-    setUploading(true);
+  const handleCancel = () => {
+    setFile(null);
+    setProgress(0);
     setError(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!file) return;
+
     try {
-      // Create Project
-      const project = await createProject(
-        file.name,
-        "Firmware Analysis run",
-        "ARM Cortex-M4"
-      );
-      // Upload Firmware
-      await uploadFirmware(project.id, file);
+      setUploading(true);
+      setError(null);
       
-      setUploadedProject(project);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message || "Upload failed. Please try again.");
+      let projId = activeProject?.id;
+      if (!projId) {
+        const newProj = await createProject(
+          file.name,
+          "Auto-created from upload",
+          "Unknown"
+        );
+        projId = newProj.id;
+      }
+
+      await uploadFirmware(projId, file, (p) => {
+        setProgress(p);
+      });
+      
+      toast.success("Firmware uploaded successfully!");
+    } catch (e: any) {
+      setError(e.response?.data?.detail || e.message || "Failed to upload firmware.");
     } finally {
       setUploading(false);
     }
   };
 
-  const isReady = activePipeline?.status === "READY" || uploadedProject;
+  const handleRunPipeline = async () => {
+    if (!activeProject?.id) return;
+    try {
+      await startPipeline(activeProject.id);
+      toast.success("Pipeline started!");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to start pipeline");
+    }
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const isUploaded = activeProject?.firmware_filepath != null;
+  const isRunning = activePipeline?.status === "RUNNING";
 
   return (
-    <div className="animate-fade-in" style={{ padding: 24, maxWidth: 800, margin: "0 auto" }}>
-      <div className="page-header" style={{ marginBottom: 30 }}>
-        <h1 className="page-title">Upload Firmware</h1>
-        <p className="page-subtitle">Upload your firmware image to begin the automated analysis workflow.</p>
-      </div>
+    <div className="view-container">
+      <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+        Firmware Ingestion
+      </h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>
+        Upload a firmware image to begin the analysis pipeline. Maximum file size is 500MB.
+      </p>
 
-      {!isReady ? (
-        <div 
-          style={{
-            border: `2px dashed ${dragActive ? "var(--accent-blue)" : "var(--border-dim)"}`,
-            borderRadius: "var(--radius-lg)",
-            padding: "60px 20px",
-            textAlign: "center",
-            background: dragActive ? "rgba(99,120,255,0.05)" : "var(--bg-card)",
-            transition: "all 0.2s ease"
-          }}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <UploadCloud size={48} color="var(--accent-blue)" style={{ margin: "0 auto", marginBottom: 20 }} />
-          
-          <h2 style={{ color: "var(--text-primary)", fontSize: 18, marginBottom: 8 }}>
-            Drag & Drop Firmware Here
-          </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 24 }}>
-            Supported: .bin, .img, .zip, .tar, .tar.gz, .hex, .elf, etc. (Max 500MB)
-          </p>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleChange}
-            style={{ display: "none" }}
-            accept={ALLOWED_EXTS.join(",")}
-          />
-
-          <button 
-            className="btn btn-secondary"
-            onClick={() => fileInputRef.current?.click()}
+      {/* Upload Zone */}
+      {!isUploaded && (
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div 
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            style={{
+              border: `2px dashed ${dragActive ? 'var(--accent-cyan)' : 'var(--border-dim)'}`,
+              borderRadius: '12px',
+              padding: '48px',
+              textAlign: 'center',
+              backgroundColor: dragActive ? 'rgba(34,211,238,0.05)' : 'var(--bg-secondary)',
+              cursor: uploading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onClick={() => !uploading && !file && fileInputRef.current?.click()}
           >
-            Browse Files
-          </button>
-        </div>
-      ) : (
-        <div className="card" style={{ padding: 40, textAlign: "left", border: "1px solid var(--accent-green)" }}>
-          <div style={{ textAlign: "center", marginBottom: 30 }}>
-            <CheckCircle size={64} color="var(--accent-green)" style={{ margin: "0 auto", marginBottom: 20 }} />
-            <h2 style={{ color: "var(--text-primary)", fontSize: 24, marginBottom: 12 }}>
-              Firmware Uploaded Successfully
-            </h2>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Project created and firmware validated. The analysis pipeline is ready.
-            </p>
-          </div>
-          
-          <div style={{ background: "var(--bg-secondary)", padding: 20, borderRadius: "var(--radius-md)", marginBottom: 30 }}>
-            <h3 style={{ fontSize: 16, color: "var(--text-primary)", marginBottom: 16 }}>Upload Details</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "12px 24px", fontSize: 14 }}>
-                <div style={{ color: "var(--text-muted)" }}>Filename:</div>
-                <div style={{ color: "var(--text-primary)", fontFamily: "var(--font-mono)" }}>{activeProject?.name || uploadedProject?.name || file?.name}</div>
-                
-                <div style={{ color: "var(--text-muted)" }}>Size:</div>
-                <div style={{ color: "var(--text-primary)" }}>{activeProject?.file_size ? (activeProject.file_size / 1024 / 1024).toFixed(2) : (file?.size ? (file.size / 1024 / 1024).toFixed(2) : "0")} MB</div>
-                
-                <div style={{ color: "var(--text-muted)" }}>Upload Timestamp:</div>
-                <div style={{ color: "var(--text-primary)" }}>{new Date().toLocaleString()}</div>
-                
-                <div style={{ color: "var(--text-muted)" }}>Architecture:</div>
-                <div style={{ color: "var(--text-primary)" }}>{activeProject?.target_architecture || "ARM Cortex-M4"}</div>
-                
-                <div style={{ color: "var(--text-muted)" }}>Checksum (SHA256):</div>
-                <div style={{ color: "var(--accent-cyan)", fontFamily: "var(--font-mono)", wordBreak: "break-all" }}>
-                    {activeProject?.checksum || "Calculating..."}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleChange} 
+              style={{ display: 'none' }} 
+              disabled={uploading}
+              accept={ALLOWED_EXTS.join(',')}
+            />
+
+            {!file ? (
+              <div style={{ pointerEvents: 'none' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-tertiary)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+                  color: 'var(--accent-cyan)'
+                }}>
+                  <UploadCloud size={32} />
                 </div>
-            </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                  Drag & Drop Firmware File
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+                  or click to browse from your computer
+                </p>
+                <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {ALLOWED_EXTS.map(ext => (
+                    <span key={ext} style={{ fontSize: '11px', background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: '4px', color: 'var(--text-muted)' }}>
+                      {ext}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'left', background: 'var(--bg-primary)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-dim)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ padding: '12px', background: 'rgba(34,211,238,0.1)', color: 'var(--accent-cyan)', borderRadius: '8px' }}>
+                      <FileIcon size={24} />
+                    </div>
+                    <div>
+                      <h4 style={{ color: 'var(--text-primary)', fontWeight: 600, margin: 0 }}>{file.name}</h4>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{formatSize(file.size)}</span>
+                    </div>
+                  </div>
+                  {!uploading && (
+                    <button onClick={(e) => { e.stopPropagation(); handleCancel(); }} className="btn btn-icon" style={{ background: 'none' }}>
+                      <X size={18} />
+                    </button>
+                  )}
+                </div>
+
+                {uploading ? (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                      <span>Uploading...</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--bg-tertiary)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${progress}%`, background: 'var(--accent-cyan)', transition: 'width 0.2s ease' }} />
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
+                    className="btn btn-primary" 
+                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <UploadCloud size={16} /> Begin Upload
+                  </button>
+                )}
+              </div>
+            )}
           </div>
+          {error && (
+            <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--accent-red)' }}>
+              <AlertTriangle size={18} />
+              <span style={{ fontSize: '14px' }}>{error}</span>
+            </div>
+          )}
         </div>
       )}
 
-      {error && (
-        <div style={{ marginTop: 20, padding: 16, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-md)", display: "flex", gap: 10, alignItems: "center", color: "var(--accent-red)" }}>
-          <AlertTriangle size={20} />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Uploaded State */}
+      {isUploaded && activeProject && (
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ 
+            background: 'var(--bg-secondary)', border: '1px solid var(--accent-cyan)', borderRadius: '12px', 
+            padding: '24px', position: 'relative', overflow: 'hidden' 
+          }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'var(--accent-cyan)' }} />
+            
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(34,211,238,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-cyan)' }}>
+                  <CheckCircle size={24} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Firmware Ready <span style={{ padding: '2px 8px', background: 'var(--accent-green)', color: '#000', fontSize: '11px', borderRadius: '12px', fontWeight: 800 }}>VALIDATED</span>
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '14px' }}>
+                    File successfully uploaded and validated.
+                  </p>
+                </div>
+              </div>
 
-      {file && !isReady && (
-        <div className="card" style={{ marginTop: 24, padding: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <FileIcon size={24} color="var(--accent-blue)" />
-            <div>
-              <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{file.name}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-                {(file.size / 1024 / 1024).toFixed(2)} MB
+              {!isRunning ? (
+                <button onClick={handleRunPipeline} className="btn btn-primary" style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                  <Play size={18} /> Run Pipeline
+                </button>
+              ) : (
+                <button disabled className="btn btn-secondary" style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', opacity: 0.7 }}>
+                  <RefreshCw size={18} className="animate-spin" /> Pipeline Running
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', borderTop: '1px solid var(--bg-tertiary)', paddingTop: '24px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <FileIcon size={12} /> Filename
+                </div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px', wordBreak: 'break-all' }}>
+                  {activeProject.firmware_filepath?.split('/').pop() || activeProject.firmware_filepath?.split('\\').pop() || 'Unknown'}
+                </div>
+              </div>
+              
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <HardDrive size={12} /> Size
+                </div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px' }}>
+                  {activeProject.file_size ? formatSize(activeProject.file_size) : 'Unknown'}
+                </div>
+              </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Hash size={12} /> SHA256 Checksum
+                </div>
+                <div style={{ color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)', fontSize: '13px', padding: '12px', background: '#0a0a0a', borderRadius: '6px', wordBreak: 'break-all', border: '1px solid #222' }}>
+                  {activeProject.checksum || 'Pending calculation...'}
+                </div>
               </div>
             </div>
           </div>
-          <button 
-            className="btn btn-primary"
-            disabled={uploading}
-            onClick={handleUpload}
-          >
-            {uploading ? "Uploading..." : "Upload & Create Project"}
-          </button>
         </div>
       )}
-
     </div>
   );
 };

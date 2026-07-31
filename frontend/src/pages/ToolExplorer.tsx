@@ -541,3 +541,5 @@ export const ToolExplorer: React.FC = () => {
     </div>
   );
 };
+
+export default ToolExplorer;

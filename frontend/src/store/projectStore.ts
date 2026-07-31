@@ -39,7 +39,8 @@ interface ProjectState {
 
   uploadFirmware: (
     projectId: number,
-    file: File
+    file: File,
+    onProgress?: (progress: number) => void
   ) => Promise<void>;
   
   addLog: (log: LogEntry) => void;
@@ -165,7 +166,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   uploadFirmware: async (
     projectId: number,
-    file: File
+    file: File,
+    onProgress?: (progress: number) => void
   ) => {
     const formData = new FormData();
     formData.append("firmware", file);
@@ -173,6 +175,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const res = await api.post(`/projects/${projectId}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data"
+      },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percentCompleted);
+        }
       }
     });
     

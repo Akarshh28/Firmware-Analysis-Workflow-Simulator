@@ -1,12 +1,12 @@
 import asyncio
-import random
 import datetime
 import os
+import shutil
 # pyrefly: ignore [missing-import]
 from sqlalchemy import create_engine
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import sessionmaker
-from app.models import ToolRun, LogEntry, Artifact
+from app.models import ToolRun, LogEntry, Artifact, Project
 from app.websockets import manager
 from langgraph.state import GraphState
 
@@ -15,21 +15,88 @@ def get_db_session(db_url: str):
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return SessionLocal()
 
+import sys
+import shlex
+
+# Pre-defined mapping of tool commands to run via subprocess
+TOOL_COMMANDS = {
+    "strings": f'"{sys.executable}" tools/strings.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "binwalk": f'"{sys.executable}" tools/binwalk.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "cutter": f'"{sys.executable}" tools/cutter.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "ghidra": f'"{sys.executable}" tools/ghidra.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "trufflehog": f'"{sys.executable}" tools/trufflehog.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "entropy": f'"{sys.executable}" tools/entropy.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "wireshark": f'"{sys.executable}" tools/wireshark.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "afl++": f'"{sys.executable}" tools/afl.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "angr": f'"{sys.executable}" tools/angr.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "scorecard": f'"{sys.executable}" tools/scorecard.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+    "pdf_report": f'"{sys.executable}" tools/pdf_report.py --target "{{target}}" --project "{{project_id}}" --run-id 0',
+}
+
 async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallback_artifacts: list) -> GraphState:
     db = get_db_session(state["db_url"])
     try:
-        # Create ToolRun
+        # Get target firmware path
+        project = db.query(Project).filter(Project.id == state["project_id"]).first()
+        target_path = project.firmware_filepath if project else "unknown.bin"
+
+        cmd_template = TOOL_COMMANDS.get(tool_name, f"echo 'Tool {tool_name} not configured'")
+        cmd = cmd_template.replace("{target}", target_path).replace("{project_id}", str(state["project_id"]))
+
+        # Check if the primary binary exists (skip logic)
+        if cmd.startswith('"'):
+            primary_bin = cmd[1:cmd.find('"', 1)]
+        else:
+            primary_bin = cmd.split(" ")[0]
+            
+        if primary_bin != sys.executable and primary_bin != "echo" and shutil.which(primary_bin) is None:
+            # Tool is unavailable, mark as SKIPPED
+            log_msg = f"[{tool_name}] Binary '{primary_bin}' not found in PATH. Stage skipped."
+            
+            tool_run = ToolRun(
+                session_id=state["session_id"],
+                tool_name=tool_name,
+                command_executed=cmd,
+                started_at=datetime.datetime.utcnow(),
+                ended_at=datetime.datetime.utcnow(),
+                exit_code=0 # We don't fail the pipeline, we just skip it
+            )
+            db.add(tool_run)
+            db.commit()
+            db.refresh(tool_run)
+
+            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
+            db.add(log_entry)
+            db.commit()
+
+            await manager.broadcast(state["project_id"], {
+                "type": "LOG_NEW",
+                "data": {
+                    "tool_name": tool_name,
+                    "log_type": "SYSTEM",
+                    "message": log_msg,
+                    "timestamp": datetime.datetime.utcnow().isoformat()
+                }
+            })
+            
+            state["current_stage"] = stage_name
+            await manager.broadcast(state["project_id"], {
+                "type": "TOOL_SUCCESS",
+                "data": {"tool_name": tool_name, "skipped": True}
+            })
+            return state
+
+        # Real Execution
         tool_run = ToolRun(
             session_id=state["session_id"],
             tool_name=tool_name,
-            command_executed=f"python -m tools.{tool_name} {state['project_id']}",
+            command_executed=cmd,
             started_at=datetime.datetime.utcnow()
         )
         db.add(tool_run)
         db.commit()
         db.refresh(tool_run)
 
-        # Broadcast start
         await manager.broadcast(state["project_id"], {
             "type": "STATUS_UPDATE",
             "data": {
@@ -39,113 +106,60 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             }
         })
 
-        # Try to run the real tool natively via subprocess
-        try:
-            # We assume tools are in backend/tools/{tool_name}.py
-            tool_script = os.path.join(os.path.dirname(__file__), "..", "tools", f"{tool_name}.py")
-            if os.path.exists(tool_script):
-                # Pass the firmware path. We need to query it from the DB.
-                from app.models import Project
-                project = db.query(Project).filter(Project.id == state["project_id"]).first()
-                if project and project.firmware_filepath:
-                    cmd = f"python {tool_script} --target {project.firmware_filepath} --project {state['project_id']} --run-id {tool_run.id}"
-                    
-                    log_msg = f"[{tool_name}] Attempting real execution: {cmd}"
-                    log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
-                    db.add(log_entry)
-                    db.commit()
-
-                    process = await asyncio.create_subprocess_shell(
-                        cmd,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE
-                    )
-                    
-                    stdout, stderr = await process.communicate()
-                    exit_code = process.returncode
-                    
-                    if stdout:
-                        out_msg = stdout.decode('utf-8').strip()
-                        log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDOUT", message=out_msg)
-                        db.add(log_entry)
-                        
-                        await manager.broadcast(state["project_id"], {
-                            "type": "LOG_NEW",
-                            "data": {
-                                "tool_name": tool_name,
-                                "log_type": "STDOUT",
-                                "message": out_msg,
-                                "timestamp": datetime.datetime.utcnow().isoformat()
-                            }
-                        })
-                        
-                    if stderr:
-                        err_msg = stderr.decode('utf-8').strip()
-                        log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDERR", message=err_msg)
-                        db.add(log_entry)
-                        
-                    db.commit()
-                    
-                    if exit_code == 0:
-                        tool_run.exit_code = 0
-                        tool_run.ended_at = datetime.datetime.utcnow()
-                        db.commit()
-                        
-                        state["current_stage"] = stage_name
-                        await manager.broadcast(state["project_id"], {
-                            "type": "TOOL_SUCCESS",
-                            "data": {"tool_name": tool_name}
-                        })
-                        
-                        # Real execution succeeded, so return early
-                        return state
-            
-        except Exception as tool_exc:
-            log_msg = f"[{tool_name}] Real execution failed: {tool_exc}. Falling back to simulation."
-            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDERR", message=log_msg)
-            db.add(log_entry)
-            db.commit()
-
-        # SIMULATION FALLBACK
-        # If the script doesn't exist, or it failed, run the simulation
-        log_msg = f"[{tool_name}] Running in simulation mode..."
+        log_msg = f"[{tool_name}] Executing: {cmd}"
         log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
         db.add(log_entry)
         db.commit()
 
-        exec_time = random.uniform(2, 6)
-        steps = 5
-        sleep_interval = exec_time / steps
+        await manager.broadcast(state["project_id"], {
+            "type": "LOG_NEW",
+            "data": {
+                "tool_name": tool_name,
+                "log_type": "SYSTEM",
+                "message": log_msg,
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            }
+        })
 
-        for i in range(steps):
-            await asyncio.sleep(sleep_interval)
-            progress = int(((i + 1) / steps) * 100)
+        import subprocess
+        def run_proc():
+            return subprocess.run(cmd, shell=True, capture_output=True)
             
-            # Write a log
-            log_msg = f"[{tool_name}] Executing step {i+1}/{steps}... (simulated)"
-            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDOUT", message=log_msg)
+        process = await asyncio.to_thread(run_proc)
+        
+        stdout = process.stdout
+        stderr = process.stderr
+        exit_code = process.returncode
+        
+        if stdout:
+            out_msg = stdout.decode('utf-8', errors='ignore').strip()
+            # truncate if too long
+            if len(out_msg) > 5000: out_msg = out_msg[:5000] + "\n...[truncated]"
+            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDOUT", message=out_msg)
             db.add(log_entry)
-            db.commit()
-
-            # Broadcast log and progress
+            
             await manager.broadcast(state["project_id"], {
                 "type": "LOG_NEW",
                 "data": {
                     "tool_name": tool_name,
                     "log_type": "STDOUT",
-                    "message": log_msg,
+                    "message": out_msg,
                     "timestamp": datetime.datetime.utcnow().isoformat()
                 }
             })
-            await manager.broadcast(state["project_id"], {
-                "type": "PROGRESS_TICK",
-                "data": {
-                    "tool_name": tool_name,
-                    "progress": progress
-                }
-            })
             
-        # Add generated artifacts
+        if stderr:
+            err_msg = stderr.decode('utf-8', errors='ignore').strip()
+            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="STDERR", message=err_msg)
+            db.add(log_entry)
+            
+        db.commit()
+        
+        tool_run.exit_code = exit_code
+        tool_run.ended_at = datetime.datetime.utcnow()
+        db.commit()
+        
+        # Add generated artifacts (stubs for now, will generate dynamically if real files exist)
         for art in fallback_artifacts:
             artifact = Artifact(
                 project_id=state["project_id"],
@@ -156,31 +170,31 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
                 local_storage_path=os.path.join("data/artifacts", art["file_name"])
             )
             db.add(artifact)
-            
-            # Log artifact creation
-            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=f"Generated artifact: {art['file_name']}")
-            db.add(log_entry)
-            
         db.commit()
-
-        tool_run.exit_code = 0
-        tool_run.ended_at = datetime.datetime.utcnow()
-        db.commit()
-
-        # Update state
+        
         state["current_stage"] = stage_name
-        
-        # Broadcast tool success
-        await manager.broadcast(state["project_id"], {
-            "type": "TOOL_SUCCESS",
-            "data": {
-                "tool_name": tool_name
-            }
-        })
-        
+        if exit_code == 0:
+            await manager.broadcast(state["project_id"], {
+                "type": "TOOL_SUCCESS",
+                "data": {"tool_name": tool_name}
+            })
+        else:
+            # We don't fail the whole pipeline on single tool failure, we just proceed
+            await manager.broadcast(state["project_id"], {
+                "type": "TOOL_SUCCESS",
+                "data": {"tool_name": tool_name, "error": True}
+            })
+            
         return state
+
     except Exception as e:
         print(f"Error in {tool_name}: {e}")
+        try:
+            err_log = LogEntry(tool_run_id=tool_run.id if 'tool_run' in locals() else None, log_type="STDERR", message=f"EXCEPTION: {str(e)}")
+            db.add(err_log)
+            db.commit()
+        except:
+            pass
         state["errors"].append(str(e))
         state["status"] = "FAILED"
         return state
@@ -189,7 +203,8 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
 
 
 async def upload_node(state: GraphState):
-    return await execute_tool(state, "upload", "Upload & Ingestion", [{"file_name": "firmware.bin", "mime_type": "application/octet-stream", "file_size": 15000000}])
+    # Upload is handled by REST API, just a pass-through here
+    return state
 
 async def strings_node(state: GraphState):
     return await execute_tool(state, "strings", "Identification", [{"file_name": "strings.txt", "mime_type": "text/plain", "file_size": 1024}])

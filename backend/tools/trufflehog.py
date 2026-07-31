@@ -7,8 +7,8 @@ import time
 def scan_file_for_secrets(filepath):
     # Extremely basic secret patterns for demonstration
     patterns = {
-        "AWS_KEY": r"(?i)aws_access_key_id\s*=?\s*['\""]?([A-Z0-9]{20})['\""]?",
-        "GENERIC_SECRET": r"(?i)(secret|password|token)\s*=?\s*['\""]?([a-zA-Z0-9_\-\.]{8,})['\""]?"
+        "AWS_KEY": r"(?i)aws_access_key_id\s*=?\s*['\"]?([A-Z0-9]{20})['\"]?",
+        "GENERIC_SECRET": r"(?i)(secret|password|token)\s*=?\s*['\"]?([a-zA-Z0-9_\-\.]{8,})['\"]?"
     }
     
     findings = []
@@ -44,7 +44,7 @@ def main():
     if findings:
         print(f"Found {len(findings)} potential secrets!")
         for f in findings:
-            print(f"[!] {f[\"type\"]} at line {f[\"line\"]}: {f[\"match\"]}")
+            print(f"[!] {f['type']} at line {f['line']}: {f['match']}")
             time.sleep(0.5)
     else:
         print("No obvious secrets found in the raw binary.")
