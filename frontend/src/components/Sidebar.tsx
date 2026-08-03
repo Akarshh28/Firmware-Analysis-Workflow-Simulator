@@ -215,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
                 : "Checking API…"}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-              127.0.0.1:8000
+              firmware-analysis-workflow-simulator.onrender.com
             </div>
           </div>
           {backendOnline === false && (
