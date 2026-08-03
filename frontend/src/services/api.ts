@@ -2,7 +2,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const api = axios.create({
-    baseURL: "https://firmware-analysis-workflow-simulator.onrender.com",headers: {
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 
+        (process.env.NODE_ENV === 'production' 
+            ? "https://firmware-analysis-workflow-simulator.onrender.com/api" 
+            : "http://localhost:8000/api"),
+    headers: {
         "Content-Type": "application/json",
     },
 });

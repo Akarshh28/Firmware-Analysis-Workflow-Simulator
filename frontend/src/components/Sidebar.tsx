@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
 
   React.useEffect(() => {
     const checkHealth = () => {
-        api.get("/")
+        api.get("/health")
           .then(() => setBackendOnline(true))
           .catch(() => setBackendOnline(false));
     };
@@ -215,7 +215,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
                 : "Checking API…"}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-              firmware-analysis-workflow-simulator.onrender.com
+              {process.env.NODE_ENV === 'production' 
+                 ? "firmware-analysis-workflow-simulator.onrender.com" 
+                 : "localhost:8000"}
             </div>
           </div>
           {backendOnline === false && (
