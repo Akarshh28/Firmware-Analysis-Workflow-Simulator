@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
 
   React.useEffect(() => {
     const checkHealth = () => {
-        api.get("/health")
+        api.get("/")
           .then(() => setBackendOnline(true))
           .catch(() => setBackendOnline(false));
     };
