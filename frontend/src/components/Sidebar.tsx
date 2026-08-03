@@ -215,9 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
                 : "Checking API…"}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-              {process.env.NODE_ENV === 'production' 
-                 ? "firmware-analysis-workflow-simulator.onrender.com" 
-                 : "localhost:8000"}
+              {api.defaults.baseURL}
             </div>
           </div>
           {backendOnline === false && (
