@@ -3,12 +3,14 @@ import toast from "react-hot-toast";
 
 let configuredUrl = process.env.NEXT_PUBLIC_API_URL || 
         (process.env.NODE_ENV === 'production' 
-            ? "https://firmware-analysis-workflow-simulator.onrender.com/api" 
-            : "http://localhost:8000/api");
+            ? "https://firmware-analysis-workflow-simulator.onrender.com/api/" 
+            : "http://localhost:8000/api/");
 
-if (configuredUrl && !configuredUrl.endsWith('/api')) {
-    configuredUrl = configuredUrl.replace(/\/+$/, '') + '/api';
+configuredUrl = configuredUrl.replace(/\/+$/, '');
+if (!configuredUrl.endsWith('/api')) {
+    configuredUrl += '/api';
 }
+configuredUrl += '/';
 
 const api = axios.create({
     baseURL: configuredUrl,

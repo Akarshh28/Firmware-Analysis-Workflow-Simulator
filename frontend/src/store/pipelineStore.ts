@@ -119,13 +119,15 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
   connectWebSocket: (projectId) => {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL || 
                    (process.env.NODE_ENV === 'production' 
-                      ? "https://firmware-analysis-workflow-simulator.onrender.com/api" 
-                      : "http://localhost:8000/api");
+                      ? "https://firmware-analysis-workflow-simulator.onrender.com/api/" 
+                      : "http://localhost:8000/api/");
     
-    if (apiUrl && !apiUrl.endsWith('/api')) {
-        apiUrl = apiUrl.replace(/\/+$/, '') + '/api';
+    apiUrl = apiUrl.replace(/\/+$/, '');
+    if (!apiUrl.endsWith('/api')) {
+        apiUrl += '/api';
     }
-    const wsUrl = apiUrl.replace(/^http/, 'ws').replace(/\/api\/?$/, '');
+    apiUrl += '/';
+    const wsUrl = apiUrl.replace(/^http/, 'ws').replace(/\/api\/$/, '');
     const ws = new WebSocket(`${wsUrl}/api/ws/${projectId}`);
     
     ws.onmessage = (event) => {
