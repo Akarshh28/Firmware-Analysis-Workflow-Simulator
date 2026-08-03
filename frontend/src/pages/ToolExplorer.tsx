@@ -98,7 +98,7 @@ export const ToolExplorer: React.FC = () => {
     setCmdInput('');
 
     try {
-      const res = await api.post(`/projects/${activeProject.id}/sandbox`, {
+      const res = await api.post(`projects/${activeProject.id}/sandbox`, {
         command: cmd,
         tool: selectedTool.name
       });

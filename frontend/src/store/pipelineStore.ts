@@ -38,13 +38,13 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
     
   resetPipelineBackend: async (projectId) => {
     try {
-        await api.post(`/projects/${projectId}/pipeline/stop`);
+        await api.post(`projects/${projectId}/pipeline/stop`);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
         // ignore if not running
     }
     try {
-        await api.post(`/projects/${projectId}/pipeline/reset`);
+        await api.post(`projects/${projectId}/pipeline/reset`);
         get().resetPipeline();
         await get().fetchPipeline(projectId);
         useProjectStore.getState().selectProject(useProjectStore.getState().activeProject!);
@@ -55,7 +55,7 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
 
   fetchPipeline: async (projectId) => {
     try {
-      const res = await api.get(`/projects/${projectId}/pipeline`);
+      const res = await api.get(`projects/${projectId}/pipeline`);
 
       const backendStages = res.data.stages;
 
@@ -109,7 +109,7 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
 
   runPipeline: async (projectId) => {
     try {
-      await api.post(`/projects/${projectId}/pipeline/run`);
+      await api.post(`projects/${projectId}/pipeline/run`);
       await get().fetchPipeline(projectId);
     } catch (e) {
       console.error(e);

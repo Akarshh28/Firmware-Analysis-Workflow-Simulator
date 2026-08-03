@@ -79,7 +79,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   fetchProjects: async () => {
     set({ isLoading: true });
     try {
-      const res = await api.get(`/projects`);
+      const res = await api.get(`projects`);
       set({ projects: res.data });
       if (res.data.length > 0 && !get().activeProject) {
         get().selectProject(res.data[0]);
@@ -96,7 +96,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     description,
     targetArch
   ) => {
-    const res = await api.post(`/projects`, {
+    const res = await api.post(`projects`, {
         name,
         description,
         target_architecture: targetArch,
@@ -123,7 +123,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   fetchPipelineStatus: async (projectId) => {
     try {
-      const res = await api.get(`/projects/${projectId}/pipeline`);
+      const res = await api.get(`projects/${projectId}/pipeline`);
       set({
         activePipeline: res.data,
       });
@@ -133,18 +133,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   startPipeline: async (projectId) => {
-    await api.post(`/projects/${projectId}/pipeline/run`);
+    await api.post(`projects/${projectId}/pipeline/run`);
     await get().fetchPipelineStatus(projectId);
   },
 
   stopPipeline: async (projectId) => {
-    await api.post(`/projects/${projectId}/pipeline/stop`);
+    await api.post(`projects/${projectId}/pipeline/stop`);
     await get().fetchPipelineStatus(projectId);
   },
 
   fetchLogs: async (projectId) => {
     try {
-      const res = await api.get(`/projects/${projectId}/logs`);
+      const res = await api.get(`projects/${projectId}/logs`);
       set({
         logs: res.data,
       });
@@ -155,7 +155,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   fetchTools: async () => {
     try {
-      const res = await api.get(`/tools`);
+      const res = await api.get(`tools`);
       set({
         tools: res.data,
       });
@@ -172,7 +172,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const formData = new FormData();
     formData.append("firmware", file);
 
-    const res = await api.post(`/projects/${projectId}/upload`, formData, {
+    const res = await api.post(`projects/${projectId}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data"
       },

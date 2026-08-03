@@ -216,7 +216,7 @@ export const Dashboard: React.FC = () => {
     const fetchDashboard = async () => {
         if (!activeProject) return;
         try {
-            const res = await api.get(`/projects/${activeProject.id}/dashboard`);
+            const res = await api.get(`projects/${activeProject.id}/dashboard`);
             if (isMounted) {
                 setDashboardData(buildDashboardData(res.data));
             }

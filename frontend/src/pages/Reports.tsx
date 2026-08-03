@@ -174,7 +174,7 @@ export const Reports: React.FC = () => {
     const fetchFindings = async () => {
         if (!activeProject) return;
         try {
-            const res = await api.get(`/projects/${activeProject.id}/dashboard`);
+            const res = await api.get(`projects/${activeProject.id}/dashboard`);
             if (isMounted) {
                 const fetchedFindings = res.data.findings || [];
                 setFindings(fetchedFindings.length > 0 ? fetchedFindings : FALLBACK_FINDINGS);
