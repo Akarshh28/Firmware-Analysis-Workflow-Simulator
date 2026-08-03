@@ -1,11 +1,17 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 
+let configuredUrl = process.env.NEXT_PUBLIC_API_URL || 
         (process.env.NODE_ENV === 'production' 
             ? "https://firmware-analysis-workflow-simulator.onrender.com/api" 
-            : "http://localhost:8000/api"),
+            : "http://localhost:8000/api");
+
+if (configuredUrl && !configuredUrl.endsWith('/api')) {
+    configuredUrl = configuredUrl.replace(/\/+$/, '') + '/api';
+}
+
+const api = axios.create({
+    baseURL: configuredUrl,
     headers: {
         "Content-Type": "application/json",
     },
