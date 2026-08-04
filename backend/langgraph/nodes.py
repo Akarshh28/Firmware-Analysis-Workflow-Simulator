@@ -159,18 +159,44 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         tool_run.ended_at = datetime.datetime.utcnow()
         db.commit()
         
-        # Add generated artifacts (stubs for now, will generate dynamically if real files exist)
-        for art in fallback_artifacts:
-            artifact = Artifact(
-                project_id=state["project_id"],
-                file_name=art["file_name"],
-                stage_generated=stage_name,
-                mime_type=art["mime_type"],
-                file_size=art["file_size"],
-                local_storage_path=os.path.join("data/artifacts", art["file_name"])
-            )
-            db.add(artifact)
-        db.commit()
+        # Generate real artifacts dynamically from stdout if available
+        os.makedirs("data/artifacts", exist_ok=True)
+        
+        has_real_artifact = False
+        if stdout and tool_name != "pdf_report":
+            out_str = stdout.decode('utf-8', errors='ignore').strip()
+            if len(out_str) > 0:
+                real_file_name = f"{state['project_id']}_{tool_name}_output.txt"
+                real_file_path = os.path.join("data/artifacts", real_file_name)
+                with open(real_file_path, "w", encoding="utf-8") as f:
+                    f.write(out_str)
+                    
+                artifact = Artifact(
+                    project_id=state["project_id"],
+                    file_name=real_file_name,
+                    stage_generated=stage_name,
+                    mime_type="text/plain",
+                    file_size=os.path.getsize(real_file_path),
+                    local_storage_path=real_file_path
+                )
+                db.add(artifact)
+                db.commit()
+                has_real_artifact = True
+                
+        # Only use the fallback artifacts as a last resort if no real artifact was created
+        # Note: pdf_report creates its own artifact inside report_generator.py
+        if not has_real_artifact and tool_name != "pdf_report":
+            for art in fallback_artifacts:
+                artifact = Artifact(
+                    project_id=state["project_id"],
+                    file_name=art["file_name"],
+                    stage_generated=stage_name,
+                    mime_type=art["mime_type"],
+                    file_size=art["file_size"],
+                    local_storage_path=os.path.join("data/artifacts", art["file_name"])
+                )
+                db.add(artifact)
+            db.commit()
         
         state["current_stage"] = stage_name
         if exit_code == 0:

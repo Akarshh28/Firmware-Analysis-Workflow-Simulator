@@ -19,7 +19,6 @@ from app.config import settings
 from app.database import Base, engine, get_db
 import app.models as models
 import app.schemas as schemas
-from app.plugins.manager import plugin_manager
 
 from app.websockets import manager
 from langgraph.executer import run_workflow
@@ -192,68 +191,81 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                     finding_idx += 1
             
     findings_to_return = real_findings
+    
+    # Calculate severities
+    crit_count = sum(1 for f in real_findings if f["severity"] == "critical")
+    high_count = sum(1 for f in real_findings if f["severity"] == "high")
+    med_count = sum(1 for f in real_findings if f["severity"] == "medium")
+    low_count = sum(1 for f in real_findings if f["severity"] == "low")
+    
+    # Calculate risk score
+    risk_score = min(100, (crit_count * 25) + (high_count * 15) + (med_count * 5) + (low_count * 1))
+    risk_label = "CRITICAL RISK" if risk_score > 75 else "HIGH RISK" if risk_score > 50 else "MEDIUM RISK" if risk_score > 25 else "LOW RISK"
+    
+    total_findings = crit_count + high_count + med_count + low_count
+    
+    # Calculate timeline and vulnerabilities per stage
+    pipeline_vulnerabilities = []
+    pipeline_timeline = []
+    
+    for stage_def in PIPELINE_STAGES:
+        stage_name = stage_def["stage"]
+        # UI expects short names for charts
+        short_names = {
+            "Upload & Ingestion": "Upload", "Identification": "ID", "Extraction": "Extract",
+            "Static & Credential Analysis": "Static", "Reverse Engineering": "RE",
+            "Cryptographic Analysis": "Crypto", "Network Analysis": "Network",
+            "Dynamic Analysis": "Fuzzing", "Symbolic Execution": "Symbolic",
+            "Risk Scoring": "Risk", "Report Generation": "Report"
+        }
+        short_name = short_names.get(stage_name, stage_name.split()[0])
         
-    # Return hybrid real/simulated data
+        # We need to map tool_name to vulnerabilities since stage names might overlap (e.g. Cutter and Trufflehog both are Static & Credential Analysis)
+        tool_name = stage_def["tool"]
+        issues = sum(1 for f in real_findings if f.get("tool") == tool_name)
+        
+        # To avoid duplicates in vulnerabilities array if multiple tools use the same stage name
+        existing_vuln = next((v for v in pipeline_vulnerabilities if v["name"] == short_name), None)
+        if existing_vuln:
+            existing_vuln["issues"] += issues
+        else:
+            pipeline_vulnerabilities.append({"name": short_name, "issues": issues})
+        
+        # timeline
+        mins = 0.0
+        if session:
+            run = db.query(models.ToolRun).filter(
+                models.ToolRun.session_id == session.id,
+                models.ToolRun.tool_name == tool_name
+            ).first()
+            if run and run.started_at and run.ended_at:
+                mins = round((run.ended_at - run.started_at).total_seconds() / 60.0, 2)
+        pipeline_timeline.append({"stage": short_name, "mins": mins or 0.1})
+        
+    # Return real data
     return {
         "summary": {
-            "critical": len(real_findings) or 4, 
-            "high": 9, "medium": 14, "low": 8,
-            "riskScore": 99 if len(real_findings) > 0 else 32, 
-            "riskLabel": "CRITICAL RISK",
-            "riskSummary": f"Firmware poses significant security risk. {len(real_findings) or 4} critical vulnerabilities must be patched before deployment."
+            "critical": crit_count, 
+            "high": high_count, "medium": med_count, "low": low_count,
+            "riskScore": risk_score, 
+            "riskLabel": risk_label,
+            "riskSummary": f"Firmware analysis complete. {crit_count} critical vulnerabilities and {total_findings} total findings detected."
         },
         "metrics": {
-            "totalFindings": len(real_findings) + 9 + 14 + 8,
-            "criticalIssues": len(real_findings) or 4,
+            "totalFindings": total_findings,
+            "criticalIssues": crit_count,
             "stagesCompleted": f"{stages_completed_count} / 12" if session else "12 / 12",
-            "duration": duration if duration != "0 min" else "62 min"
+            "duration": duration
         },
-        "findings": findings_to_return or [
-            {
-                "id": "CVE-SIM-001",
-                "title": "Hardcoded DLMS Authentication Key",
-                "severity": "critical",
-                "stage": "Secret Detection",
-                "tool": "trufflehog"
-            },
-            {
-                "id": "CVE-SIM-002",
-                "title": "Weak AES-128 ECB Mode in Meter Firmware",
-                "severity": "high",
-                "stage": "Cryptographic Analysis",
-                "tool": "entropy"
-            }
-        ],
+        "findings": findings_to_return,
         "pipeline": {
-            "vulnerabilities": [
-                {"name": "Extraction", "issues": 0},
-                {"name": "Static", "issues": 2},
-                {"name": "RE", "issues": 5},
-                {"name": "Secrets", "issues": len(real_findings) or 3},
-                {"name": "Crypto", "issues": 7},
-                {"name": "Protocol", "issues": 4},
-                {"name": "Symbolic", "issues": 8},
-                {"name": "Fuzzing", "issues": 11}
-            ],
-            "timeline": [
-                {"stage": "Upload", "mins": 0.5},
-                {"stage": "ID", "mins": 1.2},
-                {"stage": "Extract", "mins": 2.8},
-                {"stage": "Static", "mins": 4.5},
-                {"stage": "RE", "mins": 8.2},
-                {"stage": "Secrets", "mins": 2.1},
-                {"stage": "Crypto", "mins": 3.4},
-                {"stage": "Protocol", "mins": 5.0},
-                {"stage": "Symbolic", "mins": 12.0},
-                {"stage": "Fuzzing", "mins": 18.5},
-                {"stage": "Risk", "mins": 1.8},
-                {"stage": "Report", "mins": 0.8}
-            ],
+            "vulnerabilities": pipeline_vulnerabilities,
+            "timeline": pipeline_timeline,
             "severity": [
-                {"name": "Critical", "value": len(real_findings) or 4, "fill": "#ef4444"},
-                {"name": "High", "value": 9, "fill": "#f97316"},
-                {"name": "Medium", "value": 14, "fill": "#f59e0b"},
-                {"name": "Low", "value": 8, "fill": "#22c55e"}
+                {"name": "Critical", "value": crit_count, "fill": "#ef4444"},
+                {"name": "High", "value": high_count, "fill": "#f97316"},
+                {"name": "Medium", "value": med_count, "fill": "#f59e0b"},
+                {"name": "Low", "value": low_count, "fill": "#22c55e"}
             ]
         }
     }
@@ -515,40 +527,27 @@ def run_sandbox_command(project_id: int, req: SandboxRequest, db: Session = Depe
 
 @app.get("/api/tools")
 def list_tools():
-    # Return documentation for all registered tools
     tools_list = []
-    # Dynamic list
-    for name, plugin in plugin_manager.plugins.items():
-        tools_list.append({
-            "name": name,
-            "version": plugin.version,
-            "docs": plugin.documentation
-        })
-        
-    # Standard stubs for tools that don't have modules written yet
     all_stages_tools = [
         "upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
         "entropy", "wireshark", "afl++", "angr", "scorecard", "pdf_report"
     ]
     for t in all_stages_tools:
-        if t not in plugin_manager.plugins:
-            # Add a stub documentation
-            tools_list.append({
-                "name": t,
-                "version": "Not Installed",
-                "docs": {
-                    "purpose": f"Placeholder for tool: {t}",
-                    "input": "Generic analysis node input",
-                    "output": "Generic analysis node output",
-                    "workflow": "Standard stage of cybersecurity pipeline",
-                    "commands": [{"command": f"{t} --help", "explanation": "Help command"}],
-                    "common_errors": ["Connection timed out"],
-                    "troubleshooting": "Restart execution container.",
-                    "best_practices": "Check configurations.",
-                    "references": ["C3iHub Smart Meter Analysis wiki"]
-                }
-            })
-            
+        tools_list.append({
+            "name": t,
+            "version": "1.0",
+            "docs": {
+                "purpose": f"Documentation for tool: {t}",
+                "input": "Target firmware binary",
+                "output": "Analysis log and generated artifacts",
+                "workflow": "Standard stage of cybersecurity pipeline",
+                "commands": [{"command": f"{t} --help", "explanation": "Help command"}],
+                "common_errors": ["Binary not found in PATH"],
+                "troubleshooting": "Ensure binary is installed and executable.",
+                "best_practices": "Check configurations.",
+                "references": ["FAWS Wiki"]
+            }
+        })
     return tools_list
 
 @app.get("/api/projects/{project_id}/logs")
@@ -582,6 +581,6 @@ def health():
 
         "pipeline":"ready",
 
-        "plugins":len(plugin_manager.plugins)
+        "plugins":0
 
     }

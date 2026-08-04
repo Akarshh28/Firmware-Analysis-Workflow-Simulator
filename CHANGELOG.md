@@ -44,5 +44,9 @@
 - **Report Generation**: Built a professional PDF generator (`report_generator.py`) using `reportlab`. It aggregates logs, findings, and hashes, generating a downloadable artifact at Stage 12.
 
 ### UI & Dashboard
-- **Backend-Driven Data**: Stripped out all dummy data and hardcoded fallback charts from the Dashboard. It now parses actual `[!]` stdout flags to populate the CVSS scorecard and risk metrics.
-- **Action Buttons**: Hooked up the `Run Pipeline` and `Reset` buttons properly to their backend counterparts. Added spinning loading states to prevent double clicks.
+- **True Backend-Driven Data**: Removed all remaining hardcoded fallback charts and dummy numbers from the Dashboard. The dashboard now dynamically calculates risk scores, severity distributions, and timeline metrics strictly from real parsed findings and database records. Empty states are gracefully handled when zero findings exist.
+
+### Simulation Logic Removed
+- **Real Artifact Generation**: Pipeline nodes now intercept `stdout` to dynamically generate real artifact files, replacing the hardcoded file stub lists for stages that didn't have true outputs.
+- **Python Fallback Engines**: Replaced 0-byte scripts for Cutter, Ghidra, Wireshark, AFL++, angr, and Scorecard with lightweight Python analysis logic that reads the target file and returns actionable data.
+- **Plugin Framework Removal**: Deleted the unused, unhooked plugin manager system to remove ambiguity; all tools are executed via direct subprocess as the primary strategy.
