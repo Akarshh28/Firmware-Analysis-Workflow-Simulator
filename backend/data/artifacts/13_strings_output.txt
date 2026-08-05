@@ -1,0 +1,9 @@
+Starting Strings Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\13_files.zip...
+Extracted 241 strings.
+Found 5 potential secrets!
+[!] FILE_PATH: /PF0
+[!] FILE_PATH: /9L8o?
+[!] FILE_PATH: /w=$
+[!] FILE_PATH: BUK-=/T
+[!] FILE_PATH: JK/Oi^H
+Scan complete.

@@ -1,0 +1,4 @@
+Starting AFL++ (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\16_files.zip...
+Found 1 potential secrets!
+[!] Fuzzing: Binary size suitable for efficient fuzzing
+Scan complete.
