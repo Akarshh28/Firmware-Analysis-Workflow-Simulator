@@ -42,10 +42,10 @@ def main():
     print(f"Overall Shannon Entropy: {entropy:.4f}")
     
     if entropy > 7.5:
-        print(f"Found 1 potential secrets!") # Matches UI log parser
+        print(f"Found 1 finding(s).") # Matches UI log parser
         print(f"[!] High entropy ({entropy:.2f}) indicates packed or encrypted firmware section")
     elif entropy < 4.0:
-        print(f"Found 1 potential secrets!") # Matches UI log parser
+        print(f"Found 1 finding(s).") # Matches UI log parser
         print(f"[!] Low entropy ({entropy:.2f}) indicates large blocks of padding or uniform data")
     else:
         print("Entropy is within normal range for executable code.")

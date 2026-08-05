@@ -260,7 +260,7 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
         "metrics": {
             "totalFindings": total_findings,
             "criticalIssues": crit_count,
-            "stagesCompleted": f"{stages_completed_count} / 12" if session else "12 / 12",
+            "stagesCompleted": f"{stages_completed_count} / 12" if session else "0 / 12",
             "duration": duration
         },
         "findings": findings_to_return,

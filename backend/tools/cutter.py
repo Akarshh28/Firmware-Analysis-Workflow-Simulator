@@ -36,7 +36,7 @@ def main():
     findings = analyze_binary(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!") # Matches UI log parser
+        print(f"Found {len(findings)} finding(s).") # Matches UI log parser
         for f in findings:
             print(f"[!] {f['type']}: {f['match']}")
             time.sleep(0.2)

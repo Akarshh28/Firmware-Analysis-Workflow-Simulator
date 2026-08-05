@@ -69,7 +69,7 @@ def main():
     findings = analyze_strings(extracted)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!") # Matches UI log parser
+        print(f"Found {len(findings)} finding(s).") # Matches UI log parser
         # limit to 10 findings so we don't spam the DB
         for f in findings[:10]:
             print(f"[!] {f['type']}: {f['match']}")

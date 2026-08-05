@@ -160,6 +160,18 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
             })
           }
         }));
+      } else if (message.type === "TOOL_FAILED") {
+        set((state) => ({
+          pipeline: {
+            ...state.pipeline,
+            nodes: state.pipeline.nodes.map((node) => {
+              if (node.toolName === message.data.tool_name) {
+                return { ...node, status: "failed", progress: 100 };
+              }
+              return node;
+            })
+          }
+        }));
       } else if (message.type === "PIPELINE_STATUS") {
         // Handle global pipeline status changes
         if (message.data.status === "READY") {
