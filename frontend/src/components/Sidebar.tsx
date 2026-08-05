@@ -239,10 +239,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
           }}
         >
           <Activity size={12} />
-          <span>Simulation Mode Active</span>
+          <span>Live Analysis Active</span>
         </div>
         <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
-          v1.0.0 · Digital Twin Pipeline
+          v1.0.0 · Live Pipeline
         </div>
       </div>
     </nav>

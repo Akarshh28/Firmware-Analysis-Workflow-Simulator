@@ -161,9 +161,9 @@ const STAGE_DETAILS: Record<
   },
   wireshark: {
     purpose:
-      "Capture and dissect simulated DLMS/COSEM network traffic to analyze the protocol handshake, authentication frames, and identify protocol-level vulnerabilities.",
+      "Capture and dissect DLMS/COSEM network traffic to analyze the protocol handshake, authentication frames, and identify protocol-level vulnerabilities.",
     input:
-      "Simulated PCAP file of DLMS/COSEM traffic over HDLC or TCP/IP (port 4059).",
+      "PCAP file of DLMS/COSEM traffic over HDLC or TCP/IP (port 4059).",
     output:
       "Protocol dissection report: authentication frames, cipher negotiation details, replay attack vectors, and unencrypted command sequences.",
     why: "The DLMS/COSEM protocol specification (IEC 62056) allows several cipher suites, including unauthenticated variants. Real-world meters often negotiate down to no-security or low-security modes — only packet analysis reveals this misconfiguration.",
@@ -758,7 +758,7 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                     </div>
                     <div className="terminal-body">
                       <div className="terminal-line log-system">$ {selectedTool} --run [target]</div>
-                      <div className="terminal-line log-system">FAWS Simulation Engine v1.0.0 · Stage: {selectedStage?.stage}</div>
+                      <div className="terminal-line log-system">FAWS Analysis Engine v1.0.0 · Stage: {selectedStage?.stage}</div>
                       <div className="terminal-line" style={{ color: "var(--text-muted)" }}>─────────────────────────────────────────</div>
                       <div className="terminal-line log-stdout">{details.expectedResults}</div>
                       <div className="terminal-line" style={{ color: "var(--text-muted)" }}>─────────────────────────────────────────</div>
