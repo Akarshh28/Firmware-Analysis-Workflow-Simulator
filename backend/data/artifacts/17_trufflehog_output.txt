@@ -1,0 +1,8 @@
+Starting Secret Scan on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\17_firmware_test.bin...
+Found 5 potential secrets!
+[!] GENERIC_SECRET at line 3: TOKEN=ghp_FAKEtoken1234567890abcdefFAKE
+[!] GENERIC_SECRET at line 3: password='Sup3rSecretPass
+[!] GENERIC_SECRET at line 3: PASSWORD=FactoryReset
+[!] GENERIC_SECRET at line 13: TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXZpY2UtMDAxIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAwMDAwMDAwfQ.RkFLRVNJR05BVFVSRUJZVEVTTk9UUkVBTA
+[!] GENERIC_SECRET at line 13: PASSWORD=WifiPass2024
+Scan complete.

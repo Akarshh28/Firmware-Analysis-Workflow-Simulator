@@ -1,0 +1,6 @@
+Starting Python Binwalk Engine on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\17_firmware_test.bin...
+Found 3 potential secrets!
+[!] Offset 0x0: ELF 32-bit LSB executable
+[!] Offset 0x9c7: Squashfs filesystem
+[!] Offset 0x9e6: gzip compressed data
+Scan complete.

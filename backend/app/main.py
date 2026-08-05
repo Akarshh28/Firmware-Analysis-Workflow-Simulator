@@ -114,7 +114,13 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     if session and session.started_at:
         end_time = session.ended_at or datetime.datetime.utcnow()
         delta = end_time - session.started_at
-        duration = f"{int(delta.total_seconds() / 60)} min"
+        total_secs = int(delta.total_seconds())
+        if total_secs < 60:
+            duration = f"{total_secs} sec"
+        else:
+            mins = total_secs // 60
+            secs = total_secs % 60
+            duration = f"{mins}m {secs}s"
         
     # Calculate stages completed
     stages_completed_count = 0

@@ -1,0 +1,14 @@
+Starting Strings Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\17_firmware_test.bin...
+Extracted 114 strings.
+Found 23 potential secrets!
+[!] IPv4_ADDRESS: OBIS_CODE:1.0.1.8.0.255
+[!] PRIVATE_KEY_MARKER: -----BEGIN RSA PRIVATE KEY-----
+[!] FILE_PATH: MQTT_BROKER_URL=mqtt://broker.hivemq.com:1883
+[!] FILE_PATH: MQTT_BROKER_TLS_URL=mqtts://iot.eclipse.org:8883
+[!] IPv4_ADDRESS: OTA_UPDATE_URL=http://192.168.1.1/update.php
+[!] URL: OTA_UPDATE_URL=http://192.168.1.1/update.php
+[!] FILE_PATH: OTA_UPDATE_URL=http://192.168.1.1/update.php
+[!] URL: CLOUD_API_URL=https://api.firmware-update.example.com/v1/ota
+[!] FILE_PATH: CLOUD_API_URL=https://api.firmware-update.example.com/v1/ota
+[!] IPv4_ADDRESS: 192.168.1.1
+Scan complete.

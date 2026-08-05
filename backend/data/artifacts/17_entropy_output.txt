@@ -1,0 +1,4 @@
+Starting Entropy Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\17_firmware_test.bin...
+Overall Shannon Entropy: 6.2502
+Entropy is within normal range for executable code.
+Scan complete.
