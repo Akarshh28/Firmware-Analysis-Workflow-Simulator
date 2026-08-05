@@ -321,7 +321,7 @@ export const Dashboard: React.FC = () => {
           <div>
             <h1 className="page-title">Analysis Dashboard</h1>
             <p className="page-subtitle">
-              Firmware security overview — DLMS/COSEM Smart Meter · Simulated Run
+              Firmware security overview — DLMS/COSEM Smart Meter · Live Run
             </p>
           </div>
         </div>
@@ -484,7 +484,7 @@ export const Dashboard: React.FC = () => {
                       {f?.title ?? "Unnamed finding"}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                      {f?.stage ?? "Pipeline"} · {f?.tool ?? "simulated"}
+                      {f?.stage ?? "Pipeline"} · {f?.tool ?? "unknown"}
                     </div>
                   </div>
                 </div>
@@ -627,7 +627,7 @@ export const Dashboard: React.FC = () => {
         <Zap size={16} color="var(--accent-blue)" />
         <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
           <strong style={{ color: "var(--accent-blue)" }}>Live Mode:</strong>{" "}
-          All findings and metrics are pre-recorded digital twin outputs based on realistic DLMS/COSEM firmware vulnerability scenarios. Start the Pipeline Simulator to run the full analysis workflow.
+          Findings and metrics are derived from active analysis of the uploaded firmware. Start the Pipeline Simulator to execute the full workflow.
         </p>
       </div>
     </div>

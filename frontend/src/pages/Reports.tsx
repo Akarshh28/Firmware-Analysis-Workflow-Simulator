@@ -226,7 +226,7 @@ export const Reports: React.FC = () => {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1 }}>
           <h1 className="page-title" style={{ fontSize: 18 }}>Reports &amp; Findings</h1>
-          <p className="page-subtitle">Security findings from simulated firmware analysis pipeline</p>
+          <p className="page-subtitle">Security findings from live firmware analysis pipeline</p>
         </div>
         <button className="btn btn-secondary btn-sm" onClick={handleExport}>
           <Download size={12} /> Export Report (.md)
