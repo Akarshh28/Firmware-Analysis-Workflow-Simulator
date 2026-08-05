@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.1] - 2026-08-05
+
+### Backend Cleanup & Bug Fixes
+- **Removed Heavy System Dependencies**: Stripped unused heavyweight packages (`tshark`, `qemu-user-static`, `default-jre`, `radare2`, `wkhtmltopdf`, `trufflehog`, `afl++`, `ghidra` and associated X11 dependencies) from `backend/Dockerfile`. The pipeline relies on lightweight Python simulation scripts rather than actual binary execution, reducing image size and build time significantly.
+- **Fixed PDF Generation**: Added missing `reportlab` dependency to `requirements.txt` to fix crashes during Stage 12 report generation.
+
+### Frontend Stability Improvements
+- **UI Bug Fixes**: Resolved a round of 7 UI and pipeline state bugs, improving the simulation workflow and scorecard display.
+
 ## [1.0.0-production] - 2026-07-30
 
 ### Architectural Overhaul

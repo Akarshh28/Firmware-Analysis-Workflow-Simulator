@@ -9,23 +9,12 @@ RUN apt-get update && apt-get install -y \
     python3.12-venv \
     python3-pip \
     binutils \
-    tshark \
-    qemu-user-static \
-    default-jre \
     wget \
     curl \
     git \
     build-essential \
     libffi-dev \
     libssl-dev \
-    radare2 \
-    wkhtmltopdf \
-    xvfb \
-    fontconfig \
-    xfonts-75dpi \
-    xfonts-base \
-    trufflehog \
-    afl++ \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -33,12 +22,7 @@ RUN apt-get update && apt-get install -y \
 # Note: standard apt binwalk works for extraction in most cases.
 RUN apt-get update && apt-get install -y binwalk && rm -rf /var/lib/apt/lists/*
 
-# Install Ghidra
-RUN wget -q https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.0.3_build/ghidra_11.0.3_PUBLIC_20240410.zip -O ghidra.zip \
-    && apt-get update && apt-get install -y unzip \
-    && unzip ghidra.zip -d /opt/ \
-    && rm ghidra.zip \
-    && ln -s /opt/ghidra_11.0.3_PUBLIC/support/analyzeHeadless /usr/local/bin/analyzeHeadless
+
 
 # Set up Python virtual environment
 RUN python3.12 -m venv /opt/venv
