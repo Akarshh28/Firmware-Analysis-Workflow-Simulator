@@ -14,8 +14,6 @@ def analyze_pcap(filepath):
                 findings.append({"type": "Network", "match": "Valid PCAP file detected"})
             elif data.startswith(b"\x0a\x0d\x0d\x0a"):
                 findings.append({"type": "Network", "match": "Valid PCAPNG file detected"})
-            else:
-                findings.append({"type": "Network", "match": "No PCAP signature, checking for HTTP strings..."})
                 
         with open(filepath, "rb") as f:
              data = f.read()
@@ -46,7 +44,7 @@ def main():
     findings = analyze_pcap(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!")
+        print(f"Found {len(findings)} finding(s).")
         for f in findings:
             print(f"[!] {f['type']}: {f['match']}")
             time.sleep(0.2)

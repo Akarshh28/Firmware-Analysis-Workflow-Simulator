@@ -42,7 +42,7 @@ def main():
     findings = scan_file_for_secrets(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!")
+        print(f"Found {len(findings)} finding(s).")
         for f in findings:
             print(f"[!] {f['type']} at line {f['line']}: {f['match']}")
             time.sleep(0.5)

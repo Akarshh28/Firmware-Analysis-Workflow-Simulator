@@ -53,7 +53,7 @@ def main():
     findings = scan_magic_bytes(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!") # Matches UI log parser
+        print(f"Found {len(findings)} finding(s).") # Matches UI log parser
         for f in findings:
             print(f"[!] Offset {hex(f['offset'])}: {f['description']}")
             time.sleep(0.3)

@@ -7,10 +7,6 @@ def check_fuzzable(filepath):
     findings = []
     try:
         size = os.path.getsize(filepath)
-        if size > 10 * 1024 * 1024:
-            findings.append({"type": "Fuzzing", "match": "Large binary detected, fuzzing may require substantial resources"})
-        else:
-             findings.append({"type": "Fuzzing", "match": "Binary size suitable for efficient fuzzing"})
              
         with open(filepath, "rb") as f:
             data = f.read()
@@ -42,7 +38,7 @@ def main():
     findings = check_fuzzable(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!")
+        print(f"Found {len(findings)} finding(s).")
         for f in findings:
             print(f"[!] {f['type']}: {f['match']}")
             time.sleep(0.2)

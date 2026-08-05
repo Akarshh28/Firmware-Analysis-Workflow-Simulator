@@ -207,7 +207,7 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         else:
             # We don't fail the whole pipeline on single tool failure, we just proceed
             await manager.broadcast(state["project_id"], {
-                "type": "TOOL_SUCCESS",
+                "type": "TOOL_FAILED",
                 "data": {"tool_name": tool_name, "error": True}
             })
             

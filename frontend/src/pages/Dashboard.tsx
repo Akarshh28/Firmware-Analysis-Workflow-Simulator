@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
       icon: <Clock size={18} />,
       label: "Analysis Duration",
       value: duration,
-      sub: "Simulated execution time",
+      sub: "Actual execution time",
       color: "var(--accent-cyan)",
       bg: "rgba(34,211,238,0.1)",
     },

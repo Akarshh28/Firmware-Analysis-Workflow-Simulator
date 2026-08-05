@@ -39,7 +39,7 @@ def main():
     findings = analyze_functions(args.target)
     
     if findings:
-        print(f"Found {len(findings)} potential secrets!")
+        print(f"Found {len(findings)} finding(s).")
         for f in findings:
             print(f"[!] {f['type']}: {f['match']}")
             time.sleep(0.2)
