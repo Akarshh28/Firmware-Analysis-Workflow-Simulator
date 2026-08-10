@@ -43,20 +43,32 @@ app.add_middleware(
 )
 
 # Define pipeline workflow stages in chronological order
-PIPELINE_STAGES = [
-    {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
-    {"stage": "Identification", "tool": "strings", "desc": "Identify firmware architecture"},
-    {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
-    {"stage": "Static & Credential Analysis", "tool": "cutter", "desc": "Static code + secret analysis"},
-    {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Decompiler analysis"},
-    {"stage": "Static & Credential Analysis", "tool": "trufflehog", "desc": "Secret detection"},
-    {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
-    {"stage": "Network Analysis", "tool": "wireshark", "desc": "Network protocol analysis"},
-    {"stage": "Dynamic Analysis", "tool": "afl++", "desc": "Fuzzing"},
-    {"stage": "Symbolic Execution", "tool": "angr", "desc": "Path exploration"},
-    {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
-    {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate report"}
-]
+if settings.MODE == "real":
+    PIPELINE_STAGES = [
+        {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
+        {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
+        {"stage": "Identification", "tool": "strings", "desc": "Identify firmware architecture"},
+        {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
+        {"stage": "YARA Analysis", "tool": "yara", "desc": "YARA signature scanning"},
+        {"stage": "Symbol Analysis", "tool": "symbol_analysis", "desc": "Symbol table analysis"},
+        {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
+        {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate report"}
+    ]
+else:
+    PIPELINE_STAGES = [
+        {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
+        {"stage": "Identification", "tool": "strings", "desc": "Identify firmware architecture"},
+        {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
+        {"stage": "Static & Credential Analysis", "tool": "cutter", "desc": "Static code + secret analysis"},
+        {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Decompiler analysis"},
+        {"stage": "Static & Credential Analysis", "tool": "trufflehog", "desc": "Secret detection"},
+        {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
+        {"stage": "Network Analysis", "tool": "wireshark", "desc": "Network protocol analysis"},
+        {"stage": "Dynamic Analysis", "tool": "afl++", "desc": "Fuzzing"},
+        {"stage": "Symbolic Execution", "tool": "angr", "desc": "Path exploration"},
+        {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
+        {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate report"}
+    ]
 
 @app.get("/")
 def read_root():
@@ -133,68 +145,89 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     if session:
         logs = db.query(models.LogEntry).join(models.ToolRun).filter(
             models.ToolRun.session_id == session.id,
-            models.LogEntry.log_type == "STDOUT",
-            models.LogEntry.message.like("%[!]%")
+            models.LogEntry.log_type.in_(["STDOUT", "JSON_FINDINGS"])
         ).all()
         
         finding_idx = 1
+        import json
         for log in logs:
-            for line in log.message.split("\n"):
-                line = line.strip()
-                if line.startswith("[!]"):
-                    title = line.replace("[!]", "").strip()
-                    tool_name = log.tool_run.tool_name if log.tool_run else "System"
-                    
-                    # Generate production-level details based on tool
-                    cvss = 5.0
-                    severity = "medium"
-                    cwe = "CWE-000"
-                    desc = f"An anomaly or potential finding was detected by {tool_name} during analysis. The raw output is: {title}."
-                    poc = f"[{tool_name}] output:\n{title}"
-                    remediation = "Investigate the extracted artifact or pattern to determine its security impact."
-                    
-                    if tool_name == "strings":
-                        cvss = 4.3
-                        severity = "low"
-                        cwe = "CWE-200"
-                        desc = f"The strings extraction analysis identified potentially sensitive information embedded within the binary. Specifically, it matched the pattern for: {title}. Hardcoded strings can expose internal network layouts, diagnostic URLs, or debugging paths to attackers."
-                        poc = f"$ strings firmware.bin | grep -i '{title.split(':', 1)[0] if ':' in title else title}'\n{title}"
-                        remediation = "1. Avoid hardcoding sensitive paths or URLs in the firmware.\n2. Consider encrypting or obfuscating critical strings at compile time."
-                    elif tool_name == "trufflehog":
-                        cvss = 9.8
-                        severity = "critical"
-                        cwe = "CWE-798"
-                        desc = f"A hardcoded cryptographic secret or credential was detected in the firmware image. The scanner reported: {title}. Hardcoded credentials allow unauthorized access, privilege escalation, or decryption of secure communications."
-                        poc = f"$ trufflehog filesystem ./extracted_firmware/\n[+] Secret Found: {title}"
-                        remediation = "1. Immediately rotate any compromised credentials.\n2. Store secrets securely using a hardware secure element or trusted execution environment (TEE).\n3. Avoid placing API keys or passwords in the compiled firmware."
-                    elif tool_name == "entropy":
-                        cvss = 6.5
+            tool_name = log.tool_run.tool_name if log.tool_run else "System"
+            if log.log_type == "JSON_FINDINGS":
+                try:
+                    findings_data = json.loads(log.message)
+                    for f in findings_data:
+                        real_findings.append({
+                            "id": f"CVE-REAL-{finding_idx:03d}",
+                            "title": f.get("description", f.get("value", "Unknown Finding")),
+                            "severity": f.get("severity", "info").lower(),
+                            "stage": "Security Analysis",
+                            "tool": tool_name,
+                            "cvss": 9.0 if f.get("severity") == "critical" else (7.0 if f.get("severity") == "high" else (5.0 if f.get("severity") == "medium" else 2.0)),
+                            "cwe": f.get("cwe", "CWE-000"),
+                            "description": f.get("description", "A finding was detected by real analysis."),
+                            "poc": f"JSON Data: {json.dumps(f)}",
+                            "remediation": "Investigate this specific finding."
+                        })
+                        finding_idx += 1
+                except Exception:
+                    pass
+            elif log.log_type == "STDOUT" and "[!]" in log.message:
+                for line in log.message.split("\n"):
+                    line = line.strip()
+                    if line.startswith("[!]"):
+                        title = line.replace("[!]", "").strip()
+                        tool_name = log.tool_run.tool_name if log.tool_run else "System"
+                        
+                        # Generate production-level details based on tool
+                        cvss = 5.0
                         severity = "medium"
-                        cwe = "CWE-326"
-                        desc = f"High entropy regions were detected, suggesting encrypted or compressed data. {title}. If custom encryption is used, it may be vulnerable to cryptanalysis."
-                        poc = f"$ binwalk -E firmware.bin\nHigh entropy section found: {title}"
-                        remediation = "1. Ensure standard, well-vetted cryptographic libraries are used.\n2. Verify that entropy is not a result of obfuscation intended to hide malicious payloads."
-                    elif tool_name == "afl++":
-                        cvss = 8.8
-                        severity = "high"
-                        cwe = "CWE-119"
-                        desc = f"The dynamic fuzzer caused a crash or anomalous behavior during execution. {title}. This indicates a potential memory corruption vulnerability such as a buffer overflow."
-                        poc = f"$ afl-fuzz -i seeds/ -o findings/ -- ./binary @@\nCrash detected: {title}"
-                        remediation = "1. Analyze the crashing input and fix the memory corruption bug.\n2. Compile with stack canaries and ASLR.\n3. Validate all inputs before processing."
-                    
-                    real_findings.append({
-                        "id": f"CVE-REAL-{finding_idx:03d}",
-                        "title": title,
-                        "severity": severity,
-                        "stage": "Security Analysis",
-                        "tool": tool_name,
-                        "cvss": cvss,
-                        "cwe": cwe,
-                        "description": desc,
-                        "poc": poc,
-                        "remediation": remediation
-                    })
-                    finding_idx += 1
+                        cwe = "CWE-000"
+                        desc = f"An anomaly or potential finding was detected by {tool_name} during analysis. The raw output is: {title}."
+                        poc = f"[{tool_name}] output:\n{title}"
+                        remediation = "Investigate the extracted artifact or pattern to determine its security impact."
+                        
+                        if tool_name == "strings":
+                            cvss = 4.3
+                            severity = "low"
+                            cwe = "CWE-200"
+                            desc = f"The strings extraction analysis identified potentially sensitive information embedded within the binary. Specifically, it matched the pattern for: {title}. Hardcoded strings can expose internal network layouts, diagnostic URLs, or debugging paths to attackers."
+                            poc = f"$ strings firmware.bin | grep -i '{title.split(':', 1)[0] if ':' in title else title}'\n{title}"
+                            remediation = "1. Avoid hardcoding sensitive paths or URLs in the firmware.\n2. Consider encrypting or obfuscating critical strings at compile time."
+                        elif tool_name == "trufflehog":
+                            cvss = 9.8
+                            severity = "critical"
+                            cwe = "CWE-798"
+                            desc = f"A hardcoded cryptographic secret or credential was detected in the firmware image. The scanner reported: {title}. Hardcoded credentials allow unauthorized access, privilege escalation, or decryption of secure communications."
+                            poc = f"$ trufflehog filesystem ./extracted_firmware/\n[+] Secret Found: {title}"
+                            remediation = "1. Immediately rotate any compromised credentials.\n2. Store secrets securely using a hardware secure element or trusted execution environment (TEE).\n3. Avoid placing API keys or passwords in the compiled firmware."
+                        elif tool_name == "entropy":
+                            cvss = 6.5
+                            severity = "medium"
+                            cwe = "CWE-326"
+                            desc = f"High entropy regions were detected, suggesting encrypted or compressed data. {title}. If custom encryption is used, it may be vulnerable to cryptanalysis."
+                            poc = f"$ binwalk -E firmware.bin\nHigh entropy section found: {title}"
+                            remediation = "1. Ensure standard, well-vetted cryptographic libraries are used.\n2. Verify that entropy is not a result of obfuscation intended to hide malicious payloads."
+                        elif tool_name == "afl++":
+                            cvss = 8.8
+                            severity = "high"
+                            cwe = "CWE-119"
+                            desc = f"The dynamic fuzzer caused a crash or anomalous behavior during execution. {title}. This indicates a potential memory corruption vulnerability such as a buffer overflow."
+                            poc = f"$ afl-fuzz -i seeds/ -o findings/ -- ./binary @@\nCrash detected: {title}"
+                            remediation = "1. Analyze the crashing input and fix the memory corruption bug.\n2. Compile with stack canaries and ASLR.\n3. Validate all inputs before processing."
+                        
+                        real_findings.append({
+                            "id": f"CVE-REAL-{finding_idx:03d}",
+                            "title": title,
+                            "severity": severity,
+                            "stage": "Security Analysis",
+                            "tool": tool_name,
+                            "cvss": cvss,
+                            "cwe": cwe,
+                            "description": desc,
+                            "poc": poc,
+                            "remediation": remediation
+                        })
+                        finding_idx += 1
             
     findings_to_return = real_findings
     
@@ -228,7 +261,7 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
         
         # We need to map tool_name to vulnerabilities since stage names might overlap (e.g. Cutter and Trufflehog both are Static & Credential Analysis)
         tool_name = stage_def["tool"]
-        issues = sum(1 for f in real_findings if f.get("tool") == tool_name)
+        issues = sum(1 for f in real_findings if f.get("tool") == tool_name and f.get("severity") in ["critical", "high", "medium", "low"])
         
         # To avoid duplicates in vulnerabilities array if multiple tools use the same stage name
         existing_vuln = next((v for v in pipeline_vulnerabilities if v["name"] == short_name), None)
@@ -248,22 +281,103 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                 mins = round((run.ended_at - run.started_at).total_seconds() / 60.0, 2)
         pipeline_timeline.append({"stage": short_name, "mins": mins or 0.1})
         
-    # Return real data
+    from .obis_parser import OBISParser
+    obis_mappings = []
+    if session:
+        all_logs = db.query(models.LogEntry).join(models.ToolRun).filter(
+            models.ToolRun.session_id == session.id
+        ).all()
+        
+        extracted_codes = {}
+        for log in all_logs:
+            if log.message:
+                parsed_list = OBISParser.extract_from_text(log.message)
+                for parsed in parsed_list:
+                    code = parsed["code"]
+                    if code not in extracted_codes:
+                        tool_name = log.tool_run.tool_name if log.tool_run else "Unknown"
+                        source_str = "Network (Wireshark)" if tool_name == "wireshark" else "Config (Strings)" if tool_name == "strings" else f"Binary ({tool_name})"
+                        
+                        status = "Extracted"
+                        if parsed["access"] == "Read/Write" or (tool_name == "wireshark" and "Serial" not in parsed["name"]):
+                            status = "Vulnerable"
+                            
+                        extracted_codes[code] = {
+                            "code": code,
+                            "name": parsed["name"],
+                            "access": parsed["access"],
+                            "source": source_str,
+                            "status": status
+                        }
+        
+        obis_mappings = list(extracted_codes.values())
+
+    # Determine Protocol Verdict and DLMS Suite
+    dlms_suite = "Unknown"
+    protocol_verdict = "No DLMS/COSEM or IEC 61850 evidence found"
+    
+    try:
+        state_path = os.path.join(settings.ARTIFACTS_DIR, f"{project_id}_real_state.json")
+        if os.path.exists(state_path):
+            import json
+            with open(state_path, "r") as f:
+                state_data = json.load(f)
+            
+            # Use report generator to compute verdict if possible, but for simplicity here we compute based on hits
+            strings_results = state_data.get("strings_results", {})
+            yara_results = state_data.get("yara_results", {})
+            
+            has_dlms = False
+            has_iec = False
+            has_acse = False
+            
+            for leaf, res in strings_results.items():
+                if res.get("success"):
+                    matches = res.get("matches", {})
+                    if "dlms_cosem" in matches: has_dlms = True
+                    if "iec61850" in matches: has_iec = True
+                    if "acse_association" in matches: has_acse = True
+                    
+            if has_dlms:
+                protocol_verdict = "DLMS/COSEM likely"
+            elif has_iec:
+                protocol_verdict = "IEC 61850 (DLMS/COSEM not present)"
+            elif has_acse:
+                protocol_verdict = "ACSE present but unconfirmed"
+                
+            for leaf, res in yara_results.items():
+                if res.get("success"):
+                    for match in res.get("matches", []):
+                        if "dlms" in match.get("rule", "").lower():
+                            protocol_verdict = "DLMS/COSEM confirmed"
+                            break
+
+            # Suite determination based on findings
+            dlms_suite = "Suite 1 (AES-GCM-128)"
+            for f in real_findings:
+                if f.get("cwe") in ["CWE-798", "CWE-327", "CWE-319"]:
+                    dlms_suite = "Suite 0 (Vulnerable / Plaintext)"
+                    break
+    except Exception as e:
+        print(f"Error determining verdict: {e}")
     return {
         "summary": {
             "critical": crit_count, 
             "high": high_count, "medium": med_count, "low": low_count,
             "riskScore": risk_score, 
             "riskLabel": risk_label,
-            "riskSummary": f"Firmware analysis complete. {crit_count} critical vulnerabilities and {total_findings} total findings detected."
+            "riskSummary": f"Firmware analysis complete. {crit_count} critical vulnerabilities and {total_findings} total findings detected.",
+            "dlmsSuite": dlms_suite,
+            "protocolVerdict": protocol_verdict
         },
         "metrics": {
             "totalFindings": total_findings,
             "criticalIssues": crit_count,
-            "stagesCompleted": f"{stages_completed_count} / 12" if session else "0 / 12",
+            "stagesCompleted": f"{stages_completed_count} / {len(PIPELINE_STAGES)}" if session else f"0 / {len(PIPELINE_STAGES)}",
             "duration": duration
         },
         "findings": findings_to_return,
+        "obis_mappings": obis_mappings,
         "pipeline": {
             "vulnerabilities": pipeline_vulnerabilities,
             "timeline": pipeline_timeline,
@@ -504,9 +618,9 @@ def run_sandbox_command(project_id: int, req: SandboxRequest, db: Session = Depe
         env = os.environ.copy()
         env["FIRMWARE_FILE"] = project.firmware_filepath
         
+        import shlex
         result = subprocess.run(
-            req.command,
-            shell=True,
+            shlex.split(req.command),
             cwd=firmware_dir,
             capture_output=True,
             text=True,
@@ -536,24 +650,44 @@ def list_tools():
     tools_list = []
     all_stages_tools = [
         "upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
-        "entropy", "wireshark", "afl++", "angr", "scorecard", "pdf_report"
+        "entropy", "wireshark", "afl++", "angr", "yara", "scorecard", "pdf_report"
     ]
     for t in all_stages_tools:
-        tools_list.append({
-            "name": t,
-            "version": "1.0",
-            "docs": {
-                "purpose": f"Documentation for tool: {t}",
-                "input": "Target firmware binary",
-                "output": "Analysis log and generated artifacts",
-                "workflow": "Standard stage of cybersecurity pipeline",
-                "commands": [{"command": f"{t} --help", "explanation": "Help command"}],
-                "common_errors": ["Binary not found in PATH"],
-                "troubleshooting": "Ensure binary is installed and executable.",
-                "best_practices": "Check configurations.",
-                "references": ["FAWS Wiki"]
-            }
-        })
+        if t == "yara":
+            tools_list.append({
+                "name": t,
+                "version": "4.3.2",
+                "docs": {
+                    "purpose": "YARA Rule Set Editor/Viewer: Scans the extracted firmware for known threat signatures, crypto materials, and bad coding patterns using explicit rule sets.",
+                    "input": "Extracted firmware files or memory dumps.",
+                    "output": "Matching YARA rules and offsets.",
+                    "workflow": "Runs concurrently with Static Analysis to flag known bad patterns.",
+                    "commands": [
+                        {"command": "yara -r rules/dlms_crypto.yar _flash.bin.extracted/", "explanation": "Scan extracted filesystem for DLMS crypto keys"},
+                        {"command": "yara -r rules/hardcoded_passwords.yar _flash.bin.extracted/", "explanation": "Scan for default admin credentials"}
+                    ],
+                    "common_errors": ["Syntax error in rule file"],
+                    "troubleshooting": "Validate YARA rules with 'yara -c'. Ensure the rules directory is accessible.",
+                    "best_practices": "Keep rule sets updated with latest threat intel. Group rules by CVE or component.",
+                    "references": ["YARA Documentation", "DLMS Security Suite Signatures"]
+                }
+            })
+        else:
+            tools_list.append({
+                "name": t,
+                "version": "1.0",
+                "docs": {
+                    "purpose": f"Documentation for tool: {t}",
+                    "input": "Target firmware binary",
+                    "output": "Analysis log and generated artifacts",
+                    "workflow": "Standard stage of cybersecurity pipeline",
+                    "commands": [{"command": f"{t} --help", "explanation": "Help command"}],
+                    "common_errors": ["Binary not found in PATH"],
+                    "troubleshooting": "Ensure binary is installed and executable.",
+                    "best_practices": "Check configurations.",
+                    "references": ["FAWS Wiki"]
+                }
+            })
     return tools_list
 
 @app.get("/api/projects/{project_id}/logs")
@@ -576,17 +710,3 @@ def get_project_logs(project_id: int, db: Session = Depends(get_db)):
         } for log in logs
     ]
 
-@app.get("/api/health")
-def health():
-
-    return {
-
-        "status":"online",
-
-        "database":"connected",
-
-        "pipeline":"ready",
-
-        "plugins":0
-
-    }

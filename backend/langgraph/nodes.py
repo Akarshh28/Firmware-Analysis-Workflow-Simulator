@@ -121,15 +121,59 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             }
         })
 
-        import subprocess
-        def run_proc():
-            return subprocess.run(cmd, shell=True, capture_output=True)
-            
-        process = await asyncio.to_thread(run_proc)
+        from app.config import settings
+        import json
         
-        stdout = process.stdout
-        stderr = process.stderr
-        exit_code = process.returncode
+        stdout_bytes = b''
+        stderr_bytes = b''
+        exit_code = 0
+
+        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "scorecard", "pdf_report"]:
+            log_msg = f"[{tool_name}] Skipped in real mode."
+            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
+            db.add(log_entry)
+            
+            tool_run.exit_code = 0
+            tool_run.ended_at = datetime.datetime.utcnow()
+            db.commit()
+            
+            state["current_stage"] = stage_name
+            await manager.broadcast(state["project_id"], {
+                "type": "TOOL_SUCCESS",
+                "data": {"tool_name": tool_name, "skipped": True}
+            })
+            return state
+
+        if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis"]:
+            from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols
+            def run_wrapper():
+                if tool_name == "binwalk": return run_binwalk(target_path, state["project_id"])
+                elif tool_name == "strings": return run_strings(target_path, state["project_id"])
+                elif tool_name == "entropy": return run_entropy(target_path, state["project_id"])
+                elif tool_name == "yara": return run_yara(target_path, state["project_id"])
+                elif tool_name == "symbol_analysis": return run_symbols(target_path, state["project_id"])
+            wrapper_res = await asyncio.to_thread(run_wrapper)
+            
+            exit_code = 0 if wrapper_res.get("status") == "success" else 1
+            if exit_code == 0:
+                stdout_bytes = f"Analyzed successfully, found {len(wrapper_res.get('findings', []))} findings.".encode('utf-8')
+            else:
+                stderr_bytes = str(wrapper_res.get("error", "Unknown error")).encode('utf-8')
+                
+            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="JSON_FINDINGS", message=json.dumps(wrapper_res.get("findings", [])))
+            db.add(log_entry)
+            db.commit()
+        else:
+            import subprocess
+            def run_proc():
+                return subprocess.run(cmd, shell=True, capture_output=True)
+            process = await asyncio.to_thread(run_proc)
+            stdout_bytes = process.stdout
+            stderr_bytes = process.stderr
+            exit_code = process.returncode
+            
+        stdout = stdout_bytes
+        stderr = stderr_bytes
         
         if stdout:
             out_msg = stdout.decode('utf-8', errors='ignore').strip()
@@ -264,3 +308,10 @@ async def scorecard_node(state: GraphState):
 
 async def report_node(state: GraphState):
     return await execute_tool(state, "pdf_report", "Report Generation", [{"file_name": "final_report.pdf", "mime_type": "application/pdf", "file_size": 150000}])
+
+async def yara_node(state: GraphState):
+    return await execute_tool(state, "yara", "YARA Analysis", [{"file_name": "yara_matches.json", "mime_type": "application/json", "file_size": 1024}])
+
+async def symbol_node(state: GraphState):
+    return await execute_tool(state, "symbol_analysis", "Symbol Analysis", [{"file_name": "symbols.json", "mime_type": "application/json", "file_size": 2048}])
+
