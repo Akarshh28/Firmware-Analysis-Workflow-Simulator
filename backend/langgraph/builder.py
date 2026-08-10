@@ -32,8 +32,16 @@ def create_firmware_analysis_graph():
 
     workflow.set_entry_point("upload")
     
-    stages = ["upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
-              "entropy", "wireshark", "afl++", "angr", "scorecard", "pdf_report"]
+    from app.config import settings
+    if settings.MODE == "real":
+        stages = ["upload", "binwalk", "strings", "entropy", "yara", "symbol_analysis", "scorecard", "pdf_report"]
+        # In real mode, use the new yara and symbol_analysis nodes
+        from langgraph.nodes import yara_node, symbol_node
+        workflow.add_node("yara", yara_node)
+        workflow.add_node("symbol_analysis", symbol_node)
+    else:
+        stages = ["upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
+                  "entropy", "wireshark", "afl++", "angr", "scorecard", "pdf_report"]
               
     for i in range(len(stages) - 1):
         workflow.add_conditional_edges(

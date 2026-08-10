@@ -24,6 +24,7 @@ import {
   CheckCircle,
   Clock,
   Zap,
+  Network,
 } from "lucide-react";
 
 type DashboardSummary = {
@@ -34,6 +35,7 @@ type DashboardSummary = {
   riskScore?: number;
   riskLabel?: string;
   riskSummary?: string;
+  dlmsSuite?: string;
 };
 
 type DashboardMetrics = {
@@ -67,10 +69,11 @@ type DashboardPipeline = {
 };
 
 type DashboardData = {
-  summary?: DashboardSummary;
-  metrics?: DashboardMetrics;
-  findings?: DashboardFinding[];
-  pipeline?: DashboardPipeline;
+  summary: DashboardSummary;
+  metrics: DashboardMetrics;
+  findings: DashboardFinding[];
+  pipeline: DashboardPipeline;
+  obis_mappings?: { code: string; name: string; access: string; source: string; status: string }[];
   logs?: unknown[];
 };
 
@@ -83,6 +86,7 @@ const fallbackSummary: DashboardSummary = {
   riskLabel: "CRITICAL RISK",
   riskSummary:
     "Firmware poses significant security risk. 4 critical vulnerabilities must be patched before deployment.",
+  dlmsSuite: "Suite 1 (AES-GCM-128)",
 };
 
 const fallbackMetrics: DashboardMetrics = {
@@ -163,9 +167,19 @@ const fallbackPipeline: DashboardPipeline = {
   ],
 };
 
+const OBIS_CODES = [
+  { code: "0.0.96.1.0.255", name: "Device ID / Serial Number", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
+  { code: "1.0.1.8.0.255", name: "Active Energy Import (+A)", access: "Read", source: "Config (Strings)", status: "Extracted" },
+  { code: "1.0.2.8.0.255", name: "Active Energy Export (-A)", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
+  { code: "1.0.32.7.0.255", name: "L1 Voltage", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
+  { code: "1.0.31.7.0.255", name: "L1 Current", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
+  { code: "1.0.14.7.0.255", name: "Supply Frequency", access: "Read", source: "Config (Strings)", status: "Extracted" },
+  { code: "0.0.96.2.0.255", name: "Configuration Changes Count", access: "Read/Write", source: "Binary (Ghidra)", status: "Vulnerable" },
+];
+
 const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardData => ({
   summary: payload?.summary ?? {
-    critical: 0, high: 0, medium: 0, low: 0, riskScore: 0, riskLabel: "NO ISSUES", riskSummary: "No data available."
+    critical: 0, high: 0, medium: 0, low: 0, riskScore: 0, riskLabel: "NO ISSUES", riskSummary: "No data available.", dlmsSuite: "Suite 1 (AES-GCM-128)", protocolVerdict: "Unknown"
   },
   metrics: payload?.metrics ?? {
     totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 12", duration: "0 min"
@@ -177,11 +191,8 @@ const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardD
         stage: item?.stage ?? undefined,
         tool: item?.tool ?? undefined,
       })) : [],
-  pipeline: {
-    vulnerabilities: Array.isArray(payload?.pipeline?.vulnerabilities) ? payload.pipeline.vulnerabilities : [],
-    timeline: Array.isArray(payload?.pipeline?.timeline) ? payload.pipeline.timeline : [],
-    severity: Array.isArray(payload?.pipeline?.severity) ? payload.pipeline.severity : [],
-  },
+  pipeline: payload?.pipeline ?? fallbackPipeline,
+  obis_mappings: payload?.obis_mappings ?? [],
   logs: Array.isArray(payload?.logs) ? payload.logs : [],
 });
 
@@ -231,6 +242,8 @@ export const Dashboard: React.FC = () => {
       isMounted = false;
     };
   }, [activeProject]);
+
+  const handleExport = () => alert("Export functionality not implemented");
 
   const summary = dashboardData.summary ?? {};
   const metrics = dashboardData.metrics ?? {};
@@ -441,7 +454,23 @@ export const Dashboard: React.FC = () => {
             <span className="card-title" style={{ margin: 0 }}>
               Critical Findings
             </span>
-            <span className="badge badge-failed" style={{ marginLeft: "auto" }}>
+            {dashboardData.summary.protocolVerdict && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", background: "rgba(255,255,255,0.05)", borderRadius: 6, border: "1px solid var(--border-subtle)", marginLeft: "auto" }}>
+                <span style={{ fontSize: 10, color: "var(--text-secondary)", fontWeight: 600 }}>Protocol:</span>
+                <span className={`badge ${dashboardData.summary.protocolVerdict.includes("DLMS") ? "badge-queued" : "badge-success"}`} style={{ fontSize: 9 }}>
+                  {dashboardData.summary.protocolVerdict.toUpperCase()}
+                </span>
+              </div>
+            )}
+            {dashboardData.summary.dlmsSuite && dashboardData.summary.protocolVerdict?.includes("DLMS") && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", background: "rgba(255,255,255,0.05)", borderRadius: 6, border: "1px solid var(--border-subtle)", marginLeft: !dashboardData.summary.protocolVerdict ? "auto" : undefined }}>
+                <span style={{ fontSize: 10, color: "var(--text-secondary)", fontWeight: 600 }}>DLMS:</span>
+                <span className={`badge ${dashboardData.summary.dlmsSuite.includes("Suite 0") ? "badge-failed" : "badge-success"}`} style={{ fontSize: 9 }}>
+                  {dashboardData.summary.dlmsSuite.toUpperCase()}
+                </span>
+              </div>
+            )}
+            <span className="badge badge-failed" style={{ marginLeft: (!dashboardData.summary.dlmsSuite && !dashboardData.summary.protocolVerdict) ? "auto" : undefined }}>
               {findingsCount} Findings
             </span>
           </div>
@@ -610,6 +639,59 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* OBIS Codes Row */}
+      {dashboardData.obis_mappings && dashboardData.obis_mappings.length > 0 && (
+      <div className="card" style={{ marginTop: 24, padding: 0, overflow: "hidden" }}>
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid var(--border-subtle)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <Network size={15} color="var(--accent-purple)" />
+          <span className="card-title" style={{ margin: 0 }}>
+            Extracted OBIS Code Mappings
+          </span>
+          <span className="badge badge-queued" style={{ marginLeft: "auto" }}>
+            DLMS/COSEM Objects
+          </span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, textAlign: "left" }}>
+            <thead style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)", fontSize: 11, textTransform: "uppercase" }}>
+              <tr>
+                <th style={{ padding: "12px 20px", fontWeight: 600 }}>OBIS Code</th>
+                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Object Name</th>
+                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Access Right</th>
+                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Source Artifact</th>
+                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboardData.obis_mappings?.map((obis, i) => (
+                <tr key={obis.code} style={{ borderBottom: i < (dashboardData.obis_mappings?.length || 0) - 1 ? "1px solid var(--border-subtle)" : "none" }}>
+                  <td style={{ padding: "12px 20px", fontFamily: "var(--font-mono)", color: "var(--accent-cyan)", fontWeight: 600 }}>
+                    {obis.code}
+                  </td>
+                  <td style={{ padding: "12px 20px", color: "var(--text-primary)" }}>{obis.name}</td>
+                  <td style={{ padding: "12px 20px", color: "var(--text-secondary)" }}>{obis.access}</td>
+                  <td style={{ padding: "12px 20px", color: "var(--text-muted)", fontSize: 12 }}>{obis.source}</td>
+                  <td style={{ padding: "12px 20px" }}>
+                    <span className={`badge ${obis.status === "Vulnerable" ? "badge-failed" : "badge-success"}`} style={{ fontSize: 10 }}>
+                      {obis.status.toUpperCase()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      )}
 
       {/* Info Banner */}
       <div
