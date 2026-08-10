@@ -36,6 +36,7 @@ type DashboardSummary = {
   riskLabel?: string;
   riskSummary?: string;
   dlmsSuite?: string;
+  protocolVerdict?: string;
 };
 
 type DashboardMetrics = {
@@ -185,12 +186,12 @@ const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardD
     totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 12", duration: "0 min"
   },
   findings: Array.isArray(payload?.findings) ? payload.findings.map((item) => ({
-        id: item?.id ?? undefined,
-        title: item?.title ?? undefined,
-        severity: item?.severity ?? undefined,
-        stage: item?.stage ?? undefined,
-        tool: item?.tool ?? undefined,
-      })) : [],
+    id: item?.id ?? undefined,
+    title: item?.title ?? undefined,
+    severity: item?.severity ?? undefined,
+    stage: item?.stage ?? undefined,
+    tool: item?.tool ?? undefined,
+  })) : [],
   pipeline: payload?.pipeline ?? fallbackPipeline,
   obis_mappings: payload?.obis_mappings ?? [],
   logs: Array.isArray(payload?.logs) ? payload.logs : [],
@@ -225,19 +226,19 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const fetchDashboard = async () => {
-        if (!activeProject) return;
-        try {
-            const res = await api.get(`projects/${activeProject.id}/dashboard`);
-            if (isMounted) {
-                setDashboardData(buildDashboardData(res.data));
-            }
-        } catch(e) {
-            console.error(e);
+      if (!activeProject) return;
+      try {
+        const res = await api.get(`projects/${activeProject.id}/dashboard`);
+        if (isMounted) {
+          setDashboardData(buildDashboardData(res.data));
         }
+      } catch (e) {
+        console.error(e);
+      }
     };
-    
+
     fetchDashboard();
-    
+
     return () => {
       isMounted = false;
     };
@@ -642,55 +643,55 @@ export const Dashboard: React.FC = () => {
 
       {/* OBIS Codes Row */}
       {dashboardData.obis_mappings && dashboardData.obis_mappings.length > 0 && (
-      <div className="card" style={{ marginTop: 24, padding: 0, overflow: "hidden" }}>
-        <div
-          style={{
-            padding: "16px 20px",
-            borderBottom: "1px solid var(--border-subtle)",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <Network size={15} color="var(--accent-purple)" />
-          <span className="card-title" style={{ margin: 0 }}>
-            Extracted OBIS Code Mappings
-          </span>
-          <span className="badge badge-queued" style={{ marginLeft: "auto" }}>
-            DLMS/COSEM Objects
-          </span>
-        </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, textAlign: "left" }}>
-            <thead style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)", fontSize: 11, textTransform: "uppercase" }}>
-              <tr>
-                <th style={{ padding: "12px 20px", fontWeight: 600 }}>OBIS Code</th>
-                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Object Name</th>
-                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Access Right</th>
-                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Source Artifact</th>
-                <th style={{ padding: "12px 20px", fontWeight: 600 }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboardData.obis_mappings?.map((obis, i) => (
-                <tr key={obis.code} style={{ borderBottom: i < (dashboardData.obis_mappings?.length || 0) - 1 ? "1px solid var(--border-subtle)" : "none" }}>
-                  <td style={{ padding: "12px 20px", fontFamily: "var(--font-mono)", color: "var(--accent-cyan)", fontWeight: 600 }}>
-                    {obis.code}
-                  </td>
-                  <td style={{ padding: "12px 20px", color: "var(--text-primary)" }}>{obis.name}</td>
-                  <td style={{ padding: "12px 20px", color: "var(--text-secondary)" }}>{obis.access}</td>
-                  <td style={{ padding: "12px 20px", color: "var(--text-muted)", fontSize: 12 }}>{obis.source}</td>
-                  <td style={{ padding: "12px 20px" }}>
-                    <span className={`badge ${obis.status === "Vulnerable" ? "badge-failed" : "badge-success"}`} style={{ fontSize: 10 }}>
-                      {obis.status.toUpperCase()}
-                    </span>
-                  </td>
+        <div className="card" style={{ marginTop: 24, padding: 0, overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid var(--border-subtle)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Network size={15} color="var(--accent-purple)" />
+            <span className="card-title" style={{ margin: 0 }}>
+              Extracted OBIS Code Mappings
+            </span>
+            <span className="badge badge-queued" style={{ marginLeft: "auto" }}>
+              DLMS/COSEM Objects
+            </span>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, textAlign: "left" }}>
+              <thead style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)", fontSize: 11, textTransform: "uppercase" }}>
+                <tr>
+                  <th style={{ padding: "12px 20px", fontWeight: 600 }}>OBIS Code</th>
+                  <th style={{ padding: "12px 20px", fontWeight: 600 }}>Object Name</th>
+                  <th style={{ padding: "12px 20px", fontWeight: 600 }}>Access Right</th>
+                  <th style={{ padding: "12px 20px", fontWeight: 600 }}>Source Artifact</th>
+                  <th style={{ padding: "12px 20px", fontWeight: 600 }}>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {dashboardData.obis_mappings?.map((obis, i) => (
+                  <tr key={obis.code} style={{ borderBottom: i < (dashboardData.obis_mappings?.length || 0) - 1 ? "1px solid var(--border-subtle)" : "none" }}>
+                    <td style={{ padding: "12px 20px", fontFamily: "var(--font-mono)", color: "var(--accent-cyan)", fontWeight: 600 }}>
+                      {obis.code}
+                    </td>
+                    <td style={{ padding: "12px 20px", color: "var(--text-primary)" }}>{obis.name}</td>
+                    <td style={{ padding: "12px 20px", color: "var(--text-secondary)" }}>{obis.access}</td>
+                    <td style={{ padding: "12px 20px", color: "var(--text-muted)", fontSize: 12 }}>{obis.source}</td>
+                    <td style={{ padding: "12px 20px" }}>
+                      <span className={`badge ${obis.status === "Vulnerable" ? "badge-failed" : "badge-success"}`} style={{ fontSize: 10 }}>
+                        {obis.status.toUpperCase()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
       )}
 
       {/* Info Banner */}
