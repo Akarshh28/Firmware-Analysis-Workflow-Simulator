@@ -48,7 +48,7 @@ const NAV_ITEMS: {
     id: "pipeline",
     label: "Pipeline Simulator",
     icon: <GitBranch size={16} />,
-    badge: "12 Stages",
+    badge: "8 Stages",
     section: "Analysis",
   },
   {

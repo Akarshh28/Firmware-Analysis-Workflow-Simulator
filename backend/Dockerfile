@@ -18,11 +18,15 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Binwalk (from source or apt, here apt has a basic version but pip is better)
-# Note: standard apt binwalk works for extraction in most cases.
-RUN apt-get update && apt-get install -y binwalk && rm -rf /var/lib/apt/lists/*
+# Install Binwalk and other extraction tools
+RUN apt-get update && apt-get install -y binwalk cabextract unzip file && rm -rf /var/lib/apt/lists/*
 
+# Fail the build immediately (not silently at runtime) if binwalk isn't
+# actually usable after install.
+RUN which binwalk && binwalk --help > /dev/null
 
+# Verify other required extraction/analysis tools exist
+RUN which cabextract && which unzip && which objdump && which strings
 
 # Set up Python virtual environment
 RUN python3.12 -m venv /opt/venv

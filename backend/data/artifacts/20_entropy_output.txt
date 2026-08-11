@@ -1,0 +1,5 @@
+Starting Entropy Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\20_dlms_smart_meter_test_firmware.bin...
+Overall Shannon Entropy: 7.9705
+Found 1 finding(s).
+[!] High entropy (7.97) indicates packed or encrypted firmware section
+Scan complete.

@@ -1,0 +1,5 @@
+Starting Wireshark (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\25_dlms_smart_meter_test_firmware.bin...
+Found 2 finding(s).
+[!] Network: HTTP traffic signatures found
+[!] Network: SSH traffic signatures found
+Scan complete.

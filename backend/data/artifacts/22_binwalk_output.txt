@@ -1,0 +1,7 @@
+Starting Python Binwalk Engine on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\22_files.zip...
+Found 4 finding(s).
+[!] Offset 0x0: Zip archive data
+[!] Offset 0x20d0: Zip archive data
+[!] Offset 0x2c24: Zip archive data
+[!] Offset 0x3e8c: Zip archive data
+Scan complete.

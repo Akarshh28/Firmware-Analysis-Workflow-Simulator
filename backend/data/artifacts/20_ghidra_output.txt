@@ -1,0 +1,5 @@
+Starting Ghidra (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\20_dlms_smart_meter_test_firmware.bin...
+Found 2 finding(s).
+[!] Compiler: GCC compiler artifacts detected
+[!] Functions: x86_64 function prologues identified
+Scan complete.

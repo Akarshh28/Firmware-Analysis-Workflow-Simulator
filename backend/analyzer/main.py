@@ -186,6 +186,12 @@ def main():
                 all_reports.append(report)
             # 'ok' container nodes (already extracted, children queued) need no report line
 
+    print("\n--- DEBUG: FILES SENT TO analyze_leaf ---")
+    for node in all_nodes:
+        if is_binary_leaf(node):
+            print(f"  -> {node.path}")
+    print("-------------------------------------------\n")
+
     os.makedirs(args.output, exist_ok=True)
     json_path = os.path.join(args.output, "report.json")
     md_path = os.path.join(args.output, "report.md")

@@ -93,7 +93,7 @@ const fallbackSummary: DashboardSummary = {
 const fallbackMetrics: DashboardMetrics = {
   totalFindings: 35,
   criticalIssues: 4,
-  stagesCompleted: "12 / 12",
+  stagesCompleted: "8 / 8",
   duration: "62 min",
 };
 
@@ -137,26 +137,22 @@ const fallbackFindings: DashboardFinding[] = [
 
 const fallbackPipeline: DashboardPipeline = {
   vulnerabilities: [
-    { name: "Extraction", issues: 0 },
-    { name: "Static", issues: 2 },
-    { name: "RE", issues: 5 },
-    { name: "Secrets", issues: 3 },
+    { name: "Upload", issues: 0 },
+    { name: "Extract", issues: 0 },
+    { name: "ID", issues: 2 },
     { name: "Crypto", issues: 7 },
-    { name: "Protocol", issues: 4 },
-    { name: "Symbolic", issues: 8 },
-    { name: "Fuzzing", issues: 11 },
+    { name: "YARA", issues: 3 },
+    { name: "Symbol", issues: 5 },
+    { name: "Risk", issues: 0 },
+    { name: "Report", issues: 0 },
   ],
   timeline: [
     { stage: "Upload", mins: 0.5 },
-    { stage: "ID", mins: 1.2 },
     { stage: "Extract", mins: 2.8 },
-    { stage: "Static", mins: 4.5 },
-    { stage: "RE", mins: 8.2 },
-    { stage: "Secrets", mins: 2.1 },
+    { stage: "ID", mins: 1.2 },
     { stage: "Crypto", mins: 3.4 },
-    { stage: "Protocol", mins: 5.0 },
-    { stage: "Symbolic", mins: 12.0 },
-    { stage: "Fuzzing", mins: 18.5 },
+    { stage: "YARA", mins: 2.1 },
+    { stage: "Symbol", mins: 8.2 },
     { stage: "Risk", mins: 1.8 },
     { stage: "Report", mins: 0.8 },
   ],
@@ -183,7 +179,7 @@ const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardD
     critical: 0, high: 0, medium: 0, low: 0, riskScore: 0, riskLabel: "NO ISSUES", riskSummary: "No data available.", dlmsSuite: "Suite 1 (AES-GCM-128)", protocolVerdict: "Unknown"
   },
   metrics: payload?.metrics ?? {
-    totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 12", duration: "0 min"
+    totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 8", duration: "0 min"
   },
   findings: Array.isArray(payload?.findings) ? payload.findings.map((item) => ({
     id: item?.id ?? undefined,
@@ -269,7 +265,7 @@ export const Dashboard: React.FC = () => {
 
   const totalFindings = metrics?.totalFindings ?? ((summary?.critical ?? 0) + (summary?.high ?? 0) + (summary?.medium ?? 0) + (summary?.low ?? 0));
   const criticalIssues = metrics?.criticalIssues ?? summary?.critical ?? 0;
-  const stagesCompleted = metrics?.stagesCompleted ?? "12 / 12";
+  const stagesCompleted = metrics?.stagesCompleted ?? "8 / 8";
   const duration = metrics?.duration ?? "62 min";
   const riskScore = summary?.riskScore ?? 32;
   const riskLabel = summary?.riskLabel ?? "CRITICAL RISK";
@@ -282,7 +278,7 @@ export const Dashboard: React.FC = () => {
       icon: <ShieldAlert size={18} />,
       label: "Total Findings",
       value: String(totalFindings),
-      sub: "Across 12 pipeline stages",
+      sub: "Across 8 pipeline stages",
       color: "var(--accent-red)",
       bg: "rgba(239,68,68,0.1)",
     },

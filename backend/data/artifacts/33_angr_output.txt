@@ -1,0 +1,4 @@
+Starting angr (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\33_Relion670_Firmware update 1p1r01 to 27.zip...
+Found 1 finding(s).
+[!] Symbolic: High number of branch instructions (223032) indicates complex control flow suitable for symbolic execution
+Scan complete.

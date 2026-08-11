@@ -1,0 +1,5 @@
+Starting Entropy Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\29_Firmware_120626.zip...
+Overall Shannon Entropy: 7.9966
+Found 1 finding(s).
+[!] High entropy (8.00) indicates packed or encrypted firmware section
+Scan complete.

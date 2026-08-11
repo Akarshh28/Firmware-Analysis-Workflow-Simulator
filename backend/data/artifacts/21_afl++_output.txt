@@ -1,0 +1,5 @@
+Starting AFL++ (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\21_dlms_smart_meter_test_firmware.bin...
+Found 2 finding(s).
+[!] Fuzzing: Potential format string attack surface detected
+[!] Fuzzing: Usage of unsafe string functions detected (strcpy/gets)
+Scan complete.

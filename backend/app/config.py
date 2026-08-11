@@ -5,7 +5,7 @@ class Settings:
     API_V1_STR: str = "/api"
     
     # Mode can be 'simulation' or 'real'
-    MODE: str = "simulation"
+    MODE: str = os.getenv("FAWS_MODE", "real")
     
     # Base directory
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

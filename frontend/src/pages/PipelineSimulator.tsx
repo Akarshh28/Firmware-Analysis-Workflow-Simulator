@@ -288,18 +288,14 @@ const statusClass = (status: string) =>
 
 /* ─────────── Full pipeline stage list ─────────── */
 const ALL_STAGES = [
-  { stage: "Firmware Upload",       tool: "upload",     icon: "📤", order: 1 },
-  { stage: "Identification",        tool: "strings",    icon: "🔍", order: 2 },
-  { stage: "Extraction",            tool: "binwalk",    icon: "📦", order: 3 },
-  { stage: "Static Analysis",       tool: "cutter",     icon: "🔬", order: 4 },
-  { stage: "Reverse Engineering",   tool: "ghidra",     icon: "🧩", order: 5 },
-  { stage: "Secret Detection",      tool: "trufflehog", icon: "🔑", order: 6 },
-  { stage: "Cryptographic Analysis",tool: "entropy",    icon: "📊", order: 7 },
-  { stage: "Protocol Analysis",     tool: "wireshark",  icon: "🌐", order: 8 },
-  { stage: "Fuzzing",               tool: "afl++",      icon: "⚡", order: 9 },
-  { stage: "Symbolic Execution",    tool: "angr",       icon: "🧮", order: 10 },
-  { stage: "Risk Assessment",       tool: "scorecard",  icon: "📋", order: 11 },
-  { stage: "Report Generation",     tool: "pdf_report", icon: "📄", order: 12 },
+  { stage: "Upload & Ingestion",    tool: "upload",     icon: "📤", order: 1 },
+  { stage: "Extraction",            tool: "binwalk",    icon: "📦", order: 2 },
+  { stage: "Identification",        tool: "strings",    icon: "🔍", order: 3 },
+  { stage: "Cryptographic Analysis",tool: "entropy",    icon: "📊", order: 4 },
+  { stage: "YARA Analysis",         tool: "yara",       icon: "🧬", order: 5 },
+  { stage: "Symbol Analysis",       tool: "symbol_analysis", icon: "🔣", order: 6 },
+  { stage: "Risk Scoring",          tool: "scorecard",  icon: "📋", order: 7 },
+  { stage: "Report Generation",     tool: "pdf_report", icon: "📄", order: 8 },
 ];
 
 export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: PageId) => void }) {

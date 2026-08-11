@@ -1,0 +1,11 @@
+Starting Python Binwalk Engine on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\30_Relion670_Firmware update 1p1r01 to 27.zip...
+Found 8 finding(s).
+[!] Offset 0x0: Zip archive data
+[!] Offset 0x2f5b: Zip archive data
+[!] Offset 0x35fe5: Zip archive data
+[!] Offset 0x1d0ec6: bzip2 compressed data
+[!] Offset 0x3b7af1: Zip archive data
+[!] Offset 0x427cef: Zip archive data
+[!] Offset 0x5f40c5: bzip2 compressed data
+[!] Offset 0x67e078: JPEG image data
+Scan complete.
