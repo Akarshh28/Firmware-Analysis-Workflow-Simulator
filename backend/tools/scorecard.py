@@ -62,9 +62,6 @@ def calculate_score(project_id):
     finally:
         db.close()
     return findings
-    finally:
-        db.close()
-    return findings
 
 def main():
     parser = argparse.ArgumentParser(description="Basic Scorecard Python Fallback")
