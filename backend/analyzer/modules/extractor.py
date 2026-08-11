@@ -87,12 +87,9 @@ def extract_cab(path: str, out_dir: str):
 
 
 def _binwalk_extract_args(base_args):
-    """Add --run-as=root when running as root (common on containerized
-    deployments like Render), since binwalk refuses to auto-run its
-    third-party extraction utilities as root otherwise."""
-    if hasattr(os, "geteuid") and os.geteuid() == 0:
-        return [base_args[0], "--run-as=root"] + base_args[1:]
-    return base_args
+    """Add --run-as=root unconditionally to avoid any permission checking bugs
+    on Render."""
+    return [base_args[0], "--run-as=root"] + base_args[1:]
 
 
 def extract_msi_via_binwalk(path: str, out_dir: str):

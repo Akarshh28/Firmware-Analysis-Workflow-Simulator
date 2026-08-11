@@ -51,21 +51,15 @@ dash = res.json()
 
 print("\n--- RESULTS ---")
 print("Total Findings:", dash.get("metrics", {}).get("totalFindings"))
-print("Risk Score:", dash.get("metrics", {}).get("riskScore", "Not in metrics (maybe in findings)"))
-
-score_match = None
-for f in dash.get("findings", []):
-    if f.get("type") == "RiskScore":
-        score_match = f.get("match")
-        print("Scorecard:", score_match)
-
+print("Risk Score:", dash.get("metrics", {}).get("riskScore", "Not in metrics"))
 print("Protocol Verdict:", dash.get("protocolVerdict"))
-print("Findings by type:")
-types = {}
-for f in dash.get("findings", []):
-    t = f.get("type", "Unknown")
-    types[t] = types.get(t, 0) + 1
-print(types)
+
+print("\n--- ALL FINDINGS ---")
+for idx, f in enumerate(dash.get("findings", [])):
+    title = f.get("title", f.get("description", "Unknown Title"))
+    print(f"[{idx+1}] {title}")
+    if "Risk Score" in title:
+        print(" -> SCORECARD FOUND!")
 
 print("\nFetching logs for errors...")
 res = requests.get(f"{API_BASE}/projects/{project_id}/logs")

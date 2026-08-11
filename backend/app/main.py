@@ -467,7 +467,7 @@ async def upload_firmware(
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "v3_run_as_root"}
 
 # ---------------------------------------------------------
 # FALLBACK ROUTES FOR FRONTEND COMPATIBILITY ---
