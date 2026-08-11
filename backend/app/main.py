@@ -156,17 +156,41 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                 try:
                     findings_data = json.loads(log.message)
                     for f in findings_data:
+                        rule = f.get("rule", "")
+                        category = f.get("category", "")
+                        cwe = f.get("cwe", "CWE-000")
+                        severity = f.get("severity", "info").lower()
+                        
+                        # Remediation Logic mapping
+                        remediation = "Investigate this specific finding."
+                        if category == "weak_crypto" or rule in ["Weak_Hash_MD5", "Weak_Hash_SHA1", "Weak_Cipher_DES_RC4", "Deprecated_Crypto_Combined_Flag", "Weak_Cryptography"] or category == "crypto":
+                            remediation = "Replace with a modern, vetted algorithm (SHA-256/SHA-3 for hashing, AES-GCM for encryption). If used only for non-security checksums (e.g. file integrity, not authentication), document that explicitly to avoid confusion with security-relevant use."
+                        elif category == "auth_credentials" or rule in ["Verbose_Authentication_Errors", "Plaintext_Password_In_Format_String", "Hardcoded_Credential_Keywords", "Authentication_Weakness_Combined_Flag", "Hardcoded_Credentials"] or category == "credentials":
+                            remediation = "Avoid logging credentials in plaintext in any log/debug output. Return identical error messages for 'user not found' and 'wrong password' to prevent username enumeration. Ensure default/factory credentials are forced to change on first use."
+                        elif rule == "Legacy_Debug_Login_Shell":
+                            remediation = "Disable the debug login/rlogin/WDB agent interface in production builds. If required for field service, restrict to a physically isolated diagnostic port or gate behind strong authentication, not the legacy VxWorks login prompt."
+                        elif category in ["iec61850", "protocol"] or rule.startswith("DLMS_COSEM_") or rule in ["ACSE_Association_Layer_Generic", "IEC61850_Without_DLMS", "Vendor_ABB_Hitachi", "Architecture_PowerPC"] or rule.startswith("RTOS_"):
+                            remediation = "Protocol/platform identified for analysis context — no direct remediation required. Review the identified protocol's own security configuration guidance (e.g. DLMS Security Suite selection, IEC 61850 access control settings) separately."
+                        elif tool_name == "symbol_analysis" or category == "suspicious_symbol":
+                            remediation = "Review this function's disassembly to confirm whether it represents an unauthenticated debug/backdoor code path. If confirmed unused or unreachable in production configuration, remove it; if it's a legitimate diagnostic feature, ensure it's disabled or authenticated in production builds."
+                        elif rule == "Memory_Safety_Issue" or category == "memory" or cwe in ["CWE-119", "CWE-120"]:
+                            remediation = "1. Use safe string/memory functions (e.g. strncpy, snprintf). 2. Enable compiler protections like Stack Canaries, ASLR, and DEP/NX. 3. Perform fuzzing on the parser."
+                        elif category == "network_services" or cwe == "CWE-319":
+                            remediation = "1. Ensure all network services authenticate users properly. 2. Disable unnecessary debug/diagnostic services. 3. Enforce TLS 1.2+ for all network communications."
+                        
                         real_findings.append({
                             "id": f"CVE-REAL-{finding_idx:03d}",
                             "title": f.get("description", f.get("value", "Unknown Finding")),
-                            "severity": f.get("severity", "info").lower(),
+                            "severity": severity,
                             "stage": "Security Analysis",
                             "tool": tool_name,
-                            "cvss": 9.0 if f.get("severity") == "critical" else (7.0 if f.get("severity") == "high" else (5.0 if f.get("severity") == "medium" else 2.0)),
-                            "cwe": f.get("cwe", "CWE-000"),
+                            "cvss": 9.0 if severity == "critical" else (7.0 if severity == "high" else (5.0 if severity == "medium" else 2.0)),
+                            "cwe": cwe,
+                            "rule": rule,
+                            "category": category,
                             "description": f.get("description", "A finding was detected by real analysis."),
                             "poc": f"JSON Data: {json.dumps(f)}",
-                            "remediation": "Investigate this specific finding."
+                            "remediation": remediation
                         })
                         finding_idx += 1
                 except Exception:
@@ -236,12 +260,13 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     high_count = sum(1 for f in real_findings if f["severity"] == "high")
     med_count = sum(1 for f in real_findings if f["severity"] == "medium")
     low_count = sum(1 for f in real_findings if f["severity"] == "low")
+    info_count = sum(1 for f in real_findings if f["severity"] == "info")
     
     # Calculate risk score
     risk_score = min(100, (crit_count * 25) + (high_count * 15) + (med_count * 5) + (low_count * 1))
     risk_label = "CRITICAL RISK" if risk_score > 75 else "HIGH RISK" if risk_score > 50 else "MEDIUM RISK" if risk_score > 25 else "LOW RISK"
     
-    total_findings = crit_count + high_count + med_count + low_count
+    total_findings = crit_count + high_count + med_count + low_count + info_count
     
     # Calculate timeline and vulnerabilities per stage
     pipeline_vulnerabilities = []
@@ -273,13 +298,26 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
         # timeline
         mins = 0.0
         if session:
-            run = db.query(models.ToolRun).filter(
+            runs = db.query(models.ToolRun).filter(
                 models.ToolRun.session_id == session.id,
                 models.ToolRun.tool_name == tool_name
-            ).first()
-            if run and run.started_at and run.ended_at:
-                mins = round((run.ended_at - run.started_at).total_seconds() / 60.0, 2)
-        pipeline_timeline.append({"stage": short_name, "mins": mins or 0.1})
+            ).all()
+            if runs:
+                valid_runs = [r for r in runs if r.started_at and r.ended_at]
+                if valid_runs:
+                    min_start = min(r.started_at for r in valid_runs)
+                    max_end = max(r.ended_at for r in valid_runs)
+                    mins = round((max_end - min_start).total_seconds() / 60.0, 2)
+        
+        # Merge by short_name so the chart doesn't show multiple bars for the same stage
+        existing_timeline = next((t for t in pipeline_timeline if t["stage"] == short_name), None)
+        if existing_timeline:
+            # We don't add them naively; but if different tools mapped to same short_name, 
+            # ideally we'd track global min/max for short_name.
+            # But usually it's 1-to-1 or the tool duration dominates. We'll take max of durations for now.
+            existing_timeline["mins"] = max(existing_timeline["mins"], mins or 0.1)
+        else:
+            pipeline_timeline.append({"stage": short_name, "mins": mins or 0.1})
         
     from .obis_parser import OBISParser
     obis_mappings = []
@@ -313,46 +351,27 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
         obis_mappings = list(extracted_codes.values())
 
     # Determine Protocol Verdict and DLMS Suite
-    dlms_suite = "Unknown"
+    dlms_suite = None
     protocol_verdict = "No DLMS/COSEM or IEC 61850 evidence found"
     
     try:
-        state_path = os.path.join(settings.ARTIFACTS_DIR, f"{project_id}_real_state.json")
-        if os.path.exists(state_path):
-            import json
-            with open(state_path, "r") as f:
-                state_data = json.load(f)
+        yara_rule_names = {f.get("rule") for f in real_findings if f.get("tool") == "yara"}
+        string_cats = {f.get("category"): True for f in real_findings if f.get("tool") == "strings"}
+        
+        has_dlms = False
+        if "DLMS_COSEM_Confirmed_Implementation" in yara_rule_names:
+            protocol_verdict = "DLMS/COSEM confirmed"
+            has_dlms = True
+        elif string_cats.get("dlms_cosem"):
+            protocol_verdict = "DLMS/COSEM likely"
+            has_dlms = True
+        elif "IEC61850_Without_DLMS" in yara_rule_names or string_cats.get("iec61850"):
+            protocol_verdict = "IEC 61850 (DLMS/COSEM not present)"
+        elif string_cats.get("acse_association"):
+            protocol_verdict = "ACSE present but unconfirmed"
             
-            # Use report generator to compute verdict if possible, but for simplicity here we compute based on hits
-            strings_results = state_data.get("strings_results", {})
-            yara_results = state_data.get("yara_results", {})
-            
-            has_dlms = False
-            has_iec = False
-            has_acse = False
-            
-            for leaf, res in strings_results.items():
-                if res.get("success"):
-                    matches = res.get("matches", {})
-                    if "dlms_cosem" in matches: has_dlms = True
-                    if "iec61850" in matches: has_iec = True
-                    if "acse_association" in matches: has_acse = True
-                    
-            if has_dlms:
-                protocol_verdict = "DLMS/COSEM likely"
-            elif has_iec:
-                protocol_verdict = "IEC 61850 (DLMS/COSEM not present)"
-            elif has_acse:
-                protocol_verdict = "ACSE present but unconfirmed"
-                
-            for leaf, res in yara_results.items():
-                if res.get("success"):
-                    for match in res.get("matches", []):
-                        if "dlms" in match.get("rule", "").lower():
-                            protocol_verdict = "DLMS/COSEM confirmed"
-                            break
-
-            # Suite determination based on findings
+        # Suite determination based on findings
+        if has_dlms:
             dlms_suite = "Suite 1 (AES-GCM-128)"
             for f in real_findings:
                 if f.get("cwe") in ["CWE-798", "CWE-327", "CWE-319"]:
@@ -650,7 +669,7 @@ def list_tools():
     tools_list = []
     all_stages_tools = [
         "upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
-        "entropy", "wireshark", "afl++", "angr", "yara", "scorecard", "pdf_report"
+        "entropy", "wireshark", "afl++", "angr", "yara", "symbol_analysis", "scorecard", "pdf_report"
     ]
     for t in all_stages_tools:
         if t == "yara":
@@ -670,6 +689,25 @@ def list_tools():
                     "troubleshooting": "Validate YARA rules with 'yara -c'. Ensure the rules directory is accessible.",
                     "best_practices": "Keep rule sets updated with latest threat intel. Group rules by CVE or component.",
                     "references": ["YARA Documentation", "DLMS Security Suite Signatures"]
+                }
+            })
+        elif t == "symbol_analysis":
+            tools_list.append({
+                "name": t,
+                "version": "1.2.0",
+                "docs": {
+                    "purpose": "Symbol Analysis: Parses ELF symbol tables (.symtab / .dynsym) to identify dangerous functions, backdoor keywords, and object-oriented C++ classes.",
+                    "input": "Extracted ELF binary containing unstripped symbols.",
+                    "output": "JSON list of identified symbols tagged with CWEs.",
+                    "workflow": "Runs dynamically alongside Static Analysis after firmware extraction.",
+                    "commands": [
+                        {"command": "readelf -s _flash.bin.extracted/app", "explanation": "List all symbols in ELF"},
+                        {"command": "nm -D _flash.bin.extracted/app", "explanation": "List dynamic symbols"}
+                    ],
+                    "common_errors": ["Binary is stripped (no symbols found)"],
+                    "troubleshooting": "Check if binary is stripped using the 'file' command. If stripped, rely on Ghidra/Cutter.",
+                    "best_practices": "Use symbol analysis before deeper disassembly to quickly map out the program structure.",
+                    "references": ["readelf manual", "nm manual"]
                 }
             })
         else:

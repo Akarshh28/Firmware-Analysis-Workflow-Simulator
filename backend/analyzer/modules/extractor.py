@@ -28,10 +28,34 @@ class ArtifactNode:
     children: List["ArtifactNode"] = field(default_factory=list)
 
 
+import sys
+
+def _to_wsl_path(win_path: str) -> str:
+    if not win_path or not isinstance(win_path, str):
+        return win_path
+    if win_path[1:3] == ":\\":
+        return f"/mnt/{win_path[0].lower()}/{win_path[3:].replace('\\', '/')}"
+    return win_path.replace('\\', '/')
+
 def run_cmd(cmd, timeout=120):
     """Run a subprocess command, returning (success, stdout, stderr_or_reason).
     Never raises - all failure modes are converted to a clean error string."""
     try:
+        # Route through WSL on Windows for Linux tools
+        if sys.platform == "win32" and cmd[0] in ["binwalk", "cabextract", "file", "unzip"]:
+            bash_cmd = [cmd[0]]
+            for arg in cmd[1:]:
+                if arg == "--run-as=root":
+                    continue
+                # Heuristically convert arguments that look like absolute Windows paths
+                if isinstance(arg, str) and len(arg) > 2 and arg[1:3] == ":\\":
+                    val = _to_wsl_path(arg)
+                else:
+                    val = str(arg)
+                # properly escape for bash
+                bash_cmd.append("'" + val.replace("'", "'\\''") + "'")
+            cmd = ["wsl", "bash", "-c", " ".join(bash_cmd)]
+
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=timeout
         )
@@ -78,11 +102,17 @@ def extract_zip(path: str, out_dir: str):
     return True, ""
 
 
-def extract_cab(path: str, out_dir: str):
-    os.makedirs(out_dir, exist_ok=True)
-    ok, out, err = run_cmd(["cabextract", "-d", out_dir, path], timeout=180)
-    if not ok:
-        return False, f"cab extraction failed: {err}"
+def extract_cab(file_path: str, output_dir: str):
+    os.makedirs(output_dir, exist_ok=True)
+    success, out, err = run_cmd(["cabextract", "-d", output_dir, file_path])
+    
+    # cabextract often returns 1 (checksum error/warnings) on binwalk-carved CABs due to trailing garbage.
+    # If it actually extracted files, we consider it a success.
+    if not success:
+        if os.path.exists(output_dir) and any(os.scandir(output_dir)):
+            pass # Tolerable error, files were extracted
+        else:
+            return False, f"cab extraction failed: {err}"
     return True, ""
 
 
@@ -96,7 +126,7 @@ def extract_msi_via_binwalk(path: str, out_dir: str):
     """MSI installers in this project have consistently turned out to wrap
     a Cabinet archive; binwalk -e is the reliable way to carve it out."""
     os.makedirs(out_dir, exist_ok=True)
-    args = _binwalk_extract_args(["binwalk", "--dd=.*", "-e", "-C", out_dir, path])
+    args = _binwalk_extract_args(["binwalk", "-e", "-C", out_dir, path])
     ok, out, err = run_cmd(args, timeout=300)
     if not ok:
         return False, f"binwalk extraction failed: {err}"
@@ -224,7 +254,15 @@ def _process_node(node: ArtifactNode, work_dir: str, max_depth: int, seen_paths:
         node.status_detail += " (but no files were found inside)"
         return
 
-    for fpath in sorted(new_files):
+    def file_sort_key(fpath):
+        basename = os.path.basename(fpath)
+        name_no_ext = os.path.splitext(basename)[0]
+        # Prefer paths with non-numeric names (proper files) and deeper nesting
+        is_numeric = name_no_ext.isdigit()
+        depth = len(fpath.split(os.sep))
+        return (is_numeric, -depth, fpath)
+
+    for fpath in sorted(new_files, key=file_sort_key):
         child = ArtifactNode(path=fpath, depth=node.depth + 1)
         node.children.append(child)
         _process_node(child, work_dir, max_depth, seen_paths)

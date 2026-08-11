@@ -2,7 +2,7 @@ import requests
 import time
 import sys
 
-API_BASE = "https://firmware-analysis-workflow-simulator-1.onrender.com/api"
+API_BASE = "http://127.0.0.1:8000/api"
 ZIP_PATH = r"C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\30_Relion670_Firmware update 1p1r01 to 27.zip"
 
 print(f"Checking {API_BASE}/health")

@@ -64,6 +64,10 @@ def scan_strings(path: str):
                 continue
             for pat in patterns:
                 if pat.search(line):
+                    if cat == "network_services":
+                        line_lower = line.lower()
+                        if any(domain in line_lower for domain in ["digicert.com", "verisign.com", "symantec.com", "thawte.com", "geotrust.com", "globalsign.com"]):
+                            continue
                     matches[cat].append(line.strip()[:200])
                     break
 

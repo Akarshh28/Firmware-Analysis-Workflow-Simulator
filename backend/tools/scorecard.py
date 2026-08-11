@@ -27,8 +27,7 @@ def calculate_score(project_id):
             LogEntry.log_type == "JSON_FINDINGS",
         ).all()
 
-        severity_weight = {"critical": 20, "high": 10, "medium": 5, "low": 2, "info": 0}
-        score = 100
+        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
         finding_count = 0
 
         for log in json_logs:
@@ -39,9 +38,20 @@ def calculate_score(project_id):
             for item in items:
                 finding_count += 1
                 sev = str(item.get("severity", "info")).lower()
-                score -= severity_weight.get(sev, 2)
+                if sev in severity_counts:
+                    severity_counts[sev] += 1
+                else:
+                    severity_counts["info"] += 1
 
-        score = max(0, score)
+        multiplier = (
+            (0.80 ** severity_counts["critical"]) *
+            (0.90 ** severity_counts["high"]) *
+            (0.95 ** severity_counts["medium"]) *
+            (0.98 ** severity_counts["low"])
+        )
+        
+        score = int(100 * multiplier)
+        score = max(0, min(100, score))
         findings.append({
             "type": "RiskScore",
             "match": f"Calculated Aggregate Risk Score: {score}/100 based on {finding_count} findings",

@@ -164,17 +164,7 @@ def run_yara(file_path: str, project_id: int) -> dict:
         if res.get("success"):
             for match in res.get("matches", []):
                 severity = match.get("severity", "medium").lower()
-                cwe = "CWE-000"
-                # Map YARA rules to CWE if possible
-                rule = match.get("rule", "").lower()
-                if "weak" in rule and "crypto" in rule:
-                    cwe = "CWE-327"
-                elif "hardcoded" in rule or "credential" in rule:
-                    cwe = "CWE-798"
-                elif "unsafe" in rule or "function" in rule:
-                    cwe = "CWE-120"
-                elif "insecure" in rule or "network" in rule:
-                    cwe = "CWE-319"
+                cwe = match.get("cwe")
                     
                 findings.append({
                     "description": match.get("description", match.get("rule", "Unknown rule")),
@@ -205,10 +195,11 @@ def run_symbols(file_path: str, project_id: int) -> dict:
         res = analyze_symbols(leaf, file_type="elf", extra_keywords=extra_keywords)
         if res.get("success"):
             for sym in res.get("flagged_symbols", []):
+                cwe = sym.get("cwe") or "CWE-000"
                 findings.append({
                     "description": f"Suspicious symbol found: {sym.get('name')} at {sym.get('address')} in {os.path.basename(leaf)}",
                     "severity": "high",
-                    "cwe": "CWE-000",
+                    "cwe": cwe,
                     "name": sym.get("name"),
                     "file": os.path.basename(leaf)
                 })

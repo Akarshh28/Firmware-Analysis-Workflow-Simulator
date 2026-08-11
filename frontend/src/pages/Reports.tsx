@@ -147,11 +147,12 @@ const FALLBACK_FINDINGS: Finding[] = [
   },
 ];
 
-const SEVERITY_CONFIG = {
+const SEVERITY_CONFIG: Record<string, { color: string, bg: string, border: string, icon: React.ReactNode }> = {
   critical: { color: "#ef4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)",  icon: <AlertTriangle size={14} /> },
   high:     { color: "#f97316", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.3)", icon: <Shield size={14} />        },
   medium:   { color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)", icon: <Info size={14} />          },
   low:      { color: "#22c55e", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)",  icon: <CheckCircle2 size={14} />  },
+  info:     { color: "#3b82f6", bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.3)", icon: <Info size={14} />          },
 };
 
 const TOOL_ICONS: Record<string, React.ReactNode> = {
@@ -293,7 +294,7 @@ export const Reports: React.FC = () => {
           style={{ width: 320, padding: 0, overflow: "auto", flexShrink: 0 }}
         >
           {filtered.map((f) => {
-            const cfg = SEVERITY_CONFIG[f.severity];
+            const cfg = SEVERITY_CONFIG[f.severity] || SEVERITY_CONFIG["info"];
             return (
               <div
                 key={f.id}
@@ -346,7 +347,7 @@ export const Reports: React.FC = () => {
 
         {/* Right: Finding Detail */}
         {selectedFinding && (() => {
-          const cfg = SEVERITY_CONFIG[selectedFinding.severity];
+          const cfg = SEVERITY_CONFIG[selectedFinding.severity] || SEVERITY_CONFIG["info"];
           return (
             <div className="card" style={{ flex: 1, overflow: "auto" }}>
               {/* Finding Header */}
