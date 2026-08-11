@@ -66,7 +66,7 @@ KEYWORD_CATEGORIES = {
 # case-insensitively as substrings against symbol names.
 SUSPICIOUS_SYMBOL_KEYWORDS = [
     "backdoor", "bypass", "debug", "hidden", "telnet",
-    "unsafe", "factory", "override", "master", "secret",
+    "unsafe", "secret",
     "strcpy", "strcat", "sprintf", "gets", "memcpy",
 ]
 

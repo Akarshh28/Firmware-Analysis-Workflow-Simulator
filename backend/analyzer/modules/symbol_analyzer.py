@@ -169,10 +169,18 @@ def analyze_symbols(path: str, file_type: str, extra_keywords=None):
     flagged = flag_suspicious_symbols(symbols, extra_keywords)
     for sym in flagged:
         ok, disasm_or_err = disassemble_symbol(path, objdump_bin, sym)
+        
+        sym_name_lower = sym["name"].lower()
+        cwe = None
+        cred_keywords = ["backdoor", "bypass", "secret", "login", "admin", "password", "passwd", "cred", "telnet"]
+        if any(kw in sym_name_lower for kw in cred_keywords):
+            cwe = "CWE-798"
+
         flagged_entry = {
             "name": sym["name"],
             "address": hex(sym["address"]),
             "size": sym["size"],
+            "cwe": cwe,
             "disassembly_status": "ok" if ok else "error",
             "disassembly": disasm_or_err if ok else f"[not disassembled] {disasm_or_err}",
         }

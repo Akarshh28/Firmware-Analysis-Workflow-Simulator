@@ -270,6 +270,35 @@ const STAGE_DETAILS: Record<
     nextStage: "binwalk (Extraction)",
     tags: ["Upload", "Validation", "Setup"],
   },
+  yara: {
+    purpose: "Scan the extracted firmware filesystem against YARA rule sets to flag known threat signatures, crypto materials, hardcoded credentials, and bad coding patterns.",
+    input: "Extracted firmware files and directories.",
+    output: "A JSON array of matches indicating the rule triggered, offset, and severity.",
+    why: "YARA provides a static, signature-based mechanism to quickly identify known vulnerabilities or misconfigurations (e.g. DLMS Security Suite 0 or known default keys) before dynamic analysis.",
+    internalWorking: "The YARA engine compiles `.yar` text files into an Aho-Corasick automaton, running a fast pattern match against all file contents. Regular expressions and logical conditions (e.g., '$a and not $b') determine if a rule triggers.",
+    commands: [
+      { cmd: "yara -r rules/dlms_crypto.yar _flash.bin.extracted/", desc: "Scan extracted filesystem for DLMS crypto keys" },
+      { cmd: "yara -r rules/hardcoded_passwords.yar _flash.bin.extracted/", desc: "Scan for default admin credentials" }
+    ],
+    expectedResults: "Matched rule 'DLMS_COSEM_Confirmed_Implementation' at offset 0x120. Matched 'Hardcoded_Credentials' at /etc/shadow.",
+    nextStage: "symbol_analysis",
+    tags: ["YARA", "Signature Scan", "Static Analysis", "Rule-based"],
+    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N — Score: 7.5 HIGH",
+  },
+  symbol_analysis: {
+    purpose: "Parse ELF symbol tables (.symtab / .dynsym) to map out dangerous functions (e.g. strcpy), backdoor keywords, and object-oriented C++ classes.",
+    input: "Extracted ELF binary containing unstripped symbols.",
+    output: "JSON list of identified symbols tagged with their potential CWEs.",
+    why: "Symbols provide immediate context on what a binary does without requiring full decompilation. Spotting `dlms_auth_verify` or `system` helps focus reverse engineering efforts.",
+    internalWorking: "Uses binary analysis tools (like `nm`, `readelf`, or `lief`) to extract the symbol table from the ELF header, filtering out noisy symbols (like std::) to highlight suspicious ones based on a keyword heuristics list.",
+    commands: [
+      { cmd: "readelf -s _flash.bin.extracted/app", desc: "List all symbols in ELF" },
+      { cmd: "nm -D _flash.bin.extracted/app | grep -i pass", desc: "Search dynamic symbols for password-related functions" }
+    ],
+    expectedResults: "Found symbol 'strcpy' (CWE-119). Found symbol 'verify_dlms_mac' (Cryptographic routine).",
+    nextStage: "scorecard",
+    tags: ["Symbol Analysis", "ELF", "Reconnaissance"],
+  }
 };
 
 /* ─────────── Status helpers ─────────── */
