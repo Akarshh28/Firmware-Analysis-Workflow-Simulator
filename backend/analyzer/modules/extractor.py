@@ -86,11 +86,21 @@ def extract_cab(path: str, out_dir: str):
     return True, ""
 
 
+def _binwalk_extract_args(base_args):
+    """Add --run-as=root when running as root (common on containerized
+    deployments like Render), since binwalk refuses to auto-run its
+    third-party extraction utilities as root otherwise."""
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        return base_args + ["--run-as=root"]
+    return base_args
+
+
 def extract_msi_via_binwalk(path: str, out_dir: str):
     """MSI installers in this project have consistently turned out to wrap
     a Cabinet archive; binwalk -e is the reliable way to carve it out."""
     os.makedirs(out_dir, exist_ok=True)
-    ok, out, err = run_cmd(["binwalk", "--dd=.*", "-e", "-C", out_dir, path], timeout=300)
+    args = _binwalk_extract_args(["binwalk", "--dd=.*", "-e", "-C", out_dir, path])
+    ok, out, err = run_cmd(args, timeout=300)
     if not ok:
         return False, f"binwalk extraction failed: {err}"
     # binwalk creates a subfolder named _<basename>.extracted
@@ -102,7 +112,8 @@ def extract_msi_via_binwalk(path: str, out_dir: str):
 
 def extract_generic_binwalk(path: str, out_dir: str):
     os.makedirs(out_dir, exist_ok=True)
-    ok, out, err = run_cmd(["binwalk", "-e", "-C", out_dir, path], timeout=300)
+    args = _binwalk_extract_args(["binwalk", "-e", "-C", out_dir, path])
+    ok, out, err = run_cmd(args, timeout=300)
     if not ok:
         return False, f"binwalk extraction failed: {err}"
     extracted_dir = os.path.join(out_dir, f"_{os.path.basename(path)}.extracted")
