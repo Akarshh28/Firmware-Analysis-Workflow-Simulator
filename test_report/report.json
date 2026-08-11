@@ -1,0 +1,3253 @@
+{
+  "generated_at": "2026-08-10T14:09:13.360409+00:00",
+  "total_files_processed": 79,
+  "files": [
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/34_Relion670_Firmware update 1p1r01 to 27.zip_extracted/Firmware-Update Details.xlsx",
+      "file_type": "Microsoft Excel 2007+",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/363340",
+      "file_type": "PC bitmap, Windows 3.x format, 493 x 58 x 8, 1 compression, image size 1668, resolution 3780 x 3780 px/m, 256 important colors, cbSize 2746, bits offset 1078",
+      "extraction_status": "ok: unrecognized/non-executable file type ('PC bitmap, Windows 3.x format, 493 x 58 x 8, 1 compression, image size 1668, resolution 3780 x 3780 px/m, 256 important colors, cbSize 2746, bits offset 1078') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 88,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1494,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/363340: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/366000",
+      "file_type": "PE32 executable (DLL) (GUI) Intel 80386, for MS Windows, 5 sections",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 85,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1473,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "symbol table extraction ran but found no symbols - the binary may be stripped (no debug/function names available)",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/37D660",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 62,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 892,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/37D660: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/380000",
+      "file_type": "PC bitmap, Windows 3.x format, 166 x 345 x 24, image size 172500, resolution 3780 x 3780 px/m, cbSize 172554, bits offset 54",
+      "extraction_status": "ok: unrecognized/non-executable file type ('PC bitmap, Windows 3.x format, 166 x 345 x 24, image size 172500, resolution 3780 x 3780 px/m, cbSize 172554, bits offset 54') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 59,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 766,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/380000: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B418D",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 7,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B418D: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B4C66",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 7,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B4C66: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B5B00",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 6,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B5B00: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81B6",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81B6: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81D2",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81D2: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81F0",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B81F0: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B820A",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B820A: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B8221",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 136,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B8221: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9000",
+      "file_type": "DER Encoded PKCS#7 Signed Data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('DER Encoded PKCS#7 Signed Data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 2,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 135,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O",
+            "http://ocsp.digicert.com0C",
+            "http://ocsp.digicert.com0A",
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9000: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9094",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 27,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            ",http://crl3.digicert.com/sha2-assured-ts.crl02",
+            ",http://crl4.digicert.com/sha2-assured-ts.crl0",
+            "http://ocsp.digicert.com0O"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9094: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9596",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 24,
+        "matches": {
+          "network_services": [
+            "http://ocsp.digicert.com0C"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9596: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9ACB",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 31,
+        "matches": {
+          "network_services": [
+            "http://ocsp.digicert.com0A"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3B9ACB: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3BA17F",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 34,
+        "matches": {
+          "network_services": [
+            "http://www.digicert.com/CPS0",
+            "http://ocsp.digicert.com0\\"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/3BA17F: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/5000",
+      "file_type": "Microsoft Cabinet archive data, many, 3532647 bytes, 6 files, at 0x2c last modified Sun, Dec 22 2021 10:23:38 +A \"_1MRG028040_Field_Service_Tool_Instruction.pdf\" last modified Sun, Nov 08 2014 11:51:12 +A \"DelZip192.dll\", number 1, 222 datablocks, 0x1 compression",
+      "extraction_status": "error: cab extraction failed: exit code 1: /tmp/fw_analysis_qhn9uciz/FST 2.3.13.0.msi_extracted/_FST 2.3.13.0.msi.extracted/5000: WARNING; possible 358553 extra bytes at end of file.\n/tmp/fw_analysis_qhn9uciz/5000_extracted/_1MRG028040_Field_Service_Tool_Instruction.pdf: checksum error\n/tmp/fw_analysis_qhn9uciz/5000_extracted/DelZip192.dll: "
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/34_Relion670_Firmware update 1p1r01 to 27.zip_extracted/Relion670/Field_Service_Tool_instruction.pdf",
+      "file_type": "PDF document, version 1.4, 43 page(s)",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/34_Relion670_Firmware update 1p1r01 to 27.zip_extracted/Relion670/ShortProcedure.png",
+      "file_type": "PNG image data, 1814 x 1462, 8-bit/color RGBA, non-interlaced",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/1A00",
+      "file_type": "PC bitmap, Windows 3.x format, 158 x 323 x 32, image size 204138, resolution 2834 x 2834 px/m, cbSize 204192, bits offset 54",
+      "extraction_status": "ok: unrecognized/non-executable file type ('PC bitmap, Windows 3.x format, 158 x 323 x 32, image size 204138, resolution 2834 x 2834 px/m, cbSize 204192, bits offset 54') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 2363,
+        "flagged_regions": [
+          {
+            "start_offset": 299008,
+            "end_offset": 9474048,
+            "avg_entropy": 7.913
+          }
+        ],
+        "verdict": "possible_compression_or_encryption"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 94696,
+        "matches": {
+          "iec61850": [
+            "MmS#",
+            "mMS@"
+          ],
+          "auth_credentials": [
+            "NameTableTypePropertyValueDirectoryDirectory_ParentDefaultDirFeatureComponentsFeature_Component_FeatureFeature_ParentTitleDescriptionDisplayLevelDirectory_AttributesComponentComponentIdConditionKeyPat",
+            "WiseCRLF3INSTALLLEVELc:\\zipsrcZIPSRC{\\Arial_81}_WiseDialogTitleFontDefault33ProductIEDRevision1033ProductLanguage\"TESTDIR\"ZIPNAME2017-05-15ReleaseDate{\\Arial_80}_WiseDialogFontDefaultWizard...WiseInit",
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/1A00: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/_1MRG031502_FST_670_1.1_update.pdf",
+      "file_type": "PDF document, version 1.5, 8 page(s)",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/oneshot.txt",
+      "file_type": "ASCII text, with CRLF line terminators",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/package.ini",
+      "file_type": "Generic INItialization configuration [UPDATE]",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/ppc670.x",
+      "file_type": "ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), statically linked, not stripped",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 2874,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 150730,
+        "matches": {
+          "iec61850": [
+            "IEC61850",
+            "58TRC: IEC61850 RUN",
+            "TRC: IEC61850 CONFIGURE",
+            "TRC: IEC61850 INITIALIZE",
+            "TRC: IEC61850 SHUTDOWN",
+            "TRC: IEC61850 STOP",
+            "IEC61850_READY",
+            "IEC61850_NOT_READY",
+            "IEC61850",
+            "INT--IEC61850ERROR",
+            "IEC61850",
+            "iec61850sess.cpp",
+            "TRC: IEC61850WriteRequest: isCommand:%d",
+            "TRC: IEC61850WriteRequest: res:%d",
+            "TRC: IEC61850WriteRequest busy, res:%d",
+            "TRC: IEC61850WriteRequest: unknown writeType:%d, res:%d",
+            "Event.Sess.IEC61850",
+            "ERROR: iec61850DbInit() == TRUE FAILED",
+            "IEC61850",
+            "tIEC61850",
+            "INFO: IEC61850 I_IDLE -> I_INIT",
+            "INFO: IEC61850 I_INIT -> I_WAITRUN",
+            "INFO: IEC61850 I_WAITRUN -> I_START",
+            "INFO: IEC61850 I_START -> I_GISEND",
+            "INFO: IEC61850 I_GISEND -> I_GISEND Write error.",
+            "INFO: IEC61850 I_GISEND -> I_GISENT",
+            "INFO: IEC61850 I_GISENT -> I_INIT",
+            "INFO: IEC61850 I_GISENT -> I_GISEND Due to Timeout",
+            "INFO: IEC61850 I_GISENT -> I_GIDONE",
+            "INFO: IEC61850 I_GIDONE -> I_RUNNING",
+            "INFO: IEC61850 I_RUNNING -> I_INIT",
+            "INFO: IEC61850 I_RUNNING -> I_STOP",
+            "INFO: IEC61850 I_STOP -> I_IDLE",
+            "Param.0.Value.IEC61850",
+            "Param.1.Value.IEC61850",
+            "Param.2.Value.IEC61850",
+            "/flash/IEC61850.zip",
+            "INFO: CCF found in 'IEC61850.zip' matches '%s'",
+            "INFO: Start_IEC61850BP( %s, %s, %s = not used ,%s = not used,  0x%08x  = not used , %s ,%d)",
+            "INFO: IEC61850 stack started. All OK!",
+            "ERROR: initIEC61850ACP Failed to init",
+            "ERROR: IEC61850 configured to run but no configuration file found",
+            "INFO: IEC61850 stack not configured to run.",
+            "ERROR: Couldn't create property object: Conf.IEC61850.1",
+            "INFO: iec61850StartupBlockReleased",
+            "INFO: iec61850StartupBlockReleased: ALL APPS UP BUT -- NOT READY YET",
+            "INFO: iec61850StartupBlockReleased: ALL APPS NOT UP -- NOT READY YET",
+            "Iec6185092Comp",
+            "Iec6185092Comp64",
+            "IEC61850"
+          ],
+          "acse_association": [
+            "ACSE-ERROR: AARE decode failed. Aborting.",
+            "ACSE-ERROR: RLRE decode failed. Aborting.",
+            "ACSE-ERROR: AARQ decode failed",
+            "ACSE-ERROR: RLRQ decode failed",
+            "AARQ unrecognized tag %d. Ignored.",
+            "RLRE unrecognized tag %d. Ignored.",
+            "decode_aare",
+            "decode_aarq",
+            "decode_aarq_main",
+            "decode_aarq_done",
+            "decode_aare_main",
+            "decode_aare_done"
+          ],
+          "weak_crypto": [
+            "Assertion failed: nLength % 4 == 0, file md5.cpp, line 316",
+            "Assertion failed: nLength % 4 == 0, file md5.cpp, line 334",
+            "SHA1 4 OCTET",
+            "SHA1 10 OCTET"
+          ],
+          "unsafe_functions": [
+            "memcpy failed when copying timebuffer",
+            "memcpy failed when copying timebuffer",
+            "strcpy",
+            "strcat",
+            "sprintf",
+            "memmove",
+            "memcpy",
+            "strcpy",
+            "memmove",
+            "memcpy",
+            "strcat",
+            "sprintf"
+          ],
+          "auth_credentials": [
+            "TRC: Faulty user passwd string [%s]",
+            "TRC: old new passwd string [%s]",
+            "TRC: New password set, sessid = %d",
+            "TRC: failed to set new password, sessid = %d",
+            "TRC: ftpPasswdChangedCallback called %s",
+            "TRC: ftpPasswdChangedOrInit",
+            "ERROR: Failed to add FTP user %s with password %s",
+            "ERROR: Failed to encrypt FTP passwd %s",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "Login",
+            "Password",
+            "ERROR: New password too long (%d ch)",
+            "ERROR: Wrong old password (user %s)",
+            "INFO: User %s, wrong Password (SessId = %d)",
+            "ERROR: FTP login name longer than %d",
+            "ERROR: FTP login password longer than %d",
+            "INFO: User %s, wrong Password (FTP logon)",
+            "TRC: -> authorityDbSetNewPasswd",
+            "TRC: <- authorityDbSetNewPasswd",
+            "Enable user and password handling",
+            "enableUserAndPasswordHandling [59]  = %u",
+            "Password",
+            "ERROR: attrDbHmiPropertyContainerPtr->bindParamToInternalData( 13, &hmiSettings.enforceDOEPasswds) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( XcyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( NULL, NULL) == TRUE FAILED",
+            "TRC: create LioBackDoorListNode %s, %d",
+            "ERROR: backDoorPtr == NULL,  MALNEW failed",
+            "ERROR: m_backDoorIsOk == FALSE",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( (GenioCallbackWithDscIdxFunc)binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( ainDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( cyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( cyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( NULL, NULL) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: Failed to allocate backdoor callback",
+            "ftpXfer: host:%s user:%s passwd:%s acct:%s cmd:%s dir:%s",
+            "ftpLogin: error - failure to get complete login. errno:0x%08x",
+            "Login failed.",
+            "Password required",
+            "User name or password too long",
+            "Password:",
+            "Login incorrect",
+            "Login timed out after %d seconds!"
+          ],
+          "network_services": [
+            "ERROR: Failed to stop the FTP server!",
+            "TRC: The FTP server is deleted",
+            "TRC: The FTP server is restarted with new Authorization",
+            "ERROR: Failed to restart the FTP server!",
+            "TRC: The FTP server is restarted",
+            "ERROR: Failed to delete FTP user %s",
+            "TRC: FTP user %s deleted",
+            "ERROR: Failed to add FTP user %s with password %s",
+            "TRC: FTP user %s added",
+            "ERROR: Failed to encrypt FTP passwd %s",
+            "FTP server security is %s",
+            "ERROR: FTP login name longer than %d",
+            "ERROR: FTP login password longer than %d",
+            "TRC: User list empty, FTP as the IEC-style",
+            "INFO: User %s, wrong Password (FTP logon)",
+            "INFO: User %s, not found (FTP logon)",
+            "INFO: User %s, not authorized for FTP logon",
+            "TRC: User %s is Authorized for FTP",
+            "xml=http://www.w3.org/XML/1998/namespace",
+            "ftpDataConnInitPassiveMode: passive ftp connect established to host:%#x port:%d sock:%d",
+            "VxWorks (%s) FTP server ready",
+            "tftp transfer failed: error %#0x",
+            "tftp transfer failed: error 0x%x",
+            "Illegal TFTP operation",
+            "(protocol 0=rsh, 1=ftp)",
+            "ftp password (pw)",
+            "ftp password (pw) (blank = use rsh)"
+          ],
+          "rtos_platform": [
+            "/flash/boot/vxworks",
+            "gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "VxWorks BSP",
+            "NO  -> VXWORKS_V62_MUX_BEHAVIOUR",
+            "NO  -> ISS_WITH_VXWORKS_V6",
+            "INFO: VxWorks default Exception handler used",
+            "Copyright 1984-2002  Wind River Systems, Inc.",
+            "abbInitBootline: ERROR: Bootline is empty / invalid, storing vxWorks default bootline",
+            "feiPep(0,0):vxWorks",
+            "abbGetBootline: ERROR: Bootline is invalid or empty, using vxWorks default bootline",
+            "VxWorks",
+            "VxWorks5.5.1",
+            "VxWorks (%s) FTP server ready",
+            "dosVDirLib.c : VxWorks proprietary long names not supported",
+            "Copyright 1984-2002 Wind River Systems, Inc.",
+            "This program contains confidential information of Wind River Systems, Inc.",
+            "version                        Print VxWorks version info, and boot line",
+            "]]]]]]]]]]]]]]]]]]]]]]]]]       Copyright Wind River Systems, Inc., 1984-2003",
+            "Wind River Systems Inc., DosFs 2.0 Partition Table",
+            "VxWorks Events",
+            "Windview Version 2.2 Logfile.  Copyright  1999-2001 Wind River Systems.",
+            "vxWorksVersion",
+            "vxWorksTimeToBtime6",
+            "get_VxWorks_Time",
+            "VXWorksTime_To_UTCTime",
+            "VXWorksTime_To_CP64Time2a",
+            "VXWorksTime_To_CP56Time2a",
+            "UTCTime_To_VXWorksTime",
+            "Pass_SynchroTimeVxWorks",
+            "A PPC604 VxWorks image cannot run on a PPC603!",
+            "<VxWorks login:",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "required disassembler 'powerpc-linux-gnu-objdump' is not installed on this system. Install the matching binutils cross-toolchain package (e.g. 'sudo apt-get install binutils-powerpc-linux-gnu') and re-run.",
+        "objdump_used": "powerpc-linux-gnu-objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/ppc670.x1",
+      "file_type": "ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), statically linked, not stripped",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 3561,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 174453,
+        "matches": {
+          "iec61850": [
+            "IEC61850",
+            "TRC: IEC61850 RUN",
+            "TRC: IEC61850 CONFIGURE",
+            "TRC: IEC61850 INITIALIZE",
+            "TRC: IEC61850 SHUTDOWN",
+            "TRC: IEC61850 STOP",
+            "IEC61850_READY",
+            "IEC61850_NOT_READY",
+            "IEC61850",
+            "INT--IEC61850ERROR",
+            "IEC61850",
+            "%s %d INFO: IEC61850writeRequest: isCommand=%d",
+            "iec61850sess.cpp",
+            "%s %d INFO: IEC61850writeRequest: res=%d",
+            "Event.Sess.IEC61850",
+            "ERROR: iec61850DbInit() == TRUE FAILED",
+            "IEC61850",
+            "tIEC61850",
+            "INFO: IEC61850 I_IDLE -> I_INIT",
+            "INFO: IEC61850 I_INIT -> I_WAITRUN",
+            "INFO: IEC61850 I_WAITRUN -> I_START",
+            "INFO: IEC61850 I_START -> I_GISEND",
+            "INFO: IEC61850 I_GISEND -> I_GISEND Write error.",
+            "INFO: IEC61850 I_GISEND -> I_GISENT",
+            "INFO: IEC61850 I_GISENT -> I_INIT",
+            "INFO: IEC61850 I_GISENT -> I_GISEND Due to Timeout",
+            "INFO: IEC61850 I_GISENT -> I_GIDONE",
+            "INFO: IEC61850 I_GIDONE -> I_RUNNING",
+            "INFO: IEC61850 I_RUNNING -> I_INIT",
+            "INFO: IEC61850 I_RUNNING -> I_STOP",
+            "INFO: IEC61850 I_STOP -> I_IDLE",
+            "Param.0.Value.IEC61850",
+            "Param.1.Value.IEC61850",
+            "Param.2.Value.IEC61850",
+            "/flash/IEC61850.zip",
+            "INFO: CCF found in 'IEC61850.zip' matches '%s'",
+            "INFO: Start_IEC61850BP( %s, %s, %s = not used ,%s = not used,  0x%08x  = not used , %s ,%d)",
+            "INFO: IEC61850 stack started. All OK!",
+            "ERROR: initIEC61850ACP Failed to init",
+            "ERROR: IEC61850 configured to run but no configuration file found",
+            "INFO: IEC61850 stack not configured to run.",
+            "ERROR: Couldn't create property object: Conf.IEC61850.1",
+            "INFO: iec61850StartupBlockReleased",
+            "INFO: iec61850StartupBlockReleased: ALL APPS UP BUT -- NOT READY YET",
+            "INFO: iec61850StartupBlockReleased: ALL APPS NOT UP -- NOT READY YET",
+            "Iec6185092Comp",
+            "Iec6185092Comp64",
+            "IEC61850",
+            "GOOSE",
+            "IEC6185092LE"
+          ],
+          "acse_association": [
+            "decode_aare",
+            "decode_aarq",
+            "decode_aarq_main",
+            "decode_aarq_done",
+            "decode_aare_main",
+            "decode_aare_done"
+          ],
+          "weak_crypto": [
+            "Assertion failed: nLength % 4 == 0, file md5.cpp, line 316",
+            "Assertion failed: nLength % 4 == 0, file md5.cpp, line 334",
+            "SHA1 4 OCTET",
+            "SHA1 8 OCTET",
+            "SHA1 10 OCTET"
+          ],
+          "unsafe_functions": [
+            "memcpy failed when copying timebuffer",
+            "memcpy failed when copying timebuffer",
+            "strcpy",
+            "strcat",
+            "sprintf",
+            "memmove",
+            "memcpy",
+            "strcpy",
+            "memmove",
+            "memcpy",
+            "strcat",
+            "sprintf"
+          ],
+          "auth_credentials": [
+            "TRC: Faulty user passwd string [%s]",
+            "TRC: old new passwd string [%s]",
+            "TRC: New password set, sessid = %d",
+            "TRC: failed to set new password, sessid = %d",
+            "TRC: ftpPasswdChangedCallback called %s",
+            "TRC: ftpPasswdChangedOrInit",
+            "ERROR: Failed to add FTP user %s with password %s",
+            "ERROR: Failed to encrypt FTP passwd %s",
+            "ERROR: strIsOK(passwordStrPtr, 0, sizeof(sysConfUserInfo.password) - 1) == TRUE FAILED",
+            "TRC: updateSysConfUsernameAndPassword called",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "Login",
+            "Login     : User:%-16.16s P:%-16.16s D:%-16.16s #t=%3.3d #p=%3.3d",
+            "Password",
+            "ERROR: New password too long (%d ch)",
+            "ERROR: Wrong old password (user %s)",
+            "INFO: User %s, wrong Password (SessId = %d)",
+            "ERROR: FTP login name longer than %d",
+            "ERROR: FTP login password longer than %d",
+            "INFO: User %s, wrong Password (FTP logon)",
+            "TRC: -> authorityDbSetNewPasswd",
+            "TRC: <- authorityDbSetNewPasswd",
+            "ERROR: attrDbHmiPropertyContainerPtr->bindParamToInternalData( 13, &hmiSettings.enforceDOEPasswds) == TRUE FAILED",
+            "4.1: Revert to default user/passwd",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( XcyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet( NULL, NULL) == TRUE FAILED",
+            "TRC: create LioBackDoorListNode %s, %d",
+            "ERROR: backDoorPtr == NULL,  MALNEW failed",
+            "ERROR: m_backDoorIsOk == FALSE",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet(binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet((GenioCallbackWithDscIdxFunc)binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet(ainDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet(binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet(binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet(cyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet(cyclicDataCallback, this) == TRUE FAILED",
+            "ERROR: m_ainDs.inputCallbackDoorbellSet(NULL, NULL) == TRUE FAILED",
+            "ERROR: m_binDs.inputCallbackDoorbellWithIdxSet( binDsDeliveryCallback, this) == TRUE FAILED",
+            "ERROR: Failed to allocate backdoor callback",
+            "Guest login ok, upload directory is %s.",
+            "Guest login ok, access restrictions apply.",
+            "Guest login ok, send your complete e-mail address as password.",
+            "Login failed.",
+            "Password required",
+            "(%d) Verifying login for user %s",
+            "ftpXfer: host:%s user:%s passwd:%s acct:%s cmd:%s dir:%s"
+          ],
+          "network_services": [
+            "ERROR: Failed to stop the FTP server!",
+            "TRC: The FTP server is deleted",
+            "TRC: The FTP server is restarted with new Authorization",
+            "ERROR: Failed to restart the FTP server!",
+            "TRC: The FTP server is restarted",
+            "ERROR: Failed to delete FTP user %s",
+            "TRC: FTP user %s deleted",
+            "ERROR: Failed to add FTP user %s with password %s",
+            "TRC: FTP user %s added",
+            "ERROR: Failed to encrypt FTP passwd %s",
+            "XHTRC: FTP evaluate request %d to '%s'",
+            "TRC: FTP access control is OFF.",
+            "TRC: FTP path contains invalid character '0x%x'.",
+            "TRC: FTP access %d to '%s' granted!",
+            "TRC: FTP access %d to '%s' denied!",
+            "FTP server security is %s",
+            "ERROR: FTP login name longer than %d",
+            "ERROR: FTP login password longer than %d",
+            "TRC: User list empty, FTP as the IEC-style",
+            "INFO: User %s, wrong Password (FTP logon)",
+            "INFO: User %s, not found (FTP logon)",
+            "INFO: User %s, not authorized for FTP logon",
+            "TRC: User %s is Authorized for FTP",
+            "xml=http://www.w3.org/XML/1998/namespace",
+            "FTP Server has timed out.",
+            "VxWorks (%s) FTP server ready",
+            "FTP COMMAND: %s",
+            "(%d) FTP Control connection error, closed.",
+            "ftpDataConnInitPassiveMode: passive ftp connect established to host:%#x port:%d sock:%d",
+            "tftp transfer failed: errno %#0x",
+            "tftp transfer failed: errno 0x%x",
+            "Illegal TFTP operation",
+            "(protocol 0=rsh, 1=ftp)",
+            "ftp password (pw)",
+            "ftp password (pw) (blank = use rsh)"
+          ],
+          "rtos_platform": [
+            "gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "VxWorks BSP",
+            "Assertion failed: !(pos > len), file C:\\Tornado2.2\\host\\x86-win32\\bin\\..\\lib\\gcc-lib\\powerpc-wrs-vxworks\\gcc-2.96\\..\\..\\..\\..\\include\\g++-3\\std\\bastring.cc, line 156",
+            "Assertion failed: !(len - n1 > max_size () - n2), file C:\\Tornado2.2\\host\\x86-win32\\bin\\..\\lib\\gcc-lib\\powerpc-wrs-vxworks\\gcc-2.96\\..\\..\\..\\..\\include\\g++-3\\std\\bastring.cc, line 159",
+            "Assertion failed: !(pos > length ()), file C:\\Tornado2.2\\host\\x86-win32\\bin\\..\\lib\\gcc-lib\\powerpc-wrs-vxworks\\gcc-2.96\\..\\..\\..\\..\\include\\g++-3\\std\\bastring.cc, line 399",
+            "INFO: VxWorks default Exception handler used",
+            "UNIX Type: L8 Version: Tornado-VxWorks (%s)",
+            "VxWorks (%s) FTP server ready",
+            "VxWorks5.5.1",
+            "Copyright 1984-2002  Wind River Systems, Inc.",
+            "abbInitBootline: ERROR: Bootline is empty / invalid, storing vxWorks default bootline",
+            "feiPep(0,0):vxWorks",
+            "abbGetBootline: ERROR: Bootline is invalid or empty, using vxWorks default bootline",
+            "VxWorks",
+            "VxWorks5.5.2",
+            "dosVDirLib.c : VxWorks proprietary long names not supported",
+            "Copyright 1984-2006 Wind River Systems, Inc.",
+            "This program contains confidential information of Wind River Systems, Inc.",
+            "version                        Print VxWorks version info, and boot line",
+            "]]]]]]]]]]]]]]]]]]]]]]]]]       Copyright Wind River Systems, Inc., 1984-2006",
+            "Wind River Systems Inc., DosFs 2.0 Partition Table",
+            "VxWorks Events",
+            "Windview Version 2.2 Logfile.  Copyright  1999-2001 Wind River Systems.",
+            "vxWorksVersion",
+            "vxWorksTimeToBtime6",
+            "get_VxWorks_Time",
+            "VXWorksTime_To_UTCTime",
+            "VXWorksTime_To_CP64Time2a",
+            "VXWorksTime_To_CP56Time2a",
+            "UTCTime_To_VXWorksTime",
+            "A PPC604 VxWorks image cannot run on a PPC603!",
+            "<VxWorks login:",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+            "GCC: (GNU) gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "required disassembler 'powerpc-linux-gnu-objdump' is not installed on this system. Install the matching binutils cross-toolchain package (e.g. 'sudo apt-get install binutils-powerpc-linux-gnu') and re-run.",
+        "objdump_used": "powerpc-linux-gnu-objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/prebase.txt",
+      "file_type": "ASCII text, with CRLF line terminators",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/productdef_1p1r27.zip_extracted/productdef.xml",
+      "file_type": "HTML document, ASCII text, with CRLF line terminators",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/update.cfg",
+      "file_type": "Generic INItialization configuration [ID]",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90BD00",
+      "file_type": "PC bitmap, Windows 3.x format, 35 x 35 x 4, image size 700, resolution 3780 x 3780 px/m, cbSize 818, bits offset 118",
+      "extraction_status": "ok: unrecognized/non-executable file type ('PC bitmap, Windows 3.x format, 35 x 35 x 4, image size 700, resolution 3780 x 3780 px/m, cbSize 818, bits offset 118') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 49,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1268,
+        "matches": {
+          "auth_credentials": [
+            "NameTableTypePropertyValueDirectoryDirectory_ParentDefaultDirFeatureComponentsFeature_Component_FeatureFeature_ParentTitleDescriptionDisplayLevelDirectory_AttributesComponentComponentIdConditionKeyPat",
+            "WiseCRLF3INSTALLLEVELc:\\zipsrcZIPSRC{\\Arial_81}_WiseDialogTitleFontDefault33ProductIEDRevision1033ProductLanguage\"TESTDIR\"ZIPNAME2017-05-15ReleaseDate{\\Arial_80}_WiseDialogFontDefaultWizard...WiseInit",
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90BD00: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90EB42",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 46,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1235,
+        "matches": {
+          "auth_credentials": [
+            "eCostReserveKeyReserveFolderReserveLocalReserveSourceCabsw1.cab{5232C019-1D15-4E7A-9A3C-0F5813022EA7}ProductCodeABB Field Service Tool Package update_670_1.1.27_MRProductName1.0ProductVersionABB Asea ",
+            "WiseCRLF3INSTALLLEVELc:\\zipsrcZIPSRC{\\Arial_81}_WiseDialogTitleFontDefault33ProductIEDRevision1033ProductLanguage\"TESTDIR\"ZIPNAME2017-05-15ReleaseDate{\\Arial_80}_WiseDialogFontDefaultWizard...WiseInit",
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90EB42: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90FC2F",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 45,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1234,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90FC2F: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90FC41",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 45,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1234,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/90FC41: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/910CD1",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 44,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1231,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/910CD1: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/910FF8",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 43,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1231,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/910FF8: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912073",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1218,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912073: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912094",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1218,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912094: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91212D",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1218,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91212D: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9124DA",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1213,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9124DA: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912586",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1212,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/912586: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9125A3",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 42,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1212,
+        "matches": {
+          "auth_credentials": [
+            "Value: [3]Writing system registry values...{{Fatal error: }}Error [1]. Warning [1]. Info [1]. Internal Error [1]. [2]{, [3]}{, [4]}{{Disk full: }}Action [Time]: [1]. [2][ProductName]{[2]}{, [3]}{, [4]",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9125A3: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91826E",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCostAvailableDifferenceVolumeCostDifferenceRequiredVolumeCostRequiredDisk SizeVolumeCostSizeVolumeVolumeCostVolumeThis feature will change from run from network state to set to be installed when requ",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91826E: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91828B",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCostDifferenceRequiredVolumeCostRequiredDisk SizeVolumeCostSizeVolumeVolumeCostVolumeThis feature will change from run from network state to set to be installed when required.SelNetworkAdvertiseThis ",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91828B: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182A7",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCostRequiredDisk SizeVolumeCostSizeVolumeVolumeCostVolumeThis feature will change from run from network state to set to be installed when required.SelNetworkAdvertiseThis feature will be removed from",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182A7: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182C2",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCostSizeVolumeVolumeCostVolumeThis feature will change from run from network state to set to be installed when required.SelNetworkAdvertiseThis feature will be removed from your local hard drive, but",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182C2: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182D6",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCostVolumeThis feature will change from run from network state to set to be installed when required.SelNetworkAdvertiseThis feature will be removed from your local hard drive, but will be set to be i",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9182D6: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9188C8",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCost description if child cost is positiveCost descriptionColumn title in VolumeCost tableExecution SectionSearch SectionCosting / Selection Section DividerSearch / Costing Section DividerCosting Sec",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9188C8: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9188F2",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCost descriptionColumn title in VolumeCost tableExecution SectionSearch SectionCosting / Selection Section DividerSearch / Costing Section DividerCosting SectionSearch, Cost, Select, or Execution Sec",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9188F2: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/918918",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 36,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCost tableExecution SectionSearch SectionCosting / Selection Section DividerSearch / Costing Section DividerCosting SectionSearch, Cost, Select, or Execution SectionsSelection / Execution Section Div",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/918918: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91D62A",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 31,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1163,
+        "matches": {
+          "auth_credentials": [
+            "eCost recordDisk space to reserve if linked component is installed locally.Disk space to reserve if linked component is installed to run from the source location.Foreign key into the File table denoti",
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/91D62A: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/924A00",
+      "file_type": "PC bitmap, Windows 3.x format, 500 x 63 x 8, 1 compression, image size 3072, resolution 3779 x 3779 px/m, 255 important colors, cbSize 4132, bits offset 1074",
+      "extraction_status": "ok: unrecognized/non-executable file type ('PC bitmap, Windows 3.x format, 500 x 63 x 8, 1 compression, image size 3072, resolution 3779 x 3779 px/m, 255 important colors, cbSize 4132, bits offset 1074') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 24,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1130,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/924A00: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/925C00",
+      "file_type": "PE32 executable (DLL) (GUI) Intel 80386, for MS Windows, 4 sections",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 23,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1074,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "symbol table extraction ran but found no symbols - the binary may be stripped (no debug/function names available)",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927008",
+      "file_type": "DER Encoded PKCS#7 Signed Data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('DER Encoded PKCS#7 Signed Data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 58,
+        "matches": {
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927008: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/92709D",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 24,
+        "matches": {
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/92709D: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927560",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 25,
+        "matches": {
+          "network_services": [
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927560: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9275F6",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 21,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 1005,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9275F6: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/928200",
+      "file_type": "PE32+ executable (DLL) (GUI) x86-64, for MS Windows, 6 sections",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 20,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 965,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode",
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "symbol table extraction ran but found no symbols - the binary may be stripped (no debug/function names available)",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/931608",
+      "file_type": "DER Encoded PKCS#7 Signed Data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('DER Encoded PKCS#7 Signed Data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 55,
+        "matches": {
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/931608: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93169D",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/92709D'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/931B60",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927560'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/931BF6",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 11,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 519,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/931BF6: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/932400",
+      "file_type": "PE32 executable (DLL) (GUI) Intel 80386, for MS Windows, 5 sections",
+      "extraction_status": "ok: leaf binary ready for analysis",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 10,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 486,
+        "matches": {
+          "auth_credentials": [
+            "_WiseDebugMode"
+          ],
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "symbol table extraction ran but found no symbols - the binary may be stripped (no debug/function names available)",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/938008",
+      "file_type": "DER Encoded PKCS#7 Signed Data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('DER Encoded PKCS#7 Signed Data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 55,
+        "matches": {
+          "network_services": [
+            "http://crl.verisign.com/pca3.crl0",
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/938008: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93809D",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/92709D'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/938560",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/927560'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9385F6",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 4,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 216,
+        "matches": {
+          "network_services": [
+            "/http://CSC3-2004-crl.verisign.com/CSC3-2004.crl0D",
+            "http://ocsp.verisign.com0?",
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/9385F6: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A400",
+      "file_type": "DER Encoded PKCS#7 Signed Data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('DER Encoded PKCS#7 Signed Data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 2,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 106,
+        "matches": {
+          "network_services": [
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0",
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0(",
+            "http://ocsp.digicert.com0C",
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A400: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A494",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 18,
+        "matches": {
+          "network_services": [
+            "http://ocsp.thawte.com0",
+            ".http://crl.thawte.com/ThawteTimestampingCA.crl0"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A494: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A886",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 20,
+        "matches": {
+          "network_services": [
+            "http://ts-ocsp.ws.symantec.com07",
+            "+http://ts-aia.ws.symantec.com/tss-ca-g2.cer0<",
+            "+http://ts-crl.ws.symantec.com/tss-ca-g2.crl0("
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93A886: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93AD2D",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 24,
+        "matches": {
+          "network_services": [
+            "http://ocsp.digicert.com0C"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93AD2D: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93B261",
+      "file_type": "Certificate, Version=3",
+      "extraction_status": "ok: unrecognized/non-executable file type ('Certificate, Version=3') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 27,
+        "matches": {
+          "network_services": [
+            "/http://crl3.digicert.com/sha2-assured-cs-g1.crl05",
+            "/http://crl4.digicert.com/sha2-assured-cs-g1.crl0L",
+            "http://ocsp.digicert.com0N"
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": false,
+        "error": "yara-python is not installed (pip install yara-python --break-system-packages)",
+        "matches": []
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: /tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/93B261: file format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      }
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/_1MRG031502_FST_670_1.1_update.pdf",
+      "file_type": "PDF document, version 1.5, 8 page(s)",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/oneshot.txt",
+      "file_type": "ASCII text, with CRLF line terminators",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/package.ini",
+      "file_type": "Generic INItialization configuration [UPDATE]",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/ppc670.x",
+      "file_type": "ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), statically linked, not stripped",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/ppc670.x'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/ppc670.x1",
+      "file_type": "ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), statically linked, not stripped",
+      "extraction_status": "skipped: duplicate content, identical to already-analyzed file '/tmp/fw_analysis_qhn9uciz/48E00.cab_extracted/ppc670.x1'"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/prebase.txt",
+      "file_type": "ASCII text, with CRLF line terminators",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    },
+    {
+      "path": "/tmp/fw_analysis_qhn9uciz/update_670_1.1.27_MR.msi_extracted/_update_670_1.1.27_MR.msi.extracted/update.cfg",
+      "file_type": "Generic INItialization configuration [ID]",
+      "extraction_status": "skipped: recognized non-firmware document type (pdf/xlsx/png/etc.) - not analyzed"
+    }
+  ]
+}

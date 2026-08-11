@@ -1,0 +1,6 @@
+Starting Python Binwalk Engine on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\19_dlms_smart_meter_test_firmware.bin...
+Found 3 finding(s).
+[!] Offset 0x0: ELF 32-bit LSB executable
+[!] Offset 0x686: gzip compressed data
+[!] Offset 0x6c5: Squashfs filesystem
+Scan complete.

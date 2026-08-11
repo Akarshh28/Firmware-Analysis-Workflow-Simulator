@@ -1,0 +1,5 @@
+Starting Entropy Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\32_Relion670_Firmware update 1p1r01 to 27.zip...
+Overall Shannon Entropy: 7.9957
+Found 1 finding(s).
+[!] High entropy (8.00) indicates packed or encrypted firmware section
+Scan complete.

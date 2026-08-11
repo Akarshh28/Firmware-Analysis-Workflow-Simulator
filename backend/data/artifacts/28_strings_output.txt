@@ -1,0 +1,14 @@
+Starting Strings Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\28_Firmware_120626.zip...
+Extracted 3206357 strings.
+Found 86824 finding(s).
+[!] FILE_PATH: Firmware_120626/GE.zipPK
+[!] FILE_PATH: GE/ux
+[!] FILE_PATH: GE/Firmware File _ Oct 2023_72G.zipux
+[!] FILE_PATH: &/.,)M(hif
+[!] FILE_PATH: /HD<H
+[!] FILE_PATH: 2/14D
+[!] FILE_PATH: 0/pz
+[!] FILE_PATH: /s7L
+[!] FILE_PATH: C$/q5
+[!] FILE_PATH: +S/5
+Scan complete.

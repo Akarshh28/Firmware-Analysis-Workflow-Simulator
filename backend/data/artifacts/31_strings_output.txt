@@ -1,0 +1,14 @@
+Starting Strings Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\31_Relion670_Firmware update 1p1r01 to 27.zip...
+Extracted 154920 strings.
+Found 4266 finding(s).
+[!] FILE_PATH: /ZWc
+[!] FILE_PATH: b|/I
+[!] FILE_PATH: Th/I
+[!] FILE_PATH: Relion670/Field_Service_Tool_instruction.pdf
+[!] FILE_PATH: /.&%$*
+[!] FILE_PATH: ;n/1
+[!] FILE_PATH: @p/K
+[!] FILE_PATH: /1zA
+[!] FILE_PATH: *W_/I(j
+[!] FILE_PATH: `s/M
+Scan complete.

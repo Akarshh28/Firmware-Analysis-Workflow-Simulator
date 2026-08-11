@@ -1,0 +1,14 @@
+Starting Strings Analysis on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\21_dlms_smart_meter_test_firmware.bin...
+Extracted 232 strings.
+Found 24 finding(s).
+[!] FILE_PATH: B/UH
+[!] FILE_PATH: DLMS/COSEM Smart Meter Firmware
+[!] FILE_PATH: Protocol-Stack: IEC 62056-21 / IEC 62056-53 (DLMS/COSEM)
+[!] FILE_PATH: /etc/dlms/dlms_association.conf
+[!] FILE_PATH: /etc/dlms/dlms_keys.conf
+[!] FILE_PATH: /www/cgi-bin/meter_status.cgi
+[!] FILE_PATH: /www/cgi-bin/firmware_update.cgi
+[!] FILE_PATH: /opt/meter/scripts/ota_update.sh
+[!] IPv4_ADDRESS: http://192.168.1.1:4059/dlms/association
+[!] URL: http://192.168.1.1:4059/dlms/association
+Scan complete.

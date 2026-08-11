@@ -1,0 +1,3 @@
+Starting AFL++ (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\28_Firmware_120626.zip...
+No obvious fuzzing entry points found.
+Scan complete.

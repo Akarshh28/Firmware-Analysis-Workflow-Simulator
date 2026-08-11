@@ -1,0 +1,4 @@
+Starting angr (Lightweight Fallback) on C:\Users\akars\OneDrive\Desktop\Firmware Analysis workflow simulator\backend\data\uploads\23_dlms_smart_meter_test_firmware.bin...
+Found 1 finding(s).
+[!] Symbolic: High number of branch instructions (530) indicates complex control flow suitable for symbolic execution
+Scan complete.
