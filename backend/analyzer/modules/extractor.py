@@ -91,7 +91,7 @@ def _binwalk_extract_args(base_args):
     deployments like Render), since binwalk refuses to auto-run its
     third-party extraction utilities as root otherwise."""
     if hasattr(os, "geteuid") and os.geteuid() == 0:
-        return base_args + ["--run-as=root"]
+        return [base_args[0], "--run-as=root"] + base_args[1:]
     return base_args
 
 
