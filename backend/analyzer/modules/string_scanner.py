@@ -1,19 +1,25 @@
-"""
-string_scanner.py - Categorized string/keyword extraction (Phase 2, Step A).
-
-Runs `strings -a` once per file and filters the output against every
-keyword category in config.py, rather than shelling out to grep once per
-category (fewer subprocess calls, faster on large binaries).
-"""
-
 import re
 import subprocess
 
 from config import KEYWORD_CATEGORIES
 
+_ACCEPTABLE_BOUNDARY_CHARS = set(' \t_./:\\-,()[]"\'')
+
+def has_clean_boundary(line: str, match_start: int, match_end: int) -> bool:
+    """Reject a match if the character immediately before/after it is an
+    unusual symbol (#, $, <, >, !, ~, ;, {, }, +, |, etc.) - a strong
+    signal this is binary noise coincidentally containing the keyword,
+    not a genuine identifier/string."""
+    before = line[match_start - 1] if match_start > 0 else ' '
+    after = line[match_end] if match_end < len(line) else ' '
+    for ch in (before, after):
+        if ch.isalnum():
+            continue  # e.g. "MD5Init" - keyword touching more letters is fine
+        if ch not in _ACCEPTABLE_BOUNDARY_CHARS:
+            return False
+    return True
 
 def extract_raw_strings(path: str, min_len: int = 4, timeout: int = 120):
-    """Return (success, list_of_strings_or_error_message)."""
     try:
         result = subprocess.run(
             ["strings", "-a", "-n", str(min_len), path],
@@ -22,24 +28,40 @@ def extract_raw_strings(path: str, min_len: int = 4, timeout: int = 120):
         if result.returncode != 0:
             return False, f"strings command failed with exit code {result.returncode}"
         return True, result.stdout.splitlines()
-    except FileNotFoundError:
-        return False, "'strings' tool not installed"
-    except subprocess.TimeoutExpired:
-        return False, f"strings extraction timed out after {timeout}s (file may be very large)"
     except Exception as e:
         return False, f"unexpected error running strings: {e}"
 
+def is_false_positive(cat: str, line: str) -> bool:
+    """Filters out UI prompts, standard library strings, and safe domains."""
+    line_lower = line.lower()
+    
+    # 1. Filter out safe domains and PKI infrastructure
+    if cat == "network_services":
+        safe_domains = ["digicert", "verisign", "symantec", "thawte", "geotrust", "w3.org", "microsoft", "symcb", "symcd", ".crl", ".ocsp", "cacerts"]
+        if any(domain in line_lower for domain in safe_domains):
+            return True
+            
+        # Ignore isolated short garbage strings common in packed binaries
+        if len(line.strip()) <= 5:
+            return True
+
+    # 2. Filter out UI Labels and Logs for Credentials
+    if cat == "auth_credentials":
+        # Ignore UI prompt formats (e.g., "Password: ", "Login failed.")
+        ignore_prompts = ["wrong password", "login failed", "enter password", "password:", "user name", "invalid", "error:"]
+        if any(prompt in line_lower for prompt in ignore_prompts):
+            return True
+        # Ignore long descriptive sentences (usually installer text or logs)
+        if len(line.split()) > 4: 
+            return True
+
+    # 3. Filter out system paths
+    if "c:\\" in line_lower or "/usr/lib" in line_lower or "/flash/" in line_lower:
+        return True
+
+    return False
 
 def scan_strings(path: str):
-    """
-    Returns a dict:
-        {
-          "success": bool,
-          "error": str or None,
-          "total_strings": int,
-          "matches": { category: [matched_string, ...], ... }   # capped per category
-        }
-    """
     result = {"success": False, "error": None, "total_strings": 0, "matches": {}}
 
     ok, strings_or_err = extract_raw_strings(path)
@@ -55,22 +77,21 @@ def scan_strings(path: str):
         for cat, patterns in KEYWORD_CATEGORIES.items()
     }
 
-    matches = {cat: [] for cat in KEYWORD_CATEGORIES}
-    MAX_PER_CATEGORY = 50  # cap so the report stays readable
+    matches = {cat: set() for cat in KEYWORD_CATEGORIES} # Using set to avoid duplicates
+    MAX_PER_CATEGORY = 20  # Reduced to 20 for cleaner reports
 
     for line in all_strings:
+        line_clean = line.strip()
         for cat, patterns in compiled.items():
             if len(matches[cat]) >= MAX_PER_CATEGORY:
                 continue
             for pat in patterns:
-                if pat.search(line):
-                    if cat == "network_services":
-                        line_lower = line.lower()
-                        if any(domain in line_lower for domain in ["digicert.com", "verisign.com", "symantec.com", "thawte.com", "geotrust.com", "globalsign.com"]):
-                            continue
-                    matches[cat].append(line.strip()[:200])
-                    break
+                m = pat.search(line_clean)
+                if m and has_clean_boundary(line_clean, m.start(), m.end()):
+                    if not is_false_positive(cat, line_clean):
+                        matches[cat].add(line_clean[:200])
+                    break # Matched this category, move to next string
 
-    result["matches"] = {cat: vals for cat, vals in matches.items() if vals}
+    result["matches"] = {cat: list(vals) for cat, vals in matches.items() if vals}
     result["success"] = True
     return result

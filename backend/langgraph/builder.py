@@ -5,7 +5,8 @@ from langgraph.state import GraphState
 from langgraph.nodes import (
     upload_node, strings_node, binwalk_node, cutter_node, ghidra_node,
     trufflehog_node, entropy_node, wireshark_node, afl_node, angr_node,
-    scorecard_node, report_node
+    scorecard_node, report_node, yara_node, symbol_node,
+    obis_mapper_node, security_suite_node
 )
 
 def create_firmware_analysis_graph():
@@ -24,6 +25,10 @@ def create_firmware_analysis_graph():
     workflow.add_node("angr", angr_node)
     workflow.add_node("scorecard", scorecard_node)
     workflow.add_node("pdf_report", report_node)
+    workflow.add_node("yara", yara_node)
+    workflow.add_node("symbol_analysis", symbol_node)
+    workflow.add_node("obis_mapper", obis_mapper_node)
+    workflow.add_node("security_suite", security_suite_node)
 
     def check_status(state: GraphState):
         if state.get("status") == "FAILED":
@@ -34,14 +39,15 @@ def create_firmware_analysis_graph():
     
     from app.config import settings
     if settings.MODE == "real":
-        stages = ["upload", "binwalk", "strings", "entropy", "yara", "symbol_analysis", "scorecard", "pdf_report"]
-        # In real mode, use the new yara and symbol_analysis nodes
-        from langgraph.nodes import yara_node, symbol_node
-        workflow.add_node("yara", yara_node)
-        workflow.add_node("symbol_analysis", symbol_node)
+        stages = [
+            "upload", "binwalk", "entropy", "strings", "yara", "ghidra", 
+            "obis_mapper", "security_suite", "scorecard", "pdf_report"
+        ]
     else:
-        stages = ["upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
-                  "entropy", "wireshark", "afl++", "angr", "scorecard", "pdf_report"]
+        stages = [
+            "upload", "binwalk", "entropy", "strings", "yara", "ghidra", 
+            "obis_mapper", "security_suite", "scorecard", "pdf_report"
+        ]
               
     for i in range(len(stages) - 1):
         workflow.add_conditional_edges(

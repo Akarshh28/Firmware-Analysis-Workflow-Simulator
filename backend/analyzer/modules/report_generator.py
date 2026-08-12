@@ -18,15 +18,15 @@ def determine_protocol_verdict(string_matches: dict, yara_matches: list):
         return "DLMS/COSEM confirmed"
 
     has_dlms_strings = bool(
-        string_matches.get("dlms_cosem")
+        string_matches.get("dlms_cosem") and len(string_matches["dlms_cosem"]) >= 2
     )
     if has_dlms_strings:
         return "DLMS/COSEM likely (string evidence, YARA rule did not fire - review manually)"
 
-    if "IEC61850_Without_DLMS" in yara_rule_names or string_matches.get("iec61850"):
+    if "IEC61850_Without_DLMS" in yara_rule_names or (string_matches.get("iec61850") and len(string_matches["iec61850"]) >= 2):
         return "IEC 61850 (DLMS/COSEM not present)"
 
-    if string_matches.get("acse_association"):
+    if string_matches.get("acse_association") and len(string_matches["acse_association"]) >= 2:
         return "ACSE association layer present, but neither DLMS/COSEM nor IEC 61850 confirmed - manual review needed"
 
     return "No DLMS/COSEM or IEC 61850 evidence found"
@@ -145,3 +145,73 @@ def write_markdown_report(all_file_reports: list, output_path: str):
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
+
+def generate_pdf_report(results, out_dir):
+    """
+    Generates a PDF Vulnerability Assessment Report from the FAWS pipeline results.
+    """
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+    except ImportError:
+        print("Warning: reportlab not installed. Falling back to markdown report.")
+        # Minimal fallback
+        with open(os.path.join(out_dir, "report.json"), "w") as f:
+            json.dump(results, f, indent=4)
+        return
+        
+    pdf_path = os.path.join(out_dir, "FAWS_Vulnerability_Report.pdf")
+    c = canvas.Canvas(pdf_path, pagesize=letter)
+    width, height = letter
+    
+    # Title
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, height - 50, "FAWS Vulnerability Assessment Report")
+    
+    c.setFont("Helvetica", 10)
+    c.drawString(50, height - 70, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    y = height - 100
+    
+    # Stage 1
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Stage 1: Pre-Analysis & Extraction")
+    y -= 20
+    c.setFont("Helvetica", 10)
+    stage1 = results.get("stage1", {})
+    c.drawString(60, y, f"Entropy Verdict: {stage1.get('entropy', {}).get('verdict')}")
+    y -= 15
+    c.drawString(60, y, f"Files Extracted: {stage1.get('extraction_nodes')}")
+    y -= 30
+    
+    # Stage 2
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Stage 2: Advanced Static Component Analysis")
+    y -= 20
+    c.setFont("Helvetica", 10)
+    stage2 = results.get("stage2", {})
+    ghidra_findings = len(stage2.get("ghidra", {}).get("findings", []))
+    yara_matches = len(stage2.get("yara", {}).get("matches", []))
+    c.drawString(60, y, f"Ghidra Findings (Unsafe Functions & OBIS): {ghidra_findings}")
+    y -= 15
+    c.drawString(60, y, f"YARA/String Rule Matches: {yara_matches}")
+    y -= 30
+    
+    # Stage 3
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Stage 3: Dynamic Analysis & Emulation")
+    y -= 20
+    c.setFont("Helvetica", 10)
+    stage3 = results.get("stage3", {})
+    if stage3.get("emulation"):
+        emu = stage3.get("emulation")
+        c.drawString(60, y, f"Emulated Functions: {emu.get('emulated_functions', 0)}")
+        y -= 15
+        vulns = len(emu.get("vulnerabilities_found", []))
+        c.drawString(60, y, f"Vulnerabilities (Crashes) Detected: {vulns}")
+    else:
+        c.drawString(60, y, "No emulation performed.")
+    y -= 30
+    
+    c.save()
+

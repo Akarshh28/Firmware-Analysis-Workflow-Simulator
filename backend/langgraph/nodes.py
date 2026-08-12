@@ -128,7 +128,7 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         stderr_bytes = b''
         exit_code = 0
 
-        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "scorecard", "pdf_report"]:
+        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite", "scorecard", "pdf_report"]:
             log_msg = f"[{tool_name}] Skipped in real mode."
             log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
             db.add(log_entry)
@@ -144,14 +144,17 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             })
             return state
 
-        if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis"]:
-            from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols
+        if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite"]:
+            from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols, run_ghidra, run_obis_mapper, run_security_suite
             def run_wrapper():
                 if tool_name == "binwalk": return run_binwalk(target_path, state["project_id"])
                 elif tool_name == "strings": return run_strings(target_path, state["project_id"])
                 elif tool_name == "entropy": return run_entropy(target_path, state["project_id"])
                 elif tool_name == "yara": return run_yara(target_path, state["project_id"])
                 elif tool_name == "symbol_analysis": return run_symbols(target_path, state["project_id"])
+                elif tool_name == "ghidra": return run_ghidra(target_path, state["project_id"])
+                elif tool_name == "obis_mapper": return run_obis_mapper(target_path, state["project_id"])
+                elif tool_name == "security_suite": return run_security_suite(target_path, state["project_id"])
             wrapper_res = await asyncio.to_thread(run_wrapper)
             
             exit_code = 0 if wrapper_res.get("status") == "success" else 1

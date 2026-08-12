@@ -43,32 +43,18 @@ app.add_middleware(
 )
 
 # Define pipeline workflow stages in chronological order
-if settings.MODE == "real":
-    PIPELINE_STAGES = [
-        {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
-        {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
-        {"stage": "Identification", "tool": "strings", "desc": "Identify firmware architecture"},
-        {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
-        {"stage": "YARA Analysis", "tool": "yara", "desc": "YARA signature scanning"},
-        {"stage": "Symbol Analysis", "tool": "symbol_analysis", "desc": "Symbol table analysis"},
-        {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
-        {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate report"}
-    ]
-else:
-    PIPELINE_STAGES = [
-        {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
-        {"stage": "Identification", "tool": "strings", "desc": "Identify firmware architecture"},
-        {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
-        {"stage": "Static & Credential Analysis", "tool": "cutter", "desc": "Static code + secret analysis"},
-        {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Decompiler analysis"},
-        {"stage": "Static & Credential Analysis", "tool": "trufflehog", "desc": "Secret detection"},
-        {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
-        {"stage": "Network Analysis", "tool": "wireshark", "desc": "Network protocol analysis"},
-        {"stage": "Dynamic Analysis", "tool": "afl++", "desc": "Fuzzing"},
-        {"stage": "Symbolic Execution", "tool": "angr", "desc": "Path exploration"},
-        {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
-        {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate report"}
-    ]
+PIPELINE_STAGES = [
+    {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
+    {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
+    {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
+    {"stage": "Identification", "tool": "strings", "desc": "Extract hardcoded keys and URLs"},
+    {"stage": "YARA Analysis", "tool": "yara", "desc": "YARA signature scanning"},
+    {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Ghidra Headless Decompilation"},
+    {"stage": "Protocol Analysis", "tool": "obis_mapper", "desc": "DLMS OBIS Code Mapping"},
+    {"stage": "Protocol Analysis", "tool": "security_suite", "desc": "DLMS Security Suite Verification"},
+    {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
+    {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate PDF Vulnerability Report"}
+]
 
 @app.get("/")
 def read_root():
@@ -178,20 +164,38 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                         elif category == "network_services" or cwe == "CWE-319":
                             remediation = "1. Ensure all network services authenticate users properly. 2. Disable unnecessary debug/diagnostic services. 3. Enforce TLS 1.2+ for all network communications."
                         
-                        real_findings.append({
-                            "id": f"CVE-REAL-{finding_idx:03d}",
-                            "title": f.get("description", f.get("value", "Unknown Finding")),
-                            "severity": severity,
-                            "stage": "Security Analysis",
-                            "tool": tool_name,
-                            "cvss": 9.0 if severity == "critical" else (7.0 if severity == "high" else (5.0 if severity == "medium" else 2.0)),
-                            "cwe": cwe,
-                            "rule": rule,
-                            "category": category,
-                            "description": f.get("description", "A finding was detected by real analysis."),
-                            "poc": f"JSON Data: {json.dumps(f)}",
-                            "remediation": remediation
-                        })
+                        is_capability = (severity == "info" or rule in ["win_registry", "win_token", "escalate_priv", "Str_Win32_Winsock2_Library"] or category == "capabilities")
+                        
+                        if is_capability:
+                            real_findings.append({
+                                "id": f"CAPABILITY-{finding_idx:03d}",
+                                "title": f.get("description", f.get("value", "Unknown Capability")),
+                                "severity": "info",
+                                "stage": "Capabilities",
+                                "tool": tool_name,
+                                "cvss": 0.0,
+                                "cwe": "N/A",
+                                "rule": rule,
+                                "category": category,
+                                "description": f.get("description", "A standard software capability was detected (not inherently a vulnerability)."),
+                                "poc": f"JSON Data: {json.dumps(f)}",
+                                "remediation": ""
+                            })
+                        else:
+                            real_findings.append({
+                                "id": f"CVE-REAL-{finding_idx:03d}",
+                                "title": f.get("description", f.get("value", "Unknown Finding")),
+                                "severity": severity,
+                                "stage": "Security Analysis",
+                                "tool": tool_name,
+                                "cvss": 9.0 if severity == "critical" else (7.0 if severity == "high" else (5.0 if severity == "medium" else 2.0)),
+                                "cwe": cwe,
+                                "rule": rule,
+                                "category": category,
+                                "description": f.get("description", "A finding was detected by real analysis."),
+                                "poc": f"JSON Data: {json.dumps(f)}",
+                                "remediation": remediation
+                            })
                         finding_idx += 1
                 except Exception:
                     pass
@@ -356,18 +360,22 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     
     try:
         yara_rule_names = {f.get("rule") for f in real_findings if f.get("tool") == "yara"}
-        string_cats = {f.get("category"): True for f in real_findings if f.get("tool") == "strings"}
+        string_counts = {}
+        for f in real_findings:
+            if f.get("tool") == "strings":
+                cat = f.get("category")
+                string_counts[cat] = string_counts.get(cat, 0) + 1
         
         has_dlms = False
         if "DLMS_COSEM_Confirmed_Implementation" in yara_rule_names:
             protocol_verdict = "DLMS/COSEM confirmed"
             has_dlms = True
-        elif string_cats.get("dlms_cosem"):
+        elif string_counts.get("dlms_cosem", 0) >= 2:
             protocol_verdict = "DLMS/COSEM likely"
             has_dlms = True
-        elif "IEC61850_Without_DLMS" in yara_rule_names or string_cats.get("iec61850"):
+        elif "IEC61850_Without_DLMS" in yara_rule_names or string_counts.get("iec61850", 0) >= 2:
             protocol_verdict = "IEC 61850 (DLMS/COSEM not present)"
-        elif string_cats.get("acse_association"):
+        elif string_counts.get("acse_association", 0) >= 2:
             protocol_verdict = "ACSE present but unconfirmed"
             
         # Suite determination based on findings

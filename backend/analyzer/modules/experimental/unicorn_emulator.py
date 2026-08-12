@@ -7,10 +7,19 @@ import struct
 
 unicorn_installed = True
 try:
+    # pyright: ignore[reportMissingImports, reportUndefinedVariable, reportWildcardImportFromLibrary]
     from unicorn import *
+    # pyright: ignore[reportMissingImports, reportUndefinedVariable, reportWildcardImportFromLibrary]
     from unicorn.arm_const import *
 except ImportError:
     unicorn_installed = False
+    from unittest.mock import MagicMock
+    # Mock all Unicorn constants and classes to silence IDE linters
+    UC_ARCH_ARM = UC_MODE_THUMB = UC_MODE_ARM = MagicMock()
+    UC_ARM_REG_SP = UC_ARM_REG_R0 = UC_ARM_REG_R1 = UC_ARM_REG_R2 = UC_ARM_REG_R3 = MagicMock()
+    UC_HOOK_MEM_INVALID = UC_MEM_READ = UC_MEM_WRITE = MagicMock()
+    Uc = MagicMock
+    class UcError(Exception): pass
 
 class EmulatorContext:
     def __init__(self, architecture="ARM", mode="THUMB"):

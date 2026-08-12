@@ -30,6 +30,10 @@ def generate_dlms_mutations():
         target=None
     )
     
+    # Fix: Clear global Boofuzz blocks state to prevent ALREADY EXISTS error
+    if "DLMS_AARQ" in blocks.REQUESTS:
+        del blocks.REQUESTS["DLMS_AARQ"]
+    
     # Define DLMS AARQ Message
     s_initialize("DLMS_AARQ")
     s_byte(0xE6, name="AARQ_Tag")

@@ -18,7 +18,7 @@ sys.path.insert(0, analyzer_path)
 # pyright: ignore[reportMissingImports]
 from analyzer.modules import entropy_analysis, extractor, ghidra_scanner, string_scanner, yara_scanner
 # pyright: ignore[reportMissingImports]
-from analyzer.modules import unicorn_emulator, boofuzz_fuzzer, report_generator
+from analyzer.modules import report_generator
 
 def stage0_and_1_pre_processing(firmware_path, out_dir):
     print("\n--- [Step 0 & 1] Pre-Processing & Extraction ---")
@@ -64,8 +64,8 @@ def stage2_static_analysis(valid_binaries):
         entropy_score = ent_res.get("average_entropy", 0.0)
         print(f"    Average Entropy: {entropy_score:.2f}/8.0")
         
-        if entropy_score > 7.5:
-            print("    [!] HIGH ENTROPY DETECTED (>7.5). File is likely packed/encrypted.")
+        if entropy_score > 7.04:
+            print("    [!] HIGH ENTROPY DETECTED (>88% / 7.04). File is likely packed/encrypted.")
             print("    [!] Skipping Strings and YARA analysis to prevent false positives.")
             results[binary] = {"entropy": ent_res, "status": "Requires Unpacking"}
             continue
@@ -90,53 +90,6 @@ def stage2_static_analysis(valid_binaries):
         
     return results
 
-def stage3_dynamic_analysis(static_results):
-    print("\n--- [Step C] Dynamic Analysis & Emulation ---")
-    
-    emulation_results = {}
-    
-    for binary, res in static_results.items():
-        if res.get("status") == "Requires Unpacking":
-            print(f"    [-] Skipping Emulation for {os.path.basename(binary)} (Packed/Encrypted)")
-            continue
-            
-        print(f"[*] Preparing emulation for {os.path.basename(binary)}")
-        
-        # Read the binary
-        try:
-            with open(binary, "rb") as f:
-                code = f.read()
-        except Exception as e:
-            print(f"    [!] Error reading file: {e}")
-            continue
-            
-        # Prologue Scanner Heuristic
-        prologues = unicorn_emulator.find_function_prologues(code)
-        if not prologues:
-            print("    [-] No ARM/Thumb function prologues found. Skipping emulation.")
-            emulation_results[binary] = {"error": "No prologues found"}
-            continue
-            
-        print(f"    Found {len(prologues)} potential function entry points.")
-        
-        # Emulation with safe try-except handled inside unicorn_emulator.py
-        # But we also add an outer safety net just in case.
-        try:
-            funcs_hex = [hex(a) for a in prologues[:10]] # Emulate up to 10 functions
-            emu_res = unicorn_emulator.run_emulation(binary, funcs_hex)
-            emulation_results[binary] = emu_res
-            
-            if emu_res.get("success"):
-                crashes = sum(len(v.get("crashes", [])) for v in emu_res.get("vulnerabilities_found", []))
-                print(f"    Emulation Complete. Legitimate Crashes Found: {crashes}")
-            else:
-                print(f"    Emulation Failed: {emu_res.get('error')}")
-                
-        except Exception as e:
-            print(f"    [CRITICAL] Unexpected emulation crash on {os.path.basename(binary)}: {e}")
-            emulation_results[binary] = {"error": str(e)}
-            
-    return emulation_results
 
 def stage4_reporting(results, out_dir):
     print("\n--- [Stage 4] Reporting & Orchestration ---")
@@ -146,11 +99,7 @@ def stage4_reporting(results, out_dir):
     report_generator.generate_pdf_report(results, out_dir)
     print("    Report generated successfully.")
     
-def stage5_hybrid_validation(target_ip):
-    print("\n--- [Stage 5] Hybrid Validation ---")
-    print(f"[*] Launching hardware-assisted fuzzing against {target_ip}...")
-    res = boofuzz_fuzzer.network_fuzz_target(target_ip)
-    print(f"    Fuzzing Result: {res.get('message') or res.get('error')}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="FAWS: Firmware Analysis Workflow Simulator")
@@ -160,8 +109,7 @@ def main():
     scan_parser.add_argument("firmware_path", type=str, help="Path to the firmware binary")
     scan_parser.add_argument("-o", "--output", type=str, default="./faws_output", help="Output directory")
     
-    fuzz_parser = subparsers.add_parser("network-fuzz", help="Run Stage 5 hybrid validation fuzzing")
-    fuzz_parser.add_argument("--target", type=str, required=True, help="IP address of the physical smart meter")
+
     
     args = parser.parse_args()
     
@@ -178,16 +126,12 @@ def main():
             sys.exit(0)
             
         static_results = stage2_static_analysis(valid_binaries)
-        dynamic_results = stage3_dynamic_analysis(static_results)
-        
-        # Combine results
-        final_results = {"static": static_results, "dynamic": dynamic_results}
+        final_results = {"static": static_results}
         stage4_reporting(final_results, args.output)
         
         print("\n[+] Full pipeline completed.")
         
-    elif args.command == "network-fuzz":
-        stage5_hybrid_validation(args.target)
+
 
 if __name__ == "__main__":
     main()

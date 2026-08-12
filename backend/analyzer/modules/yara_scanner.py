@@ -30,6 +30,9 @@ YARA_RULE_CWE_MAP = {
     "Legacy_SNMP_Present": "CWE-319",
     "No_Encrypted_Management_Protocol": "CWE-319",
     "Insecure_Network_Services_Combined_Flag": "CWE-319",
+    "Exploit_MS15_077_078": "CWE-119",
+    "Exploit_MS15_077_078_HackingTeam": "CWE-119",
+    "CVE_2015_1701_Taihou": "CWE-269",
 }
 
 
@@ -39,6 +42,7 @@ def _load_rules():
         return  # already attempted
 
     try:
+        # pyrefly: ignore [missing-import]
         import yara
     except ImportError:
         _compile_error = "yara-python is not installed (pip install yara-python --break-system-packages)"
@@ -80,18 +84,27 @@ def scan_with_yara(path: str):
 
     for m in matches:
         cwe = YARA_RULE_CWE_MAP.get(m.rule)
+        severity = m.meta.get("severity") or m.meta.get("confidence") or "info"
+        description = m.meta.get("description", "")
+
+        # --- PRODUCTION PATCH: Contextual Severity Downgrade ---
         if not cwe:
-            # Leave protocol/identification rules without a CWE, otherwise fallback to CWE-000
-            if m.rule.startswith("DLMS_COSEM") or m.rule.startswith("IEC61850") or m.rule.startswith("RTOS_") or m.rule.startswith("Vendor_") or m.rule.startswith("Architecture_"):
+            if any(m.rule.startswith(prefix) for prefix in ["DLMS_COSEM", "IEC61850", "RTOS_", "Vendor_", "Architecture_"]):
                 cwe = None
+                severity = "info" # Protocol detection is just info, not a medium/high risk
             else:
                 cwe = "CWE-000"
+        
+        # Downgrade "Unsafe Function Imports" to INFO or LOW unless specific bad usage is found
+        if m.rule in ["Unsafe_String_Functions", "Unsafe_Memory_Functions"]:
+            severity = "low"
+            description += " (Note: Presence of function import does not guarantee exploitation)"
 
         result["matches"].append({
             "rule": m.rule,
             "cwe": cwe,
-            "severity": m.meta.get("severity") or m.meta.get("confidence") or "info",
-            "description": m.meta.get("description", ""),
+            "severity": severity,
+            "description": description,
             "action": m.meta.get("action"),
         })
 
