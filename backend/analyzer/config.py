@@ -12,7 +12,8 @@ MAX_FILE_SIZE_FOR_ENTROPY = 200 * 1024 * 1024   # 200 MB safety cap
 
 # --- File types we recognise as "not firmware" (skip analysis, just log) ---
 DOCUMENT_EXTENSIONS = {".pdf", ".xlsx", ".xls", ".docx", ".png", ".jpg",
-                        ".jpeg", ".txt", ".ini", ".cfg", ".xml", ".csv"}
+                        ".jpeg", ".txt", ".ini", ".cfg", ".xml", ".csv",
+                        ".lan", ".dat", ".html", ".htm", ".css", ".js"}
 
 # --- Archive / container extractors ----------------------------------------
 # Each entry: file-command substring -> handler name used in extractor.py
@@ -23,6 +24,9 @@ CONTAINER_SIGNATURES = {
     "Microsoft Cabinet archive data": "cab",
     "gzip compressed data": "gzip",
     "tar archive": "tar",
+    "Squashfs": "binwalk",
+    "CramFS": "binwalk",
+    "u-boot": "binwalk",
 }
 
 # --- Keyword categories for the strings scan --------------------------------
@@ -33,7 +37,7 @@ KEYWORD_CATEGORIES = {
         r"\bOBIS\b",
     ],
     "iec61850": [
-        r"IEC[\s_-]?61850", r"\bGOOSE\b", r"\bMMS\b(?!\w)",
+        r"IEC[\s_-]?61850", r"\bGOOSE\b", r"\sMMS\s", r"\sMMS\b", r"\bMMS\s",
         r"Report Control Block", r"IEC61850_DAI",
     ],
     "acse_association": [

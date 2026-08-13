@@ -14,6 +14,8 @@ from modules.string_scanner import scan_strings
 from modules.entropy_analysis import analyze_entropy
 from modules.yara_scanner import scan_with_yara
 from modules.symbol_analyzer import analyze_symbols
+from modules.ghidra_scanner import scan_with_ghidra
+from app.obis_parser import OBISParser
 from main import compute_signature, is_binary_leaf
 from app.config import settings
 
@@ -138,11 +140,23 @@ def run_entropy(file_path: str, project_id: int) -> dict:
     for leaf in state.get("leaf_binaries", []):
         res = analyze_entropy(leaf)
         if res.get("success"):
-            for region in res.get("flagged_regions", []):
+            flagged = res.get("flagged_regions", [])
+            if flagged:
+                total_high_entropy_bytes = sum(r["end_offset"] - r["start_offset"] for r in flagged)
+                file_size = os.path.getsize(leaf) if os.path.exists(leaf) else max(1, total_high_entropy_bytes)
+                percent = (total_high_entropy_bytes / file_size) * 100
+                
+                if percent > 80:
+                    desc = f"{percent:.1f}% of {os.path.basename(leaf)} is high-entropy — consistent with normal packed/encrypted executable, not necessarily suspicious."
+                    sev = "info"
+                else:
+                    desc = f"Detected {len(flagged)} localized high-entropy regions in {os.path.basename(leaf)} (covering {percent:.1f}% of file). May contain encrypted keys or compressed payloads."
+                    sev = "medium"
+                    
                 findings.append({
-                    "description": f"High entropy region (avg {region['avg_entropy']}) from {region['start_offset']} to {region['end_offset']} in {os.path.basename(leaf)}",
-                    "severity": "medium",
-                    "cwe": "CWE-310",
+                    "description": desc,
+                    "severity": sev,
+                    "cwe": "CWE-326",
                     "file": os.path.basename(leaf)
                 })
                 
@@ -207,6 +221,143 @@ def run_symbols(file_path: str, project_id: int) -> dict:
     return {
         "stage": "symbol_analysis",
         "tool": "symbol_analyzer",
+        "status": "success",
+        "findings": findings
+    }
+
+def run_ghidra(file_path: str, project_id: int) -> dict:
+    state = load_state(project_id)
+    findings = []
+    
+    for leaf in state.get("leaf_binaries", []):
+        res = scan_with_ghidra(leaf)
+        if res.get("success"):
+            for f in res.get("findings", []):
+                # The headless script returns: vulnerable_api, cwe, category, caller_function, caller_address, decompiled_snippet
+                findings.append({
+                    "description": f"Ghidra XREF: {f.get('caller_function')} at {f.get('caller_address')} calls {f.get('vulnerable_api')}",
+                    "severity": "critical" if f.get("cwe") == "CWE-798" else "high",
+                    "cwe": f.get("cwe"),
+                    "category": f.get("category"),
+                    "file": os.path.basename(leaf),
+                })
+                
+    return {
+        "stage": "Reverse Engineering",
+        "tool": "ghidra",
+        "status": "success",
+        "findings": findings
+    }
+
+def run_obis_mapper(file_path: str, project_id: int) -> dict:
+    state = load_state(project_id)
+    findings = []
+    
+    all_unique_codes = {}
+    
+    for leaf in state.get("leaf_binaries", []):
+        try:
+            # We run strings natively to fetch the text block
+            result = subprocess.run(
+                ["strings", leaf],
+                capture_output=True, text=True, timeout=60,
+                errors="ignore"
+            )
+            text = result.stdout
+            codes = OBISParser.extract_from_text(text)
+            for c in codes:
+                all_unique_codes[c['code']] = c
+        except Exception as e:
+            pass
+            
+    if all_unique_codes:
+        table_lines = ["| OBIS Code | Description | Access |", "|---|---|---|"]
+        for c in all_unique_codes.values():
+            table_lines.append(f"| {c['code']} | {c['name']} | {c['access']} |")
+            
+        findings.append({
+            "description": "Extracted OBIS Code Map\n\n" + "\n".join(table_lines),
+            "severity": "info",
+            "cwe": "CWE-200",
+            "category": "dlms_obis",
+            "file": "Multiple" if len(state.get("leaf_binaries", [])) > 1 else os.path.basename(state.get("leaf_binaries", [])[0])
+        })
+
+    return {
+        "stage": "Protocol Analysis",
+        "tool": "obis_mapper",
+        "status": "success",
+        "findings": findings
+    }
+
+def run_security_suite(file_path: str, project_id: int) -> dict:
+    state = load_state(project_id)
+    findings = []
+    
+    is_firmware_dlms = False
+    
+    # First pass: determine if ANY binary in the firmware is DLMS
+    for leaf in state.get("leaf_binaries", []):
+        try:
+            with open(leaf, "rb") as f:
+                data = f.read()
+                if b"DLMS" in data.upper() or b"COSEM" in data.upper() or b"OBIS" in data.upper():
+                    is_firmware_dlms = True
+                    break
+        except Exception:
+            pass
+            
+        strings_res = state.get("strings_results", {}).get(leaf, {})
+        if strings_res.get("matches", {}).get("dlms_cosem"):
+            is_firmware_dlms = True
+            break
+            
+    if not is_firmware_dlms:
+        findings.append({
+            "description": "Security Suite Verification: Not identified as a DLMS/COSEM binary. Skipping validation.",
+            "severity": "info",
+            "cwe": "CWE-000",
+            "category": "crypto",
+            "file": "Overall Firmware"
+        })
+    else:
+        # Second pass: only check crypto constants on leaf binaries if firmware is DLMS
+        for leaf in state.get("leaf_binaries", []):
+            try:
+                with open(leaf, "rb") as f:
+                    data = f.read()
+                    
+                    has_aes = b"AES" in data or b"GCM" in data
+                    has_ecdsa = b"ECDSA" in data or b"secp256r1" in data or b"P-256" in data
+                    
+                    suite = 0
+                    if has_ecdsa and has_aes:
+                        suite = 2
+                    elif has_aes:
+                        suite = 1
+                        
+                    if suite == 0:
+                        findings.append({
+                            "description": f"Security Suite Verification: DLMS binary lacks strong crypto constants (AES/ECDSA). It may be using Suite 0 (Plaintext), but requires dynamic verification.",
+                            "severity": "medium",
+                            "cwe": "CWE-319",
+                            "category": "weak_crypto",
+                            "file": os.path.basename(leaf)
+                        })
+                    else:
+                        findings.append({
+                            "description": f"Security Suite Verification: DLMS binary enforces Security Suite {suite}.",
+                            "severity": "info",
+                            "cwe": "CWE-000",
+                            "category": "crypto",
+                            "file": os.path.basename(leaf)
+                        })
+            except Exception:
+                pass
+
+    return {
+        "stage": "Protocol Analysis",
+        "tool": "security_suite",
         "status": "success",
         "findings": findings
     }

@@ -96,7 +96,14 @@ def is_known_document(path: str) -> bool:
 
 def extract_zip(path: str, out_dir: str):
     os.makedirs(out_dir, exist_ok=True)
-    ok, out, err = run_cmd(["unzip", "-o", path, "-d", out_dir], timeout=180)
+    # unzip returns 0 on success, 1 on warning (e.g., continuing with "compressed" size value), >1 on fatal error.
+    cmd = ["unzip", "-o", path, "-d", out_dir]
+    ok, out, err = run_cmd(cmd, timeout=180)
+    
+    # If run_cmd returns False but the error string shows exit code 1, it's just a warning.
+    if not ok and "exit code 1:" in err:
+        return True, ""
+        
     if not ok:
         return False, f"zip extraction failed: {err}"
     return True, ""
@@ -155,6 +162,7 @@ EXTRACTORS = {
     "msi": extract_msi_via_binwalk,
     "gzip": extract_generic_binwalk,
     "tar": extract_generic_binwalk,
+    "binwalk": extract_generic_binwalk,
 }
 
 

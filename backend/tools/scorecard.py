@@ -27,7 +27,9 @@ def calculate_score(project_id):
             LogEntry.log_type == "JSON_FINDINGS",
         ).all()
 
-        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        severity_weight = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
+        seen = set()          # dedupe identical (category, value) repeats
+        weighted_sum = 0
         finding_count = 0
 
         for log in json_logs:
@@ -36,25 +38,24 @@ def calculate_score(project_id):
             except (json.JSONDecodeError, TypeError):
                 continue
             for item in items:
+                key = (item.get("category"), item.get("value"))
+                if key in seen:
+                    continue
+                seen.add(key)
                 finding_count += 1
                 sev = str(item.get("severity", "info")).lower()
-                if sev in severity_counts:
-                    severity_counts[sev] += 1
-                else:
-                    severity_counts["info"] += 1
+                weighted_sum += severity_weight.get(sev, 0)
 
-        multiplier = (
-            (0.80 ** severity_counts["critical"]) *
-            (0.90 ** severity_counts["high"]) *
-            (0.95 ** severity_counts["medium"]) *
-            (0.98 ** severity_counts["low"])
-        )
-        
-        score = int(100 * multiplier)
+        if finding_count == 0:
+            score = 100
+        else:
+            avg_severity = weighted_sum / finding_count      # 0 (all info) to 4 (all critical)
+            score = round(100 * (1 - avg_severity / 4))
         score = max(0, min(100, score))
+
         findings.append({
             "type": "RiskScore",
-            "match": f"Calculated Aggregate Risk Score: {score}/100 based on {finding_count} findings",
+            "match": f"Calculated Aggregate Risk Score: {score}/100 based on {finding_count} unique findings",
         })
     except Exception as e:
         print(f"Error calculating score: {e}")

@@ -16,7 +16,6 @@ rule Weak_Hash_MD5
         reference   = "Observed in Relion670 (ppc670.x) via embedded md5.cpp source string"
     strings:
         $md5_src   = "md5.cpp" nocase
-        $md5_name  = "MD5" fullword
         $md5_func  = "MD5Update"
         $md5_init  = "MD5Init"
         $md5_final = "MD5Final"
@@ -45,9 +44,6 @@ rule Weak_Cipher_DES_RC4
         description = "Firmware references DES or RC4, both considered cryptographically weak/broken"
         severity    = "high"
     strings:
-        $des  = "DES" fullword
-        $des3 = "3DES" fullword
-        $rc4  = "RC4" fullword
         $rc4_ks = "RC4_set_key"
     condition:
         any of them

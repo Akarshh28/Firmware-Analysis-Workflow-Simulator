@@ -77,6 +77,8 @@ graph TD
 3. **Plugin Integration Layer (Extensible Layer)**:
    - Provides a common base class (`BaseToolPlugin`) defining how CLI commands are constructed, inputs validated, outputs parsed, and errors handled.
 
+> **Limitation Note:** Dynamic analysis/fuzzing (Step C) attempted via Unicorn Engine but is currently disabled and moved to the `experimental/` folder. The harness lacked proper ELF/PE loading and mapped raw bytes blindly, producing false-positive memory crashes unrelated to real firmware behavior. The Static analysis pipeline (Steps A & B) is the current, validated capability of this orchestrator.
+
 ---
 
 ## 4. Module & Component Hierarchies

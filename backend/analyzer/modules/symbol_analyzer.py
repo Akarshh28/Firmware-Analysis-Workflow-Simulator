@@ -15,9 +15,13 @@ unmodified on PowerPC (Relion670-style), ARM, MIPS, or x86 binaries -
 the objdump binary used is picked automatically per config.ARCH_OBJDUMP_MAP.
 """
 
+import json
+import os
 import re
 import shutil
 import subprocess
+import tempfile
+import uuid
 
 from config import (
     ARCH_OBJDUMP_MAP, SUSPICIOUS_SYMBOL_KEYWORDS,
@@ -132,6 +136,89 @@ def disassemble_symbol(path: str, objdump_bin: str, symbol: dict):
     return True, result.stdout
 
 
+def run_ghidra_fallback(path: str, extra_keywords: list, result: dict, original_error: str):
+    """
+    Fallback for stripped binaries. Spawns Ghidra Headless Analyzer to run
+    fallback_analyzer.py, which recovers functions and decompiles those matching heuristics.
+    """
+    result["objdump_used"] = "ghidra_fallback"
+    
+    ghidra_path = os.getenv("GHIDRA_PATH")
+    if not ghidra_path or not os.path.exists(ghidra_path):
+        ghidra_path = shutil.which("analyzeHeadless")
+        if not ghidra_path:
+            result["error"] = f"{original_error} (And Ghidra fallback skipped: analyzeHeadless not found. Set GHIDRA_PATH)"
+            return result
+
+    keywords = list(SUSPICIOUS_SYMBOL_KEYWORDS)
+    if extra_keywords:
+        keywords.extend(k.lower() for k in extra_keywords)
+    keywords_str = ",".join(set(keywords))
+
+    project_dir = tempfile.mkdtemp(prefix="ghidra_project_")
+    project_name = f"faws_fallback_{uuid.uuid4().hex[:8]}"
+    
+    scripts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ghidra_scripts")
+    output_json = os.path.join(project_dir, f"{project_name}_findings.json")
+    
+    cmd = [
+        ghidra_path, project_dir, project_name,
+        "-import", path,
+        "-scriptPath", scripts_dir,
+        "-postScript", "fallback_analyzer.py", output_json, keywords_str,
+        "-deleteProject"
+    ]
+    
+    process = None
+    try:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        stdout, stderr = process.communicate(timeout=600)
+        
+        if process.returncode != 0 and not os.path.exists(output_json):
+            result["error"] = f"{original_error} (And Ghidra failed: {stderr[-500:] if stderr else 'Unknown'})"
+            return result
+            
+        if os.path.exists(output_json):
+            with open(output_json, "r") as f:
+                findings = json.load(f)
+                
+            result["total_symbols"] = len(findings) # Ghidra script only returned flagged ones
+            
+            for finding in findings:
+                sym_name_lower = finding["name"].lower()
+                cwe = None
+                cred_keywords = ["backdoor", "bypass", "secret", "login", "admin", "password", "passwd", "cred", "telnet"]
+                if any(kw in sym_name_lower for kw in cred_keywords):
+                    cwe = "CWE-798"
+                    
+                result["flagged_symbols"].append({
+                    "name": finding["name"],
+                    "address": finding["address"],
+                    "size": finding["size"],
+                    "cwe": cwe,
+                    "disassembly_status": finding["disassembly_status"],
+                    "disassembly": finding["disassembly"]
+                })
+            
+            result["success"] = True
+            return result
+        else:
+            result["error"] = f"{original_error} (Ghidra finished but no output JSON was produced)"
+            return result
+            
+    except subprocess.TimeoutExpired:
+        result["error"] = f"{original_error} (And Ghidra timed out after 10 mins)"
+        if process:
+            process.kill()
+        return result
+    except Exception as e:
+        result["error"] = f"{original_error} (And Ghidra threw exception: {e})"
+        return result
+    finally:
+        shutil.rmtree(project_dir, ignore_errors=True)
+
+
+
 def analyze_symbols(path: str, file_type: str, extra_keywords=None):
     """
     Full pipeline step: pick objdump, pull symbol table, flag suspicious
@@ -160,8 +247,11 @@ def analyze_symbols(path: str, file_type: str, extra_keywords=None):
 
     ok, symbols_or_err = get_symbol_table(path, objdump_bin)
     if not ok:
-        result["error"] = symbols_or_err
-        return result
+        if "found no symbols" in symbols_or_err:
+            return run_ghidra_fallback(path, extra_keywords, result, symbols_or_err)
+        else:
+            result["error"] = symbols_or_err
+            return result
 
     symbols = symbols_or_err
     result["total_symbols"] = len(symbols)

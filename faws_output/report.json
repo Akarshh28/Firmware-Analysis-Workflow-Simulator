@@ -1,0 +1,294 @@
+{
+    "static": {
+        "backend\\data\\projects\\87_extraction\\update_670_1.1.27_MR.msi_extracted\\_update_670_1.1.27_MR.msi.extracted\\ppc670.x1": {
+            "entropy": {
+                "success": true,
+                "error": null,
+                "windows_scanned": 3561,
+                "flagged_regions": [],
+                "verdict": "clean"
+            },
+            "strings": {
+                "success": true,
+                "error": null,
+                "total_strings": 174453,
+                "matches": {
+                    "iec61850": [
+                        "Event.Sess.IEC61850",
+                        "INFO: IEC61850 I_WAITRUN -> I_START",
+                        "IEC61850_READY",
+                        "TRC: IEC61850 INITIALIZE",
+                        "INFO: IEC61850 I_INIT -> I_WAITRUN",
+                        "ERROR: iec61850DbInit() == TRUE FAILED",
+                        "iec61850sess.cpp",
+                        "%s %d INFO: IEC61850writeRequest: isCommand=%d",
+                        "TRC: IEC61850 CONFIGURE",
+                        "INFO: IEC61850 I_IDLE -> I_INIT",
+                        "%s %d INFO: IEC61850writeRequest: res=%d",
+                        "tIEC61850",
+                        "TRC: IEC61850 SHUTDOWN",
+                        "INFO: IEC61850 I_GISEND -> I_GISEND Write error.",
+                        "IEC61850",
+                        "TRC: IEC61850 STOP",
+                        "INT--IEC61850ERROR",
+                        "TRC: IEC61850 RUN",
+                        "IEC61850_NOT_READY",
+                        "INFO: IEC61850 I_START -> I_GISEND"
+                    ],
+                    "acse_association": [
+                        "decode_aare_done",
+                        "decode_aare_main",
+                        "decode_aarq_done",
+                        "decode_aare",
+                        "decode_aarq",
+                        "decode_aarq_main"
+                    ],
+                    "weak_crypto": [
+                        "SHA1 8 OCTET",
+                        "SHA1 4 OCTET",
+                        "Assertion failed: nLength % 4 == 0, file md5.cpp, line 334",
+                        "SHA1 10 OCTET",
+                        "Assertion failed: nLength % 4 == 0, file md5.cpp, line 316"
+                    ],
+                    "unsafe_functions": [
+                        "memcpy",
+                        "strcpy",
+                        "memcpy failed when copying timebuffer",
+                        "sprintf",
+                        "strcat",
+                        "memmove"
+                    ],
+                    "auth_credentials": [
+                        "inputCallbackDoorbellGet__C11GenioDsBaseRPFUlP16GenioInputDscBufPv_vRPv",
+                        "_$_19LioBackDoorListNode",
+                        "setupRequest__19LioBackDoorListNodePi",
+                        "cancelRequest__19LioBackDoorListNode",
+                        "inputCallbackDoorbellSet__11GenioDsBasePFUlP16GenioInputDscBufPv_vPv",
+                        "inputCallbackDoorbellWithIdxGet__C11GenioDsBaseRPFUlP16GenioInputDscBufPvUi_vRPv",
+                        "__19LioBackDoorListNodePCcT1i",
+                        "belongsTo__19LioBackDoorListNodePCcT1",
+                        "registerBackdoorCallback__5GioDSPFPvRC8dbSignalRCUl_vPv",
+                        "inputCallbackDoorbellWithIdxSet__11GenioDsBasePFUlP16GenioInputDscBufPvUi_vPv"
+                    ],
+                    "network_services": [
+                        "TRC: FTP user %s added",
+                        "ERROR: FTP login name longer than %d",
+                        "TRC: FTP access %d to '%s' granted!",
+                        "TRC: User list empty, FTP as the IEC-style",
+                        "TRC: FTP access %d to '%s' denied!",
+                        "TRC: FTP access control is OFF.",
+                        "TRC: The FTP server is deleted",
+                        "ERROR: Failed to encrypt FTP passwd %s",
+                        "ERROR: Failed to stop the FTP server!",
+                        "XHTRC: FTP evaluate request %d to '%s'",
+                        "ERROR: Failed to restart the FTP server!",
+                        "TRC: FTP user %s deleted",
+                        "INFO: User %s, wrong Password (FTP logon)",
+                        "ERROR: Failed to delete FTP user %s",
+                        "FTP server security is %s",
+                        "TRC: FTP path contains invalid character '0x%x'.",
+                        "TRC: The FTP server is restarted with new Authorization",
+                        "ERROR: Failed to add FTP user %s with password %s",
+                        "TRC: The FTP server is restarted",
+                        "ERROR: FTP login password longer than %d"
+                    ],
+                    "rtos_platform": [
+                        "This program contains confidential information of Wind River Systems, Inc.",
+                        "Copyright 1984-2002  Wind River Systems, Inc.",
+                        "VxWorks",
+                        "dosVDirLib.c : VxWorks proprietary long names not supported",
+                        "VxWorks5.5.2",
+                        "Copyright 1984-2006 Wind River Systems, Inc.",
+                        "version                        Print VxWorks version info, and boot line",
+                        "]]]]]]]]]]]]]]]]]]]]]]]]]       Copyright Wind River Systems, Inc., 1984-2006",
+                        "VxWorks Events",
+                        "abbGetBootline: ERROR: Bootline is invalid or empty, using vxWorks default bootline",
+                        "VxWorks (%s) FTP server ready",
+                        "UNIX Type: L8 Version: Tornado-VxWorks (%s)",
+                        "Windview Version 2.2 Logfile.  Copyright  1999-2001 Wind River Systems.",
+                        "gcc-2.96 (2.96+ MW/LM) 19990621 AltiVec VxWorks 5.5",
+                        "abbInitBootline: ERROR: Bootline is empty / invalid, storing vxWorks default bootline",
+                        "feiPep(0,0):vxWorks",
+                        "VxWorks BSP",
+                        "VxWorks5.5.1",
+                        "Wind River Systems Inc., DosFs 2.0 Partition Table",
+                        "INFO: VxWorks default Exception handler used"
+                    ]
+                }
+            },
+            "yara": {
+                "success": true,
+                "error": null,
+                "matches": [
+                    {
+                        "rule": "ACSE_Association_Layer_Generic",
+                        "cwe": "CWE-000",
+                        "severity": "medium",
+                        "description": "Binary implements the ACSE association layer (AARQ/AARE/RLRQ/RLRE/ABRT). This layer is shared by DLMS/COSEM and IEC 61850 MMS - match alone does NOT confirm DLMS/COSEM. Combine with DLMS_COSEM_* rules or exclude with IEC61850 rules to disambiguate.",
+                        "action": null
+                    },
+                    {
+                        "rule": "Plaintext_Password_In_Format_String",
+                        "cwe": "CWE-532",
+                        "severity": "high",
+                        "description": "Binary embeds the literal password value into a debug/log format string, risking plaintext credential exposure in logs",
+                        "action": null
+                    },
+                    {
+                        "rule": "Verbose_Authentication_Errors",
+                        "cwe": "CWE-203",
+                        "severity": "medium",
+                        "description": "Binary distinguishes 'wrong password' from 'user not found' style errors, which can enable username enumeration if surfaced over the network",
+                        "action": null
+                    },
+                    {
+                        "rule": "Legacy_Debug_Login_Shell",
+                        "cwe": "CWE-306",
+                        "severity": "medium",
+                        "description": "Binary contains a legacy VxWorks-style debug login/shell interface (rlogin/iam), which historically lacks modern authentication hardening",
+                        "action": null
+                    },
+                    {
+                        "rule": "Hardcoded_Credential_Keywords",
+                        "cwe": "CWE-798",
+                        "severity": "low",
+                        "description": "Generic scan for hardcoded credential / default-account keywords worth manual review",
+                        "action": null
+                    },
+                    {
+                        "rule": "Authentication_Weakness_Combined_Flag",
+                        "cwe": "CWE-798",
+                        "severity": "high",
+                        "description": "Consolidated authentication-weakness verdict for report generation",
+                        "action": "Flag in Vulnerability Assessment Report under 'Bypassable / Weak Authentication'"
+                    },
+                    {
+                        "rule": "IEC61850_Stack_Present",
+                        "cwe": null,
+                        "severity": "info",
+                        "description": "Firmware contains a compiled IEC 61850 communication stack",
+                        "action": null
+                    },
+                    {
+                        "rule": "IEC61850_Without_DLMS",
+                        "cwe": null,
+                        "severity": "info",
+                        "description": "Firmware implements IEC 61850 and shows no DLMS/COSEM-specific evidence - classify as IEC 61850 device, not a DLMS/COSEM target",
+                        "action": "Exclude from Phase 3 DLMS/COSEM-specific testing; retain as comparison sample"
+                    },
+                    {
+                        "rule": "FTP_Server_Present",
+                        "cwe": "CWE-319",
+                        "severity": "high",
+                        "description": "Firmware includes a built-in FTP server (unencrypted file transfer and authentication)",
+                        "action": null
+                    },
+                    {
+                        "rule": "TFTP_Service_Present",
+                        "cwe": "CWE-306",
+                        "severity": "high",
+                        "description": "Firmware includes TFTP client/server functionality - TFTP has no authentication by protocol design",
+                        "action": null
+                    },
+                    {
+                        "rule": "No_Encrypted_Management_Protocol",
+                        "cwe": "CWE-319",
+                        "severity": "high",
+                        "description": "Firmware shows insecure management protocols (FTP/TFTP/SNMP) with no evidence of HTTPS or SSH strings - indicates reliance on unencrypted channels for management/update",
+                        "action": null
+                    },
+                    {
+                        "rule": "Insecure_Network_Services_Combined_Flag",
+                        "cwe": "CWE-319",
+                        "severity": "high",
+                        "description": "Consolidated insecure-network-service verdict for report generation",
+                        "action": "Flag in Vulnerability Assessment Report under 'Insecure Network Protocol Usage'"
+                    },
+                    {
+                        "rule": "RTOS_VxWorks",
+                        "cwe": null,
+                        "severity": "info",
+                        "description": "Firmware runs on VxWorks RTOS",
+                        "action": null
+                    },
+                    {
+                        "rule": "Architecture_PowerPC",
+                        "cwe": null,
+                        "severity": "info",
+                        "description": "Firmware targets PowerPC architecture (common in ABB/Hitachi protection relays)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Vendor_ABB_Hitachi",
+                        "cwe": null,
+                        "severity": "info",
+                        "description": "Firmware carries ABB / Hitachi Energy authorship/copyright strings",
+                        "action": null
+                    },
+                    {
+                        "rule": "Unsafe_String_Functions",
+                        "cwe": "CWE-120",
+                        "severity": "low",
+                        "description": "Binary calls unbounded string functions prone to buffer overflow (Note: Presence of function import does not guarantee exploitation)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Unsafe_Memory_Functions",
+                        "cwe": "CWE-120",
+                        "severity": "low",
+                        "description": "Binary calls raw memory-copy functions without visible bounds context (manual review needed to confirm length validation) (Note: Presence of function import does not guarantee exploitation)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Unsafe_Format_String_Risk",
+                        "cwe": "CWE-134",
+                        "severity": "medium",
+                        "description": "Binary uses printf-family functions with externally influenced format strings possible (manual review needed at each call site)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Unsafe_Functions_Combined_Flag",
+                        "cwe": "CWE-120",
+                        "severity": "high",
+                        "description": "Consolidated unsafe-function-usage verdict for report generation",
+                        "action": "Flag in Vulnerability Assessment Report under 'Potential Buffer Overflow / DoS' - cross-reference disassembly to confirm exploitability"
+                    },
+                    {
+                        "rule": "Weak_Hash_MD5",
+                        "cwe": "CWE-327",
+                        "severity": "high",
+                        "description": "Firmware compiles in MD5, a cryptographically broken hash algorithm (collision attacks known)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Weak_Hash_SHA1",
+                        "cwe": "CWE-327",
+                        "severity": "medium",
+                        "description": "Firmware references SHA1, a deprecated hash algorithm (practical collisions demonstrated since 2017)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Weak_Random_Number_Generation",
+                        "cwe": "CWE-338",
+                        "severity": "medium",
+                        "description": "Firmware uses predictable/non-cryptographic random number generators (rand/srand) where secure randomness may be required (e.g. session tokens, nonces)",
+                        "action": null
+                    },
+                    {
+                        "rule": "Deprecated_Crypto_Combined_Flag",
+                        "cwe": "CWE-327",
+                        "severity": "high",
+                        "description": "Consolidated weak-cryptography verdict for report generation",
+                        "action": "Flag in Vulnerability Assessment Report under 'Weak Cryptographic Storage'"
+                    }
+                ]
+            },
+            "ghidra": {
+                "success": false,
+                "error": "Ghidra analyzeHeadless.bat not found at C:\\ghidra\\support\\analyzeHeadless.bat. Please set GHIDRA_PATH.",
+                "findings": []
+            },
+            "status": "Analyzed"
+        }
+    }
+}

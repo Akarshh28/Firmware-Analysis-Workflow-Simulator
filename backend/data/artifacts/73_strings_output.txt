@@ -1,0 +1,1 @@
+Analyzed successfully, found 10 findings.

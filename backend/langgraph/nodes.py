@@ -40,11 +40,16 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         project = db.query(Project).filter(Project.id == state["project_id"]).first()
         target_path = project.firmware_filepath if project else "unknown.bin"
 
-        cmd_template = TOOL_COMMANDS.get(tool_name, f"echo 'Tool {tool_name} not configured'")
-        cmd = cmd_template.replace("{target}", target_path).replace("{project_id}", str(state["project_id"]))
+        cmd_template = TOOL_COMMANDS.get(tool_name)
+        if cmd_template:
+            cmd = cmd_template.replace("{target}", target_path).replace("{project_id}", str(state["project_id"]))
+        else:
+            cmd = f"internal python wrapper for {tool_name}"
 
         # Check if the primary binary exists (skip logic)
-        if cmd.startswith('"'):
+        if cmd.startswith("internal python wrapper"):
+            primary_bin = "echo" # Skip check for internal wrappers
+        elif cmd.startswith('"'):
             primary_bin = cmd[1:cmd.find('"', 1)]
         else:
             primary_bin = cmd.split(" ")[0]
@@ -128,7 +133,7 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         stderr_bytes = b''
         exit_code = 0
 
-        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "scorecard", "pdf_report"]:
+        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite", "scorecard", "pdf_report"]:
             log_msg = f"[{tool_name}] Skipped in real mode."
             log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
             db.add(log_entry)
@@ -144,14 +149,17 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             })
             return state
 
-        if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis"]:
-            from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols
+        if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite"]:
+            from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols, run_ghidra, run_obis_mapper, run_security_suite
             def run_wrapper():
                 if tool_name == "binwalk": return run_binwalk(target_path, state["project_id"])
                 elif tool_name == "strings": return run_strings(target_path, state["project_id"])
                 elif tool_name == "entropy": return run_entropy(target_path, state["project_id"])
                 elif tool_name == "yara": return run_yara(target_path, state["project_id"])
                 elif tool_name == "symbol_analysis": return run_symbols(target_path, state["project_id"])
+                elif tool_name == "ghidra": return run_ghidra(target_path, state["project_id"])
+                elif tool_name == "obis_mapper": return run_obis_mapper(target_path, state["project_id"])
+                elif tool_name == "security_suite": return run_security_suite(target_path, state["project_id"])
             wrapper_res = await asyncio.to_thread(run_wrapper)
             
             exit_code = 0 if wrapper_res.get("status") == "success" else 1
@@ -165,8 +173,9 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             db.commit()
         else:
             import subprocess
+            import shlex
             def run_proc():
-                return subprocess.run(cmd, shell=True, capture_output=True)
+                return subprocess.run(shlex.split(cmd), shell=False, capture_output=True)
             process = await asyncio.to_thread(run_proc)
             stdout_bytes = process.stdout
             stderr_bytes = process.stderr
@@ -314,4 +323,10 @@ async def yara_node(state: GraphState):
 
 async def symbol_node(state: GraphState):
     return await execute_tool(state, "symbol_analysis", "Symbol Analysis", [{"file_name": "symbols.json", "mime_type": "application/json", "file_size": 2048}])
+
+async def obis_mapper_node(state: GraphState):
+    return await execute_tool(state, "obis_mapper", "Protocol Analysis", [{"file_name": "obis_mappings.json", "mime_type": "application/json", "file_size": 2048}])
+
+async def security_suite_node(state: GraphState):
+    return await execute_tool(state, "security_suite", "Protocol Analysis", [{"file_name": "security_suite.json", "mime_type": "application/json", "file_size": 1024}])
 
