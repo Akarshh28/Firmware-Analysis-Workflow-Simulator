@@ -40,12 +40,12 @@ def create_firmware_analysis_graph():
     from app.config import settings
     if settings.MODE == "real":
         stages = [
-            "upload", "binwalk", "entropy", "strings", "yara", "ghidra", 
+            "upload", "binwalk", "entropy", "strings", "yara", "symbol_analysis", "ghidra", 
             "obis_mapper", "security_suite", "scorecard", "pdf_report"
         ]
     else:
         stages = [
-            "upload", "binwalk", "entropy", "strings", "yara", "ghidra", 
+            "upload", "binwalk", "entropy", "strings", "yara", "symbol_analysis", "ghidra", 
             "obis_mapper", "security_suite", "scorecard", "pdf_report"
         ]
               

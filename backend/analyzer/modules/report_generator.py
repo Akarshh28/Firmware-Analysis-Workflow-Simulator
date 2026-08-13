@@ -14,7 +14,7 @@ def determine_protocol_verdict(string_matches: dict, yara_matches: list):
     DLMS/COSEM; literal DLMS/COSEM/OBIS evidence is required."""
     yara_rule_names = {m["rule"] for m in yara_matches}
 
-    if "DLMS_COSEM_Confirmed_Implementation" in yara_rule_names:
+    if "DLMS_COSEM_Confirmed_Implementation" in yara_rule_names or "DLMS_COSEM_OBIS_Code_Known" in yara_rule_names:
         return "DLMS/COSEM confirmed"
 
     has_dlms_strings = bool(

@@ -3,7 +3,7 @@ import subprocess
 
 from config import KEYWORD_CATEGORIES
 
-_ACCEPTABLE_BOUNDARY_CHARS = set(' \t_./:\\-,()[]"\'')
+_ACCEPTABLE_BOUNDARY_CHARS = set(' \t_./:\\-,()[]"\'@')
 
 def has_clean_boundary(line: str, match_start: int, match_end: int) -> bool:
     """Reject a match if the character immediately before/after it is an
@@ -37,7 +37,7 @@ def is_false_positive(cat: str, line: str) -> bool:
     
     # 1. Filter out safe domains and PKI infrastructure
     if cat == "network_services":
-        safe_domains = ["digicert", "verisign", "symantec", "thawte", "geotrust", "w3.org", "microsoft", "symcb", "symcd", ".crl", ".ocsp", "cacerts"]
+        safe_domains = ["digicert", "verisign", "symantec", "thawte", "geotrust", "w3.org", "microsoft", "symcb", "symcd", ".crl", ".ocsp", "cacerts", "crl.", "ocsp."]
         if any(domain in line_lower for domain in safe_domains):
             return True
             
@@ -52,7 +52,7 @@ def is_false_positive(cat: str, line: str) -> bool:
         if any(prompt in line_lower for prompt in ignore_prompts):
             return True
         # Ignore long descriptive sentences (usually installer text or logs)
-        if len(line.split()) > 4: 
+        if len(line.split()) > 10: 
             return True
 
     # 3. Filter out system paths

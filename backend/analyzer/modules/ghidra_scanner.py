@@ -3,19 +3,22 @@ import subprocess
 import json
 import uuid
 import sys
+import shutil
 from app.config import settings
 
 def scan_with_ghidra(target_bin: str) -> dict:
     """
     Spawns Ghidra Headless Analyzer to run the FAWS Jython script.
     """
-    # Use environment variable or fallback to a common default path on Windows
-    ghidra_path = os.getenv("GHIDRA_PATH", "C:\\ghidra\\support\\analyzeHeadless.bat")
-    
-    if not os.path.exists(ghidra_path):
+    # Use environment variable or fallback to PATH
+    ghidra_path = os.getenv("GHIDRA_PATH")
+    if not ghidra_path or not os.path.exists(ghidra_path):
+        ghidra_path = shutil.which("analyzeHeadless")
+        
+    if not ghidra_path:
         return {
             "success": False,
-            "error": f"Ghidra analyzeHeadless.bat not found at {ghidra_path}. Please set GHIDRA_PATH.",
+            "error": "Ghidra analyzeHeadless not found in PATH. Please set GHIDRA_PATH.",
             "findings": []
         }
 

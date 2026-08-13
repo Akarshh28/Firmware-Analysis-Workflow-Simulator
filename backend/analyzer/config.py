@@ -53,9 +53,8 @@ KEYWORD_CATEGORIES = {
         r"\bmemcpy\b", r"\bmemmove\b",
     ],
     "auth_credentials": [
-        r"(?i)password\s*=\s*[^\s]+", r"(?i)passwd\s*=\s*[^\s]+", 
-        r"(?i)admin\s+password", r"(?i)root\s+password",
-        r"(?i)default\s*cred", r"(?i)hardcoded\s*key", r"(?i)backdoor"
+        r"password", r"passwd", r"\blogin\b", r"\badmin\b",
+        r"backdoor", r"debug.?mode", r"default.?cred", r"hardcode",
     ],
     "network_services": [
         r"\bftp\b", r"\btelnet\b", r"\bhttp\b", r"\bsnmp\b",

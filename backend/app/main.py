@@ -49,6 +49,7 @@ PIPELINE_STAGES = [
     {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
     {"stage": "Identification", "tool": "strings", "desc": "Extract hardcoded keys and URLs"},
     {"stage": "YARA Analysis", "tool": "yara", "desc": "YARA signature scanning"},
+    {"stage": "Symbol Analysis", "tool": "symbol_analysis", "desc": "Identify suspicious API symbols"},
     {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Ghidra Headless Decompilation"},
     {"stage": "Protocol Analysis", "tool": "obis_mapper", "desc": "DLMS OBIS Code Mapping"},
     {"stage": "Protocol Analysis", "tool": "security_suite", "desc": "DLMS Security Suite Verification"},
@@ -149,22 +150,32 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                         
                         # Remediation Logic mapping
                         remediation = "Investigate this specific finding."
-                        if category == "weak_crypto" or rule in ["Weak_Hash_MD5", "Weak_Hash_SHA1", "Weak_Cipher_DES_RC4", "Deprecated_Crypto_Combined_Flag", "Weak_Cryptography"] or category == "crypto":
-                            remediation = "Replace with a modern, vetted algorithm (SHA-256/SHA-3 for hashing, AES-GCM for encryption). If used only for non-security checksums (e.g. file integrity, not authentication), document that explicitly to avoid confusion with security-relevant use."
+                        if category == "weak_crypto" or rule in ["Weak_Hash_MD5", "Weak_Hash_SHA1", "Weak_Cipher_DES_RC4", "Deprecated_Crypto_Combined_Flag", "Weak_Cryptography", "Weak_Random_Number_Generation"] or category == "crypto":
+                            remediation = "Replace with a modern, vetted algorithm (SHA-256/SHA-3 for hashing, AES-GCM for encryption). Use cryptographically secure pseudorandom number generators (CSPRNG). If used only for non-security checksums, document that explicitly."
                         elif category == "auth_credentials" or rule in ["Verbose_Authentication_Errors", "Plaintext_Password_In_Format_String", "Hardcoded_Credential_Keywords", "Authentication_Weakness_Combined_Flag", "Hardcoded_Credentials"] or category == "credentials":
                             remediation = "Avoid logging credentials in plaintext in any log/debug output. Return identical error messages for 'user not found' and 'wrong password' to prevent username enumeration. Ensure default/factory credentials are forced to change on first use."
                         elif rule == "Legacy_Debug_Login_Shell":
                             remediation = "Disable the debug login/rlogin/WDB agent interface in production builds. If required for field service, restrict to a physically isolated diagnostic port or gate behind strong authentication, not the legacy VxWorks login prompt."
-                        elif category in ["iec61850", "protocol"] or rule.startswith("DLMS_COSEM_") or rule in ["ACSE_Association_Layer_Generic", "IEC61850_Without_DLMS", "Vendor_ABB_Hitachi", "Architecture_PowerPC"] or rule.startswith("RTOS_"):
+                        elif category in ["iec61850", "protocol", "dlms_cosem", "rtos_platform"] or rule.startswith("DLMS_COSEM_") or rule in ["ACSE_Association_Layer_Generic", "IEC61850_Without_DLMS", "Vendor_ABB_Hitachi", "Architecture_PowerPC"] or rule.startswith("RTOS_"):
                             remediation = "Protocol/platform identified for analysis context — no direct remediation required. Review the identified protocol's own security configuration guidance (e.g. DLMS Security Suite selection, IEC 61850 access control settings) separately."
                         elif tool_name == "symbol_analysis" or category == "suspicious_symbol":
                             remediation = "Review this function's disassembly to confirm whether it represents an unauthenticated debug/backdoor code path. If confirmed unused or unreachable in production configuration, remove it; if it's a legitimate diagnostic feature, ensure it's disabled or authenticated in production builds."
-                        elif rule == "Memory_Safety_Issue" or category == "memory" or cwe in ["CWE-119", "CWE-120"]:
-                            remediation = "1. Use safe string/memory functions (e.g. strncpy, snprintf). 2. Enable compiler protections like Stack Canaries, ASLR, and DEP/NX. 3. Perform fuzzing on the parser."
-                        elif category == "network_services" or cwe == "CWE-319":
+                        elif rule in ["Memory_Safety_Issue", "Unsafe_Format_String_Risk", "Unsafe_Function_Usage"] or category in ["memory", "unsafe_functions"] or cwe in ["CWE-119", "CWE-120", "CWE-134", "CWE-242"]:
+                            remediation = "1. Use safe string/memory functions (e.g. strncpy, snprintf). 2. Always use a format string literal (e.g. printf(\"%s\", user_input) not printf(user_input)). 3. Enable compiler protections like Stack Canaries, ASLR, and DEP/NX."
+                        elif category == "network_services" or rule in ["No_Encrypted_Management_Protocol", "Insecure_Network_Service_Usage"] or cwe == "CWE-319" or category == "acse_association":
                             remediation = "1. Ensure all network services authenticate users properly. 2. Disable unnecessary debug/diagnostic services. 3. Enforce TLS 1.2+ for all network communications."
                         
                         is_capability = (severity == "info" or rule in ["win_registry", "win_token", "escalate_priv", "Str_Win32_Winsock2_Library"] or category == "capabilities")
+                        
+                        desc = f.get("description", "A finding was detected by real analysis.")
+                        if is_capability:
+                            desc = f"A standard software capability was detected: {f.get('value', f.get('description', 'unknown'))}. While not inherently a vulnerability, this provides context on the system architecture or OS functionality."
+                        elif category == "weak_crypto" or "crypto" in category.lower():
+                            desc = f"The analysis identified the presence of a weak or deprecated cryptographic algorithm/pattern ({f.get('value', f.get('description', 'unknown'))}). Relying on deprecated cryptography exposes the firmware to known cryptanalytic attacks and reduces the effort required for an attacker to break encryption."
+                        elif category == "auth_credentials" or "credentials" in category.lower():
+                            desc = f"Hardcoded credential patterns or authentication artifacts were found ({f.get('value', f.get('description', 'unknown'))}). Storing credentials in plaintext within the firmware image can lead to unauthorized access or privilege escalation if extracted by an attacker."
+                        elif category in ["memory", "unsafe_functions"] or cwe in ["CWE-119", "CWE-120", "CWE-134", "CWE-242"]:
+                            desc = f"A potentially unsafe memory or string manipulation function was detected ({f.get('value', f.get('description', 'unknown'))}). Usage of functions without bounds checking can lead to buffer overflows or format string vulnerabilities."
                         
                         if is_capability:
                             real_findings.append({
@@ -177,7 +188,7 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                                 "cwe": "N/A",
                                 "rule": rule,
                                 "category": category,
-                                "description": f.get("description", "A standard software capability was detected (not inherently a vulnerability)."),
+                                "description": desc,
                                 "poc": f"JSON Data: {json.dumps(f)}",
                                 "remediation": ""
                             })
@@ -192,7 +203,7 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                                 "cwe": cwe,
                                 "rule": rule,
                                 "category": category,
-                                "description": f.get("description", "A finding was detected by real analysis."),
+                                "description": desc,
                                 "poc": f"JSON Data: {json.dumps(f)}",
                                 "remediation": remediation
                             })
@@ -205,6 +216,10 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                     if line.startswith("[!]"):
                         title = line.replace("[!]", "").strip()
                         tool_name = log.tool_run.tool_name if log.tool_run else "System"
+                        
+                        # Exclude metric logs from being treated as vulnerabilities
+                        if tool_name in ["scorecard", "pdf_report"]:
+                            continue
                         
                         # Generate production-level details based on tool
                         cvss = 5.0
@@ -385,6 +400,20 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                 if f.get("cwe") in ["CWE-798", "CWE-327", "CWE-319"]:
                     dlms_suite = "Suite 0 (Vulnerable / Plaintext)"
                     break
+                    
+        # Inject the explicit protocol verdict finding
+        real_findings.append({
+            "id": f"{project_id}-VERDICT-001",
+            "title": "Protocol Identification Verdict",
+            "severity": "info",
+            "stage": "Protocol Analysis",
+            "tool": "System",
+            "cvss": 0.0,
+            "cwe": "N/A",
+            "description": f"The firmware was identified as: {protocol_verdict}",
+            "poc": f"Derived from signature matches and heuristics. DLMS Crypto Suite: {dlms_suite or 'N/A'}",
+            "remediation": "N/A"
+        })
     except Exception as e:
         print(f"Error determining verdict: {e}")
     return {
@@ -491,10 +520,10 @@ async def upload_firmware(
     }
 
 
-
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "version": "v3_run_as_root"}
+
 
 # ---------------------------------------------------------
 # FALLBACK ROUTES FOR FRONTEND COMPATIBILITY ---
@@ -627,50 +656,7 @@ from pydantic import BaseModel
 import subprocess
 import os
 
-class SandboxRequest(BaseModel):
-    command: str
-    tool: str
 
-@app.post("/api/projects/{project_id}/sandbox")
-def run_sandbox_command(project_id: int, req: SandboxRequest, db: Session = Depends(get_db)):
-    project = db.query(models.Project).filter(models.Project.id == project_id).first()
-    if not project or not project.firmware_filepath:
-        raise HTTPException(status_code=404, detail="Project or firmware not found")
-
-    # Security warning: this is running arbitrary commands locally for demo purposes
-    try:
-        # replace {firmware} placeholder with actual path if needed, though usually they just type it
-        # or we just run the command in the dir of the firmware
-        firmware_dir = os.path.dirname(project.firmware_filepath)
-        env = os.environ.copy()
-        env["FIRMWARE_FILE"] = project.firmware_filepath
-        
-        import shlex
-        result = subprocess.run(
-            shlex.split(req.command),
-            cwd=firmware_dir,
-            capture_output=True,
-            text=True,
-            timeout=30 # 30 second timeout
-        )
-        
-        return {
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "exit_code": result.returncode
-        }
-    except subprocess.TimeoutExpired as e:
-        return {
-            "stdout": e.stdout.decode('utf-8') if e.stdout else "",
-            "stderr": "Command timed out after 30 seconds.",
-            "exit_code": -1
-        }
-    except Exception as e:
-        return {
-            "stdout": "",
-            "stderr": str(e),
-            "exit_code": -2
-        }
 
 @app.get("/api/tools")
 def list_tools():

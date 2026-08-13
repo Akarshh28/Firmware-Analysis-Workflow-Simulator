@@ -319,12 +319,15 @@ const statusClass = (status: string) =>
 const ALL_STAGES = [
   { stage: "Upload & Ingestion",    tool: "upload",     icon: "📤", order: 1 },
   { stage: "Extraction",            tool: "binwalk",    icon: "📦", order: 2 },
-  { stage: "Identification",        tool: "strings",    icon: "🔍", order: 3 },
-  { stage: "Cryptographic Analysis",tool: "entropy",    icon: "📊", order: 4 },
+  { stage: "Cryptographic Analysis",tool: "entropy",    icon: "📊", order: 3 },
+  { stage: "Identification",        tool: "strings",    icon: "🔍", order: 4 },
   { stage: "YARA Analysis",         tool: "yara",       icon: "🧬", order: 5 },
   { stage: "Symbol Analysis",       tool: "symbol_analysis", icon: "🔣", order: 6 },
-  { stage: "Risk Scoring",          tool: "scorecard",  icon: "📋", order: 7 },
-  { stage: "Report Generation",     tool: "pdf_report", icon: "📄", order: 8 },
+  { stage: "Reverse Engineering",   tool: "ghidra",     icon: "🐉", order: 7 },
+  { stage: "OBIS Mapping",          tool: "obis_mapper",icon: "🗺️", order: 8 },
+  { stage: "Security Suite Verification", tool: "security_suite", icon: "🔐", order: 9 },
+  { stage: "Risk Scoring",          tool: "scorecard",  icon: "📋", order: 10 },
+  { stage: "Report Generation",     tool: "pdf_report", icon: "📄", order: 11 },
 ];
 
 export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: PageId) => void }) {

@@ -38,53 +38,53 @@ const NAV_ITEMS: {
   badge?: string;
   section?: string;
 }[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: <LayoutDashboard size={16} />,
-    section: "Overview",
-  },
-  {
-    id: "pipeline",
-    label: "Pipeline Simulator",
-    icon: <GitBranch size={16} />,
-    badge: "8 Stages",
-    section: "Analysis",
-  },
-  {
-    id: "tools",
-    label: "Tool Explorer",
-    icon: <Wrench size={16} />,
-    section: "Analysis",
-  },
-  {
-    id: "knowledge",
-    label: "Knowledge Base",
-    icon: <BookOpen size={16} />,
-    section: "Resources",
-  },
-  {
-    id: "logs",
-    label: "Execution Logs",
-    icon: <ScrollText size={16} />,
-    section: "Resources",
-  },
-  {
-    id: "reports",
-    label: "Reports & Findings",
-    icon: <Shield size={16} />,
-    section: "Resources",
-  },
-];
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <LayoutDashboard size={16} />,
+      section: "Overview",
+    },
+    {
+      id: "pipeline",
+      label: "Pipeline Simulator",
+      icon: <GitBranch size={16} />,
+      badge: "11 Stages",
+      section: "Analysis",
+    },
+    {
+      id: "tools",
+      label: "Tool Explorer",
+      icon: <Wrench size={16} />,
+      section: "Analysis",
+    },
+    {
+      id: "knowledge",
+      label: "Knowledge Base",
+      icon: <BookOpen size={16} />,
+      section: "Resources",
+    },
+    {
+      id: "logs",
+      label: "Execution Logs",
+      icon: <ScrollText size={16} />,
+      section: "Resources",
+    },
+    {
+      id: "reports",
+      label: "Reports & Findings",
+      icon: <Shield size={16} />,
+      section: "Resources",
+    },
+  ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   React.useEffect(() => {
     const checkHealth = () => {
-        api.get("health")
-          .then(() => setBackendOnline(true))
-          .catch(() => setBackendOnline(false));
+      api.get("health")
+        .then(() => setBackendOnline(true))
+        .catch(() => setBackendOnline(false));
     };
     checkHealth();
     const interval = setInterval(checkHealth, 5000);
@@ -179,27 +179,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
               backendOnline === true
                 ? "rgba(34,197,94,0.08)"
                 : backendOnline === false
-                ? "rgba(239,68,68,0.08)"
-                : "rgba(99,120,255,0.06)",
-            border: `1px solid ${
-              backendOnline === true
+                  ? "rgba(239,68,68,0.08)"
+                  : "rgba(99,120,255,0.06)",
+            border: `1px solid ${backendOnline === true
                 ? "rgba(34,197,94,0.2)"
                 : backendOnline === false
-                ? "rgba(239,68,68,0.2)"
-                : "var(--border-subtle)"
-            }`,
+                  ? "rgba(239,68,68,0.2)"
+                  : "var(--border-subtle)"
+              }`,
             borderRadius: "var(--radius-sm)",
             marginBottom: 8,
           }}
         >
           <div
-            className={`status-dot ${
-              backendOnline === true
+            className={`status-dot ${backendOnline === true
                 ? "status-dot-success"
                 : backendOnline === false
-                ? "status-dot-failed"
-                : "status-dot-queued"
-            }`}
+                  ? "status-dot-failed"
+                  : "status-dot-queued"
+              }`}
             style={
               backendOnline === null
                 ? { animation: "pulse-amber 1.5s infinite" }
@@ -211,8 +209,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
               {backendOnline === true
                 ? "API Server Online"
                 : backendOnline === false
-                ? "API Server Offline"
-                : "Checking API…"}
+                  ? "API Server Offline"
+                  : "Checking API…"}
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
               {api.defaults.baseURL}

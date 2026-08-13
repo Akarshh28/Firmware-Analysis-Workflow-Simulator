@@ -40,11 +40,16 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         project = db.query(Project).filter(Project.id == state["project_id"]).first()
         target_path = project.firmware_filepath if project else "unknown.bin"
 
-        cmd_template = TOOL_COMMANDS.get(tool_name, f"echo 'Tool {tool_name} not configured'")
-        cmd = cmd_template.replace("{target}", target_path).replace("{project_id}", str(state["project_id"]))
+        cmd_template = TOOL_COMMANDS.get(tool_name)
+        if cmd_template:
+            cmd = cmd_template.replace("{target}", target_path).replace("{project_id}", str(state["project_id"]))
+        else:
+            cmd = f"internal python wrapper for {tool_name}"
 
         # Check if the primary binary exists (skip logic)
-        if cmd.startswith('"'):
+        if cmd.startswith("internal python wrapper"):
+            primary_bin = "echo" # Skip check for internal wrappers
+        elif cmd.startswith('"'):
             primary_bin = cmd[1:cmd.find('"', 1)]
         else:
             primary_bin = cmd.split(" ")[0]
@@ -168,8 +173,9 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
             db.commit()
         else:
             import subprocess
+            import shlex
             def run_proc():
-                return subprocess.run(cmd, shell=True, capture_output=True)
+                return subprocess.run(shlex.split(cmd), shell=False, capture_output=True)
             process = await asyncio.to_thread(run_proc)
             stdout_bytes = process.stdout
             stderr_bytes = process.stderr
@@ -317,4 +323,10 @@ async def yara_node(state: GraphState):
 
 async def symbol_node(state: GraphState):
     return await execute_tool(state, "symbol_analysis", "Symbol Analysis", [{"file_name": "symbols.json", "mime_type": "application/json", "file_size": 2048}])
+
+async def obis_mapper_node(state: GraphState):
+    return await execute_tool(state, "obis_mapper", "Protocol Analysis", [{"file_name": "obis_mappings.json", "mime_type": "application/json", "file_size": 2048}])
+
+async def security_suite_node(state: GraphState):
+    return await execute_tool(state, "security_suite", "Protocol Analysis", [{"file_name": "security_suite.json", "mime_type": "application/json", "file_size": 1024}])
 

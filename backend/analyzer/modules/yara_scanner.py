@@ -4,6 +4,7 @@ yara_scanner.py - Wraps the bundled YARA ruleset (Phase 2, Pattern Matching step
 
 import os
 import glob
+from modules.obis_registry import lookup_obis_meaning
 
 RULES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "yara_rules")
 
@@ -99,6 +100,49 @@ def scan_with_yara(path: str):
         if m.rule in ["Unsafe_String_Functions", "Unsafe_Memory_Functions"]:
             severity = "low"
             description += " (Note: Presence of function import does not guarantee exploitation)"
+
+        if m.rule == "DLMS_COSEM_OBIS_Code_Pattern":
+            valid_obis_found = False
+            for string_match in m.strings:
+                # older yara-python: string_match is a tuple (offset, identifier, data)
+                # newer yara-python: string_match is an object with .instances
+                instances = getattr(string_match, 'instances', [])
+                if not instances and isinstance(string_match, tuple):
+                    # handle older yara-python
+                    string_data = string_match[2]
+                    try:
+                        decoded = string_data.decode("utf-8") if isinstance(string_data, bytes) else string_data
+                        is_known, meaning = lookup_obis_meaning(decoded)
+                        if is_known:
+                            valid_obis_found = True
+                            result["matches"].append({
+                                "rule": "DLMS_COSEM_OBIS_Code_Known",
+                                "cwe": None,
+                                "severity": "high",
+                                "description": f"OBIS code {decoded} found — {meaning}",
+                                "action": m.meta.get("action"),
+                            })
+                    except Exception:
+                        pass
+                else:
+                    # handle newer yara-python
+                    for instance in instances:
+                        string_data = instance.matched_data
+                        try:
+                            decoded = string_data.decode("utf-8") if isinstance(string_data, bytes) else string_data
+                            is_known, meaning = lookup_obis_meaning(decoded)
+                            if is_known:
+                                valid_obis_found = True
+                                result["matches"].append({
+                                    "rule": "DLMS_COSEM_OBIS_Code_Known",
+                                    "cwe": None,
+                                    "severity": "high",
+                                    "description": f"OBIS code {decoded} found — {meaning}",
+                                    "action": m.meta.get("action"),
+                                })
+                        except Exception:
+                            pass
+            # If we appended high severity known codes, we still keep the original match but at info severity
 
         result["matches"].append({
             "rule": m.rule,

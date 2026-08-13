@@ -253,6 +253,8 @@ def run_obis_mapper(file_path: str, project_id: int) -> dict:
     state = load_state(project_id)
     findings = []
     
+    all_unique_codes = {}
+    
     for leaf in state.get("leaf_binaries", []):
         try:
             # We run strings natively to fetch the text block
@@ -263,18 +265,23 @@ def run_obis_mapper(file_path: str, project_id: int) -> dict:
             )
             text = result.stdout
             codes = OBISParser.extract_from_text(text)
-            unique_codes = {c['code']: c for c in codes}.values()
-            
-            for c in unique_codes:
-                findings.append({
-                    "description": f"Hardcoded OBIS Code Found: {c['code']} -> {c['name']} (Access: {c['access']})",
-                    "severity": "medium" if c["access"] == "Read/Write" else "info",
-                    "cwe": "CWE-200",
-                    "category": "dlms_obis",
-                    "file": os.path.basename(leaf)
-                })
+            for c in codes:
+                all_unique_codes[c['code']] = c
         except Exception as e:
             pass
+            
+    if all_unique_codes:
+        table_lines = ["| OBIS Code | Description | Access |", "|---|---|---|"]
+        for c in all_unique_codes.values():
+            table_lines.append(f"| {c['code']} | {c['name']} | {c['access']} |")
+            
+        findings.append({
+            "description": "Extracted OBIS Code Map\n\n" + "\n".join(table_lines),
+            "severity": "info",
+            "cwe": "CWE-200",
+            "category": "dlms_obis",
+            "file": "Multiple" if len(state.get("leaf_binaries", [])) > 1 else os.path.basename(state.get("leaf_binaries", [])[0])
+        })
 
     return {
         "stage": "Protocol Analysis",
@@ -287,59 +294,66 @@ def run_security_suite(file_path: str, project_id: int) -> dict:
     state = load_state(project_id)
     findings = []
     
+    is_firmware_dlms = False
+    
+    # First pass: determine if ANY binary in the firmware is DLMS
     for leaf in state.get("leaf_binaries", []):
         try:
             with open(leaf, "rb") as f:
                 data = f.read()
-                
-                # First, check if this is even a DLMS/COSEM binary.
-                # Look for common DLMS terms or OBIS codes.
-                is_dlms = False
                 if b"DLMS" in data.upper() or b"COSEM" in data.upper() or b"OBIS" in data.upper():
-                    is_dlms = True
-                
-                # Alternatively, check if strings/yara found DLMS indicators
-                strings_res = state.get("strings_results", {}).get(leaf, {})
-                if strings_res.get("matches", {}).get("dlms_cosem"):
-                    is_dlms = True
-                    
-                if not is_dlms:
-                    findings.append({
-                        "description": f"Security Suite Verification: Not identified as a DLMS/COSEM binary. Skipping validation.",
-                        "severity": "info",
-                        "cwe": "CWE-000",
-                        "category": "crypto",
-                        "file": os.path.basename(leaf)
-                    })
-                    continue
-
-                has_aes = b"AES" in data or b"GCM" in data
-                has_ecdsa = b"ECDSA" in data or b"secp256r1" in data or b"P-256" in data
-                
-                suite = 0
-                if has_ecdsa and has_aes:
-                    suite = 2
-                elif has_aes:
-                    suite = 1
-                    
-                if suite == 0:
-                    findings.append({
-                        "description": f"Security Suite Verification: DLMS binary lacks strong crypto constants (AES/ECDSA). It may be using Suite 0 (Plaintext), but requires dynamic verification.",
-                        "severity": "medium",
-                        "cwe": "CWE-319",
-                        "category": "weak_crypto",
-                        "file": os.path.basename(leaf)
-                    })
-                else:
-                    findings.append({
-                        "description": f"Security Suite Verification: DLMS binary enforces Security Suite {suite}.",
-                        "severity": "info",
-                        "cwe": "CWE-000",
-                        "category": "crypto",
-                        "file": os.path.basename(leaf)
-                    })
-        except Exception as e:
+                    is_firmware_dlms = True
+                    break
+        except Exception:
             pass
+            
+        strings_res = state.get("strings_results", {}).get(leaf, {})
+        if strings_res.get("matches", {}).get("dlms_cosem"):
+            is_firmware_dlms = True
+            break
+            
+    if not is_firmware_dlms:
+        findings.append({
+            "description": "Security Suite Verification: Not identified as a DLMS/COSEM binary. Skipping validation.",
+            "severity": "info",
+            "cwe": "CWE-000",
+            "category": "crypto",
+            "file": "Overall Firmware"
+        })
+    else:
+        # Second pass: only check crypto constants on leaf binaries if firmware is DLMS
+        for leaf in state.get("leaf_binaries", []):
+            try:
+                with open(leaf, "rb") as f:
+                    data = f.read()
+                    
+                    has_aes = b"AES" in data or b"GCM" in data
+                    has_ecdsa = b"ECDSA" in data or b"secp256r1" in data or b"P-256" in data
+                    
+                    suite = 0
+                    if has_ecdsa and has_aes:
+                        suite = 2
+                    elif has_aes:
+                        suite = 1
+                        
+                    if suite == 0:
+                        findings.append({
+                            "description": f"Security Suite Verification: DLMS binary lacks strong crypto constants (AES/ECDSA). It may be using Suite 0 (Plaintext), but requires dynamic verification.",
+                            "severity": "medium",
+                            "cwe": "CWE-319",
+                            "category": "weak_crypto",
+                            "file": os.path.basename(leaf)
+                        })
+                    else:
+                        findings.append({
+                            "description": f"Security Suite Verification: DLMS binary enforces Security Suite {suite}.",
+                            "severity": "info",
+                            "cwe": "CWE-000",
+                            "category": "crypto",
+                            "file": os.path.basename(leaf)
+                        })
+            except Exception:
+                pass
 
     return {
         "stage": "Protocol Analysis",

@@ -270,7 +270,7 @@ export const Dashboard: React.FC = () => {
   const riskScore = summary?.riskScore ?? 32;
   const riskLabel = summary?.riskLabel ?? "CRITICAL RISK";
   const riskSummary = summary?.riskSummary ?? "Firmware poses significant security risk. 4 critical vulnerabilities must be patched before deployment.";
-  const findingsCount = findings?.length ?? 0;
+  const findingsCount = totalFindings;
 
 
   const statCards = [
@@ -406,7 +406,7 @@ export const Dashboard: React.FC = () => {
         <div className="card">
           <div className="card-title">
             <Clock size={14} />
-            Stage Analysis Time (minutes)
+            Stage Execution Time (Concurrent)
           </div>
           <div style={{ height: 200, marginTop: 16 }}>
             <ResponsiveContainer width="100%" height="100%">

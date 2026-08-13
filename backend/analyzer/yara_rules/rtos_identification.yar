@@ -37,7 +37,7 @@ rule RTOS_FreeRTOS
 rule Architecture_PowerPC
 {
     meta:
-        description = "Firmware targets PowerPC architecture (common in ABB/Hitachi protection relays)"
+        description = "Firmware targets PowerPC architecture"
         confidence  = "medium"
     strings:
         $ppc1 = "PowerPC" nocase

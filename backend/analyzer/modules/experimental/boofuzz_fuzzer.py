@@ -8,14 +8,26 @@ import threading
 
 boofuzz_installed = True
 try:
-    # pyright: ignore[reportMissingImports, reportUndefinedVariable, reportWildcardImportFromLibrary]
-    from boofuzz import *
+    # pyrefly: ignore [missing-import]
+    import boofuzz
+    Session = boofuzz.Session
+    Target = boofuzz.Target
+    SocketConnection = boofuzz.SocketConnection
+    s_initialize = boofuzz.s_initialize
+    s_byte = boofuzz.s_byte
+    s_size = boofuzz.s_size
+    s_block_start = boofuzz.s_block_start
+    s_block_end = boofuzz.s_block_end
+    s_bytes = boofuzz.s_bytes
+    s_get = boofuzz.s_get
+    blocks = boofuzz.blocks
 except ImportError:
     boofuzz_installed = False
     from unittest.mock import MagicMock
-    # MagicMock safely absorbs all function calls and attribute accesses without IDE type errors
     Session = Target = SocketConnection = MagicMock
     s_initialize = s_byte = s_size = s_block_start = s_block_end = s_bytes = s_get = MagicMock()
+    blocks = MagicMock()
+    blocks.REQUESTS = {}
 
 def generate_dlms_mutations():
     """
