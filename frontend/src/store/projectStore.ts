@@ -81,9 +81,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       const res = await api.get(`projects`);
       set({ projects: res.data });
-      if (res.data.length > 0 && !get().activeProject) {
-        get().selectProject(res.data[0]);
-      }
+      // Do NOT auto-select a project so Pipeline Simulator starts clean
     } catch (e) {
       console.error(e);
     } finally {

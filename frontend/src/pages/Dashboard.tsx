@@ -78,108 +78,14 @@ type DashboardData = {
   logs?: unknown[];
 };
 
-const fallbackSummary: DashboardSummary = {
-  critical: 4,
-  high: 9,
-  medium: 14,
-  low: 8,
-  riskScore: 32,
-  riskLabel: "CRITICAL RISK",
-  riskSummary:
-    "Firmware poses significant security risk. 4 critical vulnerabilities must be patched before deployment.",
-  dlmsSuite: "Suite 1 (AES-GCM-128)",
-};
-
-const fallbackMetrics: DashboardMetrics = {
-  totalFindings: 35,
-  criticalIssues: 4,
-  stagesCompleted: "8 / 8",
-  duration: "62 min",
-};
-
-const fallbackFindings: DashboardFinding[] = [
-  {
-    id: "CVE-SIM-001",
-    title: "Hardcoded DLMS Authentication Key",
-    severity: "critical",
-    stage: "Secret Detection",
-    tool: "trufflehog",
-  },
-  {
-    id: "CVE-SIM-002",
-    title: "Weak AES-128 ECB Mode in Meter Firmware",
-    severity: "high",
-    stage: "Cryptographic Analysis",
-    tool: "entropy",
-  },
-  {
-    id: "CVE-SIM-003",
-    title: "Buffer Overflow in DLMS Request Parser",
-    severity: "critical",
-    stage: "Symbolic Execution",
-    tool: "angr",
-  },
-  {
-    id: "CVE-SIM-004",
-    title: "Unauthenticated OBIS Code Access",
-    severity: "high",
-    stage: "Protocol Analysis",
-    tool: "wireshark",
-  },
-  {
-    id: "CVE-SIM-005",
-    title: "Stack Canary Bypass via Format String",
-    severity: "medium",
-    stage: "Fuzzing",
-    tool: "afl",
-  },
-];
-
-const fallbackPipeline: DashboardPipeline = {
-  vulnerabilities: [
-    { name: "Upload", issues: 0 },
-    { name: "Extract", issues: 0 },
-    { name: "ID", issues: 2 },
-    { name: "Crypto", issues: 7 },
-    { name: "YARA", issues: 3 },
-    { name: "Symbol", issues: 5 },
-    { name: "Risk", issues: 0 },
-    { name: "Report", issues: 0 },
-  ],
-  timeline: [
-    { stage: "Upload", mins: 0.5 },
-    { stage: "Extract", mins: 2.8 },
-    { stage: "ID", mins: 1.2 },
-    { stage: "Crypto", mins: 3.4 },
-    { stage: "YARA", mins: 2.1 },
-    { stage: "Symbol", mins: 8.2 },
-    { stage: "Risk", mins: 1.8 },
-    { stage: "Report", mins: 0.8 },
-  ],
-  severity: [
-    { name: "Critical", value: 4, fill: "#ef4444" },
-    { name: "High", value: 9, fill: "#f97316" },
-    { name: "Medium", value: 14, fill: "#f59e0b" },
-    { name: "Low", value: 8, fill: "#22c55e" },
-  ],
-};
-
-const OBIS_CODES = [
-  { code: "0.0.96.1.0.255", name: "Device ID / Serial Number", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
-  { code: "1.0.1.8.0.255", name: "Active Energy Import (+A)", access: "Read", source: "Config (Strings)", status: "Extracted" },
-  { code: "1.0.2.8.0.255", name: "Active Energy Export (-A)", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
-  { code: "1.0.32.7.0.255", name: "L1 Voltage", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
-  { code: "1.0.31.7.0.255", name: "L1 Current", access: "Read", source: "Network (Wireshark)", status: "Extracted" },
-  { code: "1.0.14.7.0.255", name: "Supply Frequency", access: "Read", source: "Config (Strings)", status: "Extracted" },
-  { code: "0.0.96.2.0.255", name: "Configuration Changes Count", access: "Read/Write", source: "Binary (Ghidra)", status: "Vulnerable" },
-];
-
 const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardData => ({
   summary: payload?.summary ?? {
-    critical: 0, high: 0, medium: 0, low: 0, riskScore: 0, riskLabel: "NO ISSUES", riskSummary: "No data available.", dlmsSuite: "Suite 1 (AES-GCM-128)", protocolVerdict: "Unknown"
+    critical: 0, high: 0, medium: 0, low: 0, riskScore: 0,
+    riskLabel: "NO DATA",
+    riskSummary: "No analysis has been run yet. Upload firmware and run the pipeline to generate findings.",
   },
   metrics: payload?.metrics ?? {
-    totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 8", duration: "0 min"
+    totalFindings: 0, criticalIssues: 0, stagesCompleted: "0 / 12", duration: "—"
   },
   findings: Array.isArray(payload?.findings) ? payload.findings.map((item) => ({
     id: item?.id ?? undefined,
@@ -188,10 +94,20 @@ const buildDashboardData = (payload?: Partial<DashboardData> | null): DashboardD
     stage: item?.stage ?? undefined,
     tool: item?.tool ?? undefined,
   })) : [],
-  pipeline: payload?.pipeline ?? fallbackPipeline,
+  pipeline: payload?.pipeline ?? {
+    vulnerabilities: [],
+    timeline: [],
+    severity: [
+      { name: "Critical", value: 0, fill: "#ef4444" },
+      { name: "High", value: 0, fill: "#f97316" },
+      { name: "Medium", value: 0, fill: "#f59e0b" },
+      { name: "Low", value: 0, fill: "#22c55e" },
+    ]
+  },
   obis_mappings: payload?.obis_mappings ?? [],
   logs: Array.isArray(payload?.logs) ? payload.logs : [],
 });
+
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
   if (active && payload && payload.length) {
@@ -215,6 +131,124 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
+/* ─────────── Severity Semicircle Arc Gauge ─────────── */
+const SeverityArcGauge = ({
+  critical,
+  high,
+  medium,
+  low,
+  total,
+}: {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  total: number;
+}) => {
+  const cx = 130;
+  const cy = 120;
+  const strokeWidth = 8;
+
+  const arcs = [
+    { name: "Critical", value: critical, color: "#ef4444", r: 92, len: Math.PI * 92 },
+    { name: "High", value: high, color: "#f97316", r: 72, len: Math.PI * 72 },
+    { name: "Medium", value: medium, color: "#f59e0b", r: 52, len: Math.PI * 52 },
+    { name: "Low", value: low, color: "#22c55e", r: 32, len: Math.PI * 32 },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", padding: "8px 0" }}>
+      <div style={{ width: 260, height: 130, position: "relative" }}>
+        <svg viewBox="0 0 260 130" style={{ width: 260, height: 130, overflow: "visible" }}>
+          <defs>
+            {arcs.map((a) => (
+              <linearGradient key={`grad-${a.name}`} id={`sev-grad-${a.name}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor={a.color} stopOpacity="0.8" />
+                <stop offset="100%" stopColor={a.color} stopOpacity="1" />
+              </linearGradient>
+            ))}
+            <filter id="arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          {arcs.map((a) => {
+            const pct = total > 0 ? a.value / total : 0;
+            const fillRatio = a.value > 0 ? Math.max(pct, 0.08) : 0;
+            const offset = a.len * (1 - fillRatio);
+            return (
+              <g key={a.name}>
+                <path
+                  d={`M ${cx - a.r} ${cy} A ${a.r} ${a.r} 0 0 1 ${cx + a.r} ${cy}`}
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.08)"
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                />
+                {a.value > 0 && (
+                  <path
+                    d={`M ${cx - a.r} ${cy} A ${a.r} ${a.r} 0 0 1 ${cx + a.r} ${cy}`}
+                    fill="none"
+                    stroke={`url(#sev-grad-${a.name})`}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeDasharray={a.len}
+                    strokeDashoffset={offset}
+                    filter="url(#arc-glow)"
+                    style={{
+                      transition: "stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
+                  />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        <div
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>
+            {total}
+          </div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
+            Total Findings
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 14, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
+        {arcs.map((a) => {
+          const share = total > 0 ? Math.round((a.value / total) * 100) : 0;
+          return (
+            <div key={a.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: a.color,
+                  boxShadow: a.value > 0 ? `0 0 6px ${a.color}` : "none",
+                }}
+              />
+              <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                {a.name}: <strong style={{ color: a.color }}>{a.value}</strong>{" "}
+                <span style={{ color: "var(--text-muted)", fontSize: 10 }}>({share}%)</span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const Dashboard: React.FC = () => {
   const { activeProject } = useProjectStore();
   const [dashboardData, setDashboardData] = useState<DashboardData>(() => buildDashboardData());
@@ -234,9 +268,12 @@ export const Dashboard: React.FC = () => {
     };
 
     fetchDashboard();
+    // Live polling every 3 seconds to keep dashboard stats dynamically updated
+    const pollTimer = setInterval(fetchDashboard, 3000);
 
     return () => {
       isMounted = false;
+      clearInterval(pollTimer);
     };
   }, [activeProject]);
 
@@ -258,19 +295,32 @@ export const Dashboard: React.FC = () => {
     fill: item?.fill ?? "#22c55e",
   }));
 
-  const timelineData = (pipeline?.timeline ?? []).map((item) => ({
+  const timelineData = (pipeline?.timeline ?? []).map((item: any) => ({
     stage: item?.stage ?? "",
     mins: item?.mins ?? 0,
+    secs: item?.secs ?? 0,
+    // Display label: use seconds if < 1 min, otherwise minutes
+    display: (item?.mins ?? 0) < 1 ? `${item?.secs ?? 0}s` : `${item?.mins ?? 0}m`,
   }));
+
+  const hasVulnData = vulnData.length > 0;
+  const hasTimelineData = timelineData.length > 0 && timelineData.some((d: any) => d.secs > 0);
+  const hasSeverityData = severityData.some((d) => d.value > 0);
 
   const totalFindings = metrics?.totalFindings ?? ((summary?.critical ?? 0) + (summary?.high ?? 0) + (summary?.medium ?? 0) + (summary?.low ?? 0));
   const criticalIssues = metrics?.criticalIssues ?? summary?.critical ?? 0;
-  const stagesCompleted = metrics?.stagesCompleted ?? "8 / 8";
-  const duration = metrics?.duration ?? "62 min";
-  const riskScore = summary?.riskScore ?? 32;
-  const riskLabel = summary?.riskLabel ?? "CRITICAL RISK";
-  const riskSummary = summary?.riskSummary ?? "Firmware poses significant security risk. 4 critical vulnerabilities must be patched before deployment.";
+  const stagesCompleted = metrics?.stagesCompleted ?? "0 / 12";
+  const duration = metrics?.duration ?? "—";
+  const riskScore = summary?.riskScore ?? 0;
+  const riskLabel = summary?.riskLabel ?? "NO DATA";
+  const riskSummary = summary?.riskSummary ?? "No analysis has been run yet. Upload firmware and run the pipeline to generate findings.";
   const findingsCount = totalFindings;
+
+  const critCount = Number(summary?.critical ?? severityData.find((s) => s.name === "Critical")?.value ?? 0);
+  const highCount = Number(summary?.high ?? severityData.find((s) => s.name === "High")?.value ?? 0);
+  const medCount = Number(summary?.medium ?? severityData.find((s) => s.name === "Medium")?.value ?? 0);
+  const lowCount = Number(summary?.low ?? severityData.find((s) => s.name === "Low")?.value ?? 0);
+  const totalSeverityCount = critCount + highCount + medCount + lowCount;
 
 
   const statCards = [
@@ -278,7 +328,7 @@ export const Dashboard: React.FC = () => {
       icon: <ShieldAlert size={18} />,
       label: "Total Findings",
       value: String(totalFindings),
-      sub: "Across 8 pipeline stages",
+      sub: "Across 12 pipeline stages",
       color: "var(--accent-red)",
       bg: "rgba(239,68,68,0.1)",
     },
@@ -379,26 +429,33 @@ export const Dashboard: React.FC = () => {
             Vulnerabilities by Pipeline Stage
           </div>
           <div style={{ height: 200, marginTop: 16 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={vulnData}>
-                <defs>
-                  <linearGradient id="vulnGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6378ff" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#6378ff" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="issues"
-                  stroke="#6378ff"
-                  strokeWidth={2}
-                  fill="url(#vulnGrad)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {hasVulnData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={vulnData}>
+                  <defs>
+                    <linearGradient id="vulnGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6378ff" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6378ff" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="var(--text-muted)" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="var(--text-muted)" allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="issues"
+                    stroke="#6378ff"
+                    strokeWidth={2}
+                    fill="url(#vulnGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
+                <TrendingUp size={28} color="var(--text-muted)" style={{ opacity: 0.3 }} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>No vulnerability data yet — run the pipeline first</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -406,30 +463,48 @@ export const Dashboard: React.FC = () => {
         <div className="card">
           <div className="card-title">
             <Clock size={14} />
-            Stage Execution Time (Concurrent)
+            Stage Execution Time
           </div>
           <div style={{ height: 200, marginTop: 16 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timelineData}>
-                <defs>
-                  <linearGradient id="timeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.9} />
-                    <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.3} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="stage" tick={{ fontSize: 9 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-dim)",
-                    borderRadius: 6,
-                    fontSize: 12,
-                  }}
-                />
-                <Bar dataKey="mins" fill="url(#timeGrad)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {hasTimelineData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timelineData}>
+                  <defs>
+                    <linearGradient id="timeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.3} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="stage" tick={{ fontSize: 9 }} stroke="var(--text-muted)" />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    stroke="var(--text-muted)"
+                    label={{ value: 'seconds', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'var(--text-muted)' } }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--bg-card)",
+                      border: "1px solid var(--border-dim)",
+                      borderRadius: 6,
+                      fontSize: 12,
+                    }}
+                    formatter={(value: any, name: any, props: any) => {
+                      const secs = props?.payload?.secs ?? 0;
+                      if (secs < 60) return [`${secs}s`, 'Duration'];
+                      const m = Math.floor(secs / 60);
+                      const s = Math.round(secs % 60);
+                      return [`${m}m ${s}s`, 'Duration'];
+                    }}
+                  />
+                  <Bar dataKey="secs" fill="url(#timeGrad)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
+                <Clock size={28} color="var(--text-muted)" style={{ opacity: 0.3 }} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>No execution data yet — run the pipeline first</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -519,121 +594,110 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Severity Radial + Security Score */}
+        {/* Severity Distribution + Security Score */}
         <div className="card">
-          <div className="card-title">
-            <Cpu size={14} />
-            Severity Distribution
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div className="card-title" style={{ margin: 0 }}>
+              <Cpu size={14} />
+              Severity Distribution
+            </div>
+            <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+              Total: <strong style={{ color: "var(--text-primary)" }}>{totalSeverityCount}</strong>
+            </span>
           </div>
-          <div style={{ height: 160, marginTop: 8 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart
-                cx="50%"
-                cy="50%"
-                innerRadius="30%"
-                outerRadius="90%"
-                data={severityData}
-                startAngle={180}
-                endAngle={0}
-              >
-                <RadialBar dataKey="value" cornerRadius={4} />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-dim)",
-                    borderRadius: 6,
-                    fontSize: 12,
-                  }}
-                />
-              </RadialBarChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-            {severityData.map((s) => (
-              <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 2,
-                    background: s.fill,
-                    flexShrink: 0,
-                  }}
-                />
-                <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                  {s.name}: <strong style={{ color: "var(--text-primary)" }}>{s.value}</strong>
-                </span>
-              </div>
-            ))}
+
+          {/* Semicircle Arc Display */}
+          <div style={{ marginTop: 4, marginBottom: 4 }}>
+            <SeverityArcGauge
+              critical={critCount}
+              high={highCount}
+              medium={medCount}
+              low={lowCount}
+              total={totalSeverityCount}
+            />
           </div>
 
           <div className="divider" />
 
-          {/* Security Score */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                border: "3px solid #ef4444",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#ef4444", textAlign: "center", lineHeight: 1 }}>
-                  {riskScore}
-                </div>
-                <div style={{ fontSize: 9, color: "var(--text-muted)", textAlign: "center" }}>
-                  /100
-                </div>
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444" }}>
-                {riskLabel}
-              </div>
-              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3 }}>
-                {riskSummary}
-              </div>
-            </div>
-          </div>
-
-          {/* CVSS Bars */}
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { label: "Confidentiality Impact", pct: 85, color: "#ef4444" },
-              { label: "Integrity Impact", pct: 72, color: "#f97316" },
-              { label: "Availability Impact", pct: 60, color: "#f59e0b" },
-            ].map((m) => (
-              <div key={m.label}>
+          {/* Security Score — dynamic color based on actual risk score */}
+          {(() => {
+            const scoreColor = riskScore > 75 ? "#ef4444" : riskScore > 50 ? "#f97316" : riskScore > 25 ? "#f59e0b" : riskScore > 0 ? "#22c55e" : "var(--text-muted)";
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div
                   style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    border: `3px solid ${scoreColor}`,
                     display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 11,
-                    color: "var(--text-secondary)",
-                    marginBottom: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
                   }}
                 >
-                  <span>{m.label}</span>
-                  <span style={{ color: m.color, fontWeight: 600 }}>{m.pct}%</span>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: scoreColor, textAlign: "center", lineHeight: 1 }}>
+                      {riskScore}
+                    </div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", textAlign: "center" }}>
+                      /100
+                    </div>
+                  </div>
                 </div>
-                <div className="progress-track">
-                  <div
-                    className="progress-bar"
-                    style={{
-                      width: `${m.pct}%`,
-                      background: `linear-gradient(90deg, ${m.color}, ${m.color}88)`,
-                    }}
-                  />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: scoreColor }}>
+                    {riskLabel}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3 }}>
+                    {riskSummary}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })()}
+
+          {/* CVSS Impact Bars — derived from real finding counts */}
+          {(() => {
+            const total = Number(totalFindings) || 1;
+            const critPct = Math.round(((summary?.critical ?? 0) / total) * 100);
+            const highPct = Math.round((((summary?.critical ?? 0) + (summary?.high ?? 0)) / total) * 100);
+            const medPct = Math.round((((summary?.critical ?? 0) + (summary?.high ?? 0) + (summary?.medium ?? 0)) / total) * 100);
+            const impactBars = [
+              { label: "Confidentiality Impact", pct: critPct + highPct > 0 ? Math.min(critPct * 3 + highPct, 100) : 0, color: "#ef4444" },
+              { label: "Integrity Impact", pct: highPct > 0 ? Math.min(highPct * 2 + critPct, 100) : 0, color: "#f97316" },
+              { label: "Availability Impact", pct: medPct > 0 ? Math.min(medPct + critPct, 100) : 0, color: "#f59e0b" },
+            ];
+            return (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                {impactBars.map((m) => (
+                  <div key={m.label}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: 11,
+                        color: "var(--text-secondary)",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span>{m.label}</span>
+                      <span style={{ color: m.color, fontWeight: 600 }}>{m.pct}%</span>
+                    </div>
+                    <div className="progress-track">
+                      <div
+                        className="progress-bar"
+                        style={{
+                          width: `${m.pct}%`,
+                          background: `linear-gradient(90deg, ${m.color}, ${m.color}88)`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

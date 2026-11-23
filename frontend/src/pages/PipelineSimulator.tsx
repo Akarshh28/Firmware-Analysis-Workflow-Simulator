@@ -16,6 +16,9 @@ import {
   XCircle,
   Loader,
   Circle,
+  Layers,
+  Sparkles,
+  Workflow,
 } from "lucide-react";
 import { usePipelineStore } from "../store/pipelineStore";
 import { useProjectStore } from "../store/projectStore";
@@ -39,26 +42,24 @@ const STAGE_DETAILS: Record<
     cvssImpact?: string;
   }
 > = {
-  binwalk: {
+  upload: {
     purpose:
-      "Scan the raw firmware binary for embedded file signatures, compressed archives, filesystems, and kernel images.",
-    input:
-      "Raw firmware binary image (flash.bin, firmware.img, *.hex). Typically 2–64 MB.",
+      "Upload and validate the target smart meter firmware binary into the FAWS analysis environment, initializing pipeline state and tracking metadata.",
+    input: "Raw firmware binary file (.bin, .hex, .elf, .img). Typically 2–64 MB.",
     output:
-      "Offset table listing all identified file signatures, extracted filesystem directories (SquashFS, cramfs, JFFS2), and any nested binaries.",
-    why: "Without extraction we cannot inspect file contents. Most smart meter firmware encrypts/compresses the filesystem — binwalk's signature library can identify and extract these structures even without a key for unencrypted sections.",
+      "Stored firmware binary in workspace artifacts directory with SHA-256 fingerprint and verified architecture headers.",
+    why: "The pipeline requires a verified firmware binary as its starting artifact. Upload validation confirms the file integrity, magic bytes, and architecture before heavy analysis begins.",
     internalWorking:
-      "Binwalk reads the binary byte-by-byte, comparing sequences against a database of 'magic byte' signatures (e.g., SquashFS magic 0x73717368, LZMA header 0x5D000080). When a match is found it records the offset. The -e flag then invokes decompressors (sasquatch, lzma, gzip) on those offsets to produce the filesystem tree.",
+      "File is validated by extension and magic bytes, stored in the backend artifacts repository, and registered in SQLite database. A new pipeline session is created and initialized.",
     commands: [
-      { cmd: "binwalk flash.bin",     desc: "Scan and list all signatures" },
-      { cmd: "binwalk -e flash.bin",  desc: "Extract detected filesystems" },
-      { cmd: "binwalk -Mat flash.bin", desc: "Recursive extraction with entropy" },
-      { cmd: "binwalk -E flash.bin",  desc: "Generate entropy graph (detect encryption)" },
+      { cmd: "curl -F 'firmware=@flash.bin' http://localhost:8000/api/projects/1/upload", desc: "Upload via REST API" },
+      { cmd: "sha256sum flash.bin", desc: "Verify firmware cryptographic fingerprint" },
+      { cmd: "file flash.bin", desc: "Inspect file magic bytes and format" },
     ],
     expectedResults:
-      "SquashFS filesystem extracted at offset 0x100000, LZMA kernel at 0x200, bootloader at 0x0. Extraction directory: _flash.bin.extracted/",
+      "File stored at artifacts/flash.bin. SHA-256: 4f3b89a... Ingestion verified, pipeline session READY.",
     nextStage: "strings (Identification)",
-    tags: ["Extraction", "Filesystem", "Signature Scan"],
+    tags: ["Upload", "Ingestion", "Validation", "Fingerprint"],
   },
   strings: {
     purpose:
@@ -77,47 +78,29 @@ const STAGE_DETAILS: Record<
     ],
     expectedResults:
       "Found: 'admin:changeme', OBIS code '1.0.1.8.0.255', endpoint 'dlms://192.168.1.1:4059', compiler 'GCC 9.3.0 arm-linux-gnueabi'.",
-    nextStage: "entropy (Cryptographic Analysis)",
-    tags: ["String Extraction", "Credential Hunt", "OSINT"],
+    nextStage: "binwalk (Extraction)",
+    tags: ["Identification", "String Extraction", "Credential Hunt", "OSINT"],
   },
-  entropy: {
+  binwalk: {
     purpose:
-      "Generate an entropy analysis map of the firmware to identify encrypted regions, compressed data, and areas containing random-looking data (keys, encrypted payloads).",
-    input: "Raw firmware binary file.",
-    output:
-      "Entropy graph (0.0–8.0 bits per byte), high-entropy region offsets, and recommendations for further investigation.",
-    why: "Encrypted data or strong compression appears as high-entropy (near 8.0 bits/byte) noise. By mapping entropy we can pinpoint where encryption keys and cipher-text payloads are stored — critical for DLMS security layer analysis.",
-    internalWorking:
-      "Entropy is calculated using Shannon entropy formula: H = -Σ(p(x) * log2(p(x))) over sliding blocks of 1024 bytes. Encrypted AES blocks will show entropy approaching 8.0. Known signatures (LZMA ~7.5, JPEG ~7.9, plaintext ~4.5) help classify regions.",
-    commands: [
-      { cmd: "binwalk -E flash.bin",        desc: "Generate entropy visualization" },
-      { cmd: "binwalk -E -J flash.bin",     desc: "Output entropy as JSON" },
-      { cmd: "python3 entropy.py flash.bin", desc: "Custom entropy analysis script" },
-    ],
-    expectedResults:
-      "High entropy region at offsets 0x80000–0x100000 (8.0 bits/byte — AES-128 ECB encrypted payload). Normal entropy at 0x0–0x80000 (SquashFS ~6.8).",
-    nextStage: "ghidra (Reverse Engineering)",
-    tags: ["Entropy", "Encryption Detection", "Cryptographic"],
-  },
-  ghidra: {
-    purpose:
-      "Perform full reverse engineering of the DLMS/COSEM parser binary: decompile ARM assembly to C pseudo-code, recover function signatures, and trace authentication logic.",
+      "Scan the raw firmware binary for embedded file signatures, compressed archives, filesystems, and kernel images.",
     input:
-      "Extracted ELF binary from firmware (dlms_parser, libcosem.so, or main_app).",
+      "Raw firmware binary image (flash.bin, firmware.img, *.hex). Typically 2–64 MB.",
     output:
-      "Decompiled C pseudo-code, control flow graph, function call graph, data cross-references, and annotated disassembly of the DLMS authentication and parsing routines.",
-    why: "Smart meter security relies on the correctness of the DLMS/COSEM protocol parser. Ghidra allows us to read the parser logic as C code without source, enabling identification of logic flaws, authentication bypasses, and unsafe pointer operations.",
+      "Offset table listing all identified file signatures, extracted filesystem directories (SquashFS, cramfs, JFFS2), and any nested binaries.",
+    why: "Without extraction we cannot inspect file contents. Most smart meter firmware encrypts/compresses the filesystem — binwalk's signature library can identify and extract these structures even without a key for unencrypted sections.",
     internalWorking:
-      "Ghidra runs a multi-phase analysis: (1) binary loader identifies ELF sections, (2) disassembler decodes ARM Thumb-2 instructions, (3) decompiler reconstructs high-level C via data flow analysis, (4) auto-analysis identifies known library functions via FunctionID signatures.",
+      "Binwalk reads the binary byte-by-byte, comparing sequences against a database of 'magic byte' signatures (e.g., SquashFS magic 0x73717368, LZMA header 0x5D000080). When a match is found it records the offset. The -e flag then invokes decompressors (sasquatch, lzma, gzip) on those offsets to produce the filesystem tree.",
     commands: [
-      { cmd: "analyzeHeadless . proj -import dlms_parser -postScript ExportDecompilation.java", desc: "Headless analysis" },
-      { cmd: "ghidra-decompile dlms_parser 0x401000", desc: "Decompile function at address" },
+      { cmd: "binwalk flash.bin",     desc: "Scan and list all signatures" },
+      { cmd: "binwalk -e flash.bin",  desc: "Extract detected filesystems" },
+      { cmd: "binwalk -Mat flash.bin", desc: "Recursive extraction with entropy" },
+      { cmd: "binwalk -E flash.bin",  desc: "Generate entropy graph (detect encryption)" },
     ],
     expectedResults:
-      "Function 'dlms_auth_verify()' decompiled — reveals single-byte XOR 'encryption' with hardcoded key 0xA5. Buffer overflow found at dlms_parse_request+0x48.",
+      "SquashFS filesystem extracted at offset 0x100000, LZMA kernel at 0x200, bootloader at 0x0. Extraction directory: _flash.bin.extracted/",
     nextStage: "cutter (Static Analysis)",
-    tags: ["Decompilation", "Reverse Engineering", "ARM", "DLMS Parser"],
-    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H — Score: 9.8 CRITICAL",
+    tags: ["Extraction", "Filesystem", "Signature Scan", "SquashFS"],
   },
   cutter: {
     purpose:
@@ -135,8 +118,29 @@ const STAGE_DETAILS: Record<
     ],
     expectedResults:
       "DLMS request handler at 0x4012a0, authentication check function at 0x401380, unsafe strcpy call at 0x401450 (buffer overflow candidate).",
-    nextStage: "trufflehog (Secret Detection)",
+    nextStage: "ghidra (Reverse Engineering)",
     tags: ["Static Analysis", "CFG", "Radare2", "Call Graph"],
+    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N — Score: 7.2 HIGH",
+  },
+  ghidra: {
+    purpose:
+      "Perform full reverse engineering of the DLMS/COSEM parser binary: decompile ARM assembly to C pseudo-code, recover function signatures, and trace authentication logic.",
+    input:
+      "Extracted ELF binary from firmware (dlms_parser, libcosem.so, or main_app).",
+    output:
+      "Decompiled C pseudo-code, control flow graph, function call graph, data cross-references, and annotated disassembly of the DLMS authentication and parsing routines.",
+    why: "Smart meter security relies on the correctness of the DLMS/COSEM protocol parser. Ghidra allows us to read the parser logic as C code without source, enabling identification of logic flaws, authentication bypasses, and unsafe pointer operations.",
+    internalWorking:
+      "Ghidra runs a multi-phase analysis: (1) binary loader identifies ELF sections, (2) disassembler decodes ARM Thumb-2 instructions, (3) decompiler reconstructs high-level C via data flow analysis, (4) auto-analysis identifies known library functions via FunctionID signatures.",
+    commands: [
+      { cmd: "analyzeHeadless . proj -import dlms_parser -postScript ExportDecompilation.java", desc: "Headless analysis" },
+      { cmd: "ghidra-decompile dlms_parser 0x401000", desc: "Decompile function at address" },
+    ],
+    expectedResults:
+      "Function 'dlms_auth_verify()' decompiled — reveals single-byte XOR 'encryption' with hardcoded key 0xA5. Buffer overflow found at dlms_parse_request+0x48.",
+    nextStage: "trufflehog (Secret Detection)",
+    tags: ["Decompilation", "Reverse Engineering", "ARM", "DLMS Parser"],
+    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H — Score: 9.8 CRITICAL",
   },
   trufflehog: {
     purpose:
@@ -155,9 +159,28 @@ const STAGE_DETAILS: Record<
     ],
     expectedResults:
       "Found: /etc/dlms.conf: DLMS_PASSWORD='SuperSecret123!', /usr/lib/libcosem.so: hardcoded AES key 0x4d534d534b4559...",
-    nextStage: "wireshark (Protocol Analysis)",
-    tags: ["Secret Detection", "Hardcoded Credentials", "Entropy"],
+    nextStage: "entropy (Cryptographic Analysis)",
+    tags: ["Secret Detection", "Hardcoded Credentials", "Entropy", "Key Discovery"],
     cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N — Score: 7.5 HIGH",
+  },
+  entropy: {
+    purpose:
+      "Generate an entropy analysis map of the firmware to identify encrypted regions, compressed data, and areas containing random-looking data (keys, encrypted payloads).",
+    input: "Raw firmware binary file.",
+    output:
+      "Entropy graph (0.0–8.0 bits per byte), high-entropy region offsets, and recommendations for further investigation.",
+    why: "Encrypted data or strong compression appears as high-entropy (near 8.0 bits/byte) noise. By mapping entropy we can pinpoint where encryption keys and cipher-text payloads are stored — critical for DLMS security layer analysis.",
+    internalWorking:
+      "Entropy is calculated using Shannon entropy formula: H = -Σ(p(x) * log2(p(x))) over sliding blocks of 1024 bytes. Encrypted AES blocks will show entropy approaching 8.0. Known signatures (LZMA ~7.5, JPEG ~7.9, plaintext ~4.5) help classify regions.",
+    commands: [
+      { cmd: "binwalk -E flash.bin",        desc: "Generate entropy visualization" },
+      { cmd: "binwalk -E -J flash.bin",     desc: "Output entropy as JSON" },
+      { cmd: "python3 entropy.py flash.bin", desc: "Custom entropy analysis script" },
+    ],
+    expectedResults:
+      "High entropy region at offsets 0x80000–0x100000 (8.0 bits/byte — AES-128 ECB encrypted payload). Normal entropy at 0x0–0x80000 (SquashFS ~6.8).",
+    nextStage: "wireshark (Protocol Analysis)",
+    tags: ["Cryptographic Analysis", "Entropy", "Encryption Detection", "Shannon"],
   },
   wireshark: {
     purpose:
@@ -196,7 +219,7 @@ const STAGE_DETAILS: Record<
     ],
     expectedResults:
       "Bypass key discovered: 0x444C4D535F434F53454D5F4259504153535F4B45590000 (ASCII: DLMS_COSEM_BYPASS_KEY). Buffer overflow triggered at offset 64 with payload 'A' * 64 + 0xdeadbeef.",
-    nextStage: "afl (Fuzzing)",
+    nextStage: "afl++ (Fuzzing)",
     tags: ["Symbolic Execution", "Z3 Solver", "Path Exploration", "Exploit Generation"],
     cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H — Score: 9.8 CRITICAL",
   },
@@ -219,6 +242,7 @@ const STAGE_DETAILS: Record<
       "11 unique crashes found after 2 hours: 3 heap overflows, 2 null pointer dereferences, 1 format string, 5 assertion failures. Coverage: 68% of parser code paths.",
     nextStage: "scorecard (Risk Assessment)",
     tags: ["Fuzzing", "Crash Detection", "Coverage-Guided", "AFL++"],
+    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H — Score: 8.8 HIGH",
   },
   scorecard: {
     purpose:
@@ -237,7 +261,7 @@ const STAGE_DETAILS: Record<
     expectedResults:
       "35 findings total: 4 Critical (CVSS ≥ 9.0), 9 High (7.0–8.9), 14 Medium (4.0–6.9), 8 Low (<4.0). Overall risk score: 32/100 (CRITICAL).",
     nextStage: "pdf_report (Report Generation)",
-    tags: ["CVSS", "CWE", "Risk Assessment", "IEC 62056"],
+    tags: ["Risk Assessment", "CVSS", "CWE", "IEC 62056"],
   },
   pdf_report: {
     purpose:
@@ -257,84 +281,86 @@ const STAGE_DETAILS: Record<
     nextStage: "— End of Pipeline —",
     tags: ["Report Generation", "PDF", "Executive Summary", "Remediation"],
   },
-  upload: {
-    purpose: "Upload the firmware binary to begin the analysis pipeline.",
-    input: "Firmware binary file (.bin, .hex, .elf, .img)",
-    output: "Stored firmware file ready for analysis pipeline",
-    why: "The pipeline requires a firmware binary as its starting artifact. The upload stage validates the file format and stores it securely.",
-    internalWorking: "File is validated by extension and magic bytes, then stored in the artifacts directory. A new pipeline session is created and initialized.",
-    commands: [
-      { cmd: "curl -F 'firmware=@flash.bin' http://localhost:8000/api/projects/1/upload", desc: "Upload via API" },
-    ],
-    expectedResults: "File stored at artifacts/flash.bin. Pipeline session initialized with status IDLE.",
-    nextStage: "binwalk (Extraction)",
-    tags: ["Upload", "Validation", "Setup"],
-  },
-  yara: {
-    purpose: "Scan the extracted firmware filesystem against YARA rule sets to flag known threat signatures, crypto materials, hardcoded credentials, and bad coding patterns.",
-    input: "Extracted firmware files and directories.",
-    output: "A JSON array of matches indicating the rule triggered, offset, and severity.",
-    why: "YARA provides a static, signature-based mechanism to quickly identify known vulnerabilities or misconfigurations (e.g. DLMS Security Suite 0 or known default keys) before dynamic analysis.",
-    internalWorking: "The YARA engine compiles `.yar` text files into an Aho-Corasick automaton, running a fast pattern match against all file contents. Regular expressions and logical conditions (e.g., '$a and not $b') determine if a rule triggers.",
-    commands: [
-      { cmd: "yara -r rules/dlms_crypto.yar _flash.bin.extracted/", desc: "Scan extracted filesystem for DLMS crypto keys" },
-      { cmd: "yara -r rules/hardcoded_passwords.yar _flash.bin.extracted/", desc: "Scan for default admin credentials" }
-    ],
-    expectedResults: "Matched rule 'DLMS_COSEM_Confirmed_Implementation' at offset 0x120. Matched 'Hardcoded_Credentials' at /etc/shadow.",
-    nextStage: "symbol_analysis",
-    tags: ["YARA", "Signature Scan", "Static Analysis", "Rule-based"],
-    cvssImpact: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N — Score: 7.5 HIGH",
-  },
-  symbol_analysis: {
-    purpose: "Parse ELF symbol tables (.symtab / .dynsym) to map out dangerous functions (e.g. strcpy), backdoor keywords, and object-oriented C++ classes.",
-    input: "Extracted ELF binary containing unstripped symbols.",
-    output: "JSON list of identified symbols tagged with their potential CWEs.",
-    why: "Symbols provide immediate context on what a binary does without requiring full decompilation. Spotting `dlms_auth_verify` or `system` helps focus reverse engineering efforts.",
-    internalWorking: "Uses binary analysis tools (like `nm`, `readelf`, or `lief`) to extract the symbol table from the ELF header, filtering out noisy symbols (like std::) to highlight suspicious ones based on a keyword heuristics list.",
-    commands: [
-      { cmd: "readelf -s _flash.bin.extracted/app", desc: "List all symbols in ELF" },
-      { cmd: "nm -D _flash.bin.extracted/app | grep -i pass", desc: "Search dynamic symbols for password-related functions" }
-    ],
-    expectedResults: "Found symbol 'strcpy' (CWE-119). Found symbol 'verify_dlms_mac' (Cryptographic routine).",
-    nextStage: "scorecard",
-    tags: ["Symbol Analysis", "ELF", "Reconnaissance"],
-  }
 };
 
 /* ─────────── Status helpers ─────────── */
 const statusIcon = (status: string, size = 14) => {
   switch (status) {
-    case "completed": return <CheckCircle size={size} color="var(--accent-green)" />;
-    case "running":   return <Loader size={size} color="var(--accent-amber)" style={{ animation: "spin 1s linear infinite" }} />;
-    case "failed":    return <XCircle size={size} color="var(--accent-red)" />;
-    case "queued":    return <Circle size={size} color="var(--accent-blue)" />;
-    default:          return <Circle size={size} color="var(--text-muted)" />;
+    case "completed": return <CheckCircle size={size} color="var(--accent-green, #22c55e)" />;
+    case "running":   return <Loader size={size} color="var(--accent-amber, #f59e0b)" style={{ animation: "spin 1s linear infinite" }} />;
+    case "failed":    return <XCircle size={size} color="var(--accent-red, #ef4444)" />;
+    case "queued":    return <Circle size={size} color="var(--accent-blue, #3b82f6)" />;
+    default:          return <Circle size={size} color="var(--text-muted, #64748b)" />;
   }
 };
 
 const statusClass = (status: string) =>
   `badge badge-${status === "completed" ? "success" : status === "running" ? "running" : status === "failed" ? "failed" : status === "queued" ? "queued" : "idle"}`;
 
-/* ─────────── Full pipeline stage list ─────────── */
+export type StageGroup = "blue" | "green" | "amber" | "gray";
+
+/* ─────────── Color Themes matching User Pipeline Diagram ─────────── */
+export const STAGE_THEMES: Record<
+  StageGroup,
+  {
+    border: string;
+    bg: string;
+    text: string;
+    badgeBg: string;
+    badgeBorder: string;
+  }
+> = {
+  blue: {
+    border: "#2b4c7e",
+    bg: "rgba(43, 76, 126, 0.16)",
+    text: "#93c5fd",
+    badgeBg: "rgba(59, 130, 246, 0.18)",
+    badgeBorder: "rgba(59, 130, 246, 0.35)",
+  },
+  green: {
+    border: "#2e7d32",
+    bg: "rgba(46, 125, 50, 0.16)",
+    text: "#86efac",
+    badgeBg: "rgba(34, 197, 94, 0.18)",
+    badgeBorder: "rgba(34, 197, 94, 0.35)",
+  },
+  amber: {
+    border: "#b45309",
+    bg: "rgba(180, 83, 9, 0.16)",
+    text: "#fde047",
+    badgeBg: "rgba(245, 158, 11, 0.18)",
+    badgeBorder: "rgba(245, 158, 11, 0.35)",
+  },
+  gray: {
+    border: "#64748b",
+    bg: "rgba(100, 116, 139, 0.16)",
+    text: "#cbd5e1",
+    badgeBg: "rgba(148, 163, 184, 0.18)",
+    badgeBorder: "rgba(148, 163, 184, 0.35)",
+  },
+};
+
+/* ─────────── Full pipeline stage list (12 stages in exact order) ─────────── */
 const ALL_STAGES = [
-  { stage: "Upload & Ingestion",    tool: "upload",     icon: "📤", order: 1 },
-  { stage: "Extraction",            tool: "binwalk",    icon: "📦", order: 2 },
-  { stage: "Cryptographic Analysis",tool: "entropy",    icon: "📊", order: 3 },
-  { stage: "Identification",        tool: "strings",    icon: "🔍", order: 4 },
-  { stage: "YARA Analysis",         tool: "yara",       icon: "🧬", order: 5 },
-  { stage: "Symbol Analysis",       tool: "symbol_analysis", icon: "🔣", order: 6 },
-  { stage: "Reverse Engineering",   tool: "ghidra",     icon: "🐉", order: 7 },
-  { stage: "OBIS Mapping",          tool: "obis_mapper",icon: "🗺️", order: 8 },
-  { stage: "Security Suite Verification", tool: "security_suite", icon: "🔐", order: 9 },
-  { stage: "Risk Scoring",          tool: "scorecard",  icon: "📋", order: 10 },
-  { stage: "Report Generation",     tool: "pdf_report", icon: "📄", order: 11 },
+  { stage: "Firmware Upload",         tool: "upload",     label: "1. Firmware Upload",        icon: "📤", order: 1,  group: "blue"  as StageGroup },
+  { stage: "Identification",          tool: "strings",    label: "2. Identification",         icon: "🔍", order: 2,  group: "blue"  as StageGroup },
+  { stage: "Extraction",              tool: "binwalk",    label: "3. Extraction",             icon: "📦", order: 3,  group: "blue"  as StageGroup },
+  { stage: "Static Analysis",         tool: "cutter",     label: "4. Static Analysis",        icon: "🧩", order: 4,  group: "green" as StageGroup },
+  { stage: "Reverse Engineering",     tool: "ghidra",     label: "5. Reverse Engineering",    icon: "🐉", order: 5,  group: "green" as StageGroup },
+  { stage: "Secret Detection",        tool: "trufflehog", label: "6. Secret Detection",       icon: "🔑", order: 6,  group: "green" as StageGroup },
+  { stage: "Cryptographic Analysis",  tool: "entropy",    label: "7. Cryptographic Analysis", icon: "📊", order: 7,  group: "green" as StageGroup },
+  { stage: "Protocol Analysis",       tool: "wireshark",  label: "8. Protocol Analysis",      icon: "🌐", order: 8,  group: "green" as StageGroup },
+  { stage: "Symbolic Execution",      tool: "angr",       label: "9. Symbolic Execution",     icon: "🧠", order: 9,  group: "amber" as StageGroup },
+  { stage: "Fuzzing",                 tool: "afl++",      label: "10. Fuzzing",               icon: "🐛", order: 10, group: "amber" as StageGroup },
+  { stage: "Risk Assessment",         tool: "scorecard",  label: "11. Risk Assessment",       icon: "📋", order: 11, group: "gray"  as StageGroup },
+  { stage: "Report Generation",       tool: "pdf_report", label: "12. Report Generation",      icon: "📄", order: 12, group: "gray"  as StageGroup },
 ];
 
 export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: PageId) => void }) {
   const { pipeline, fetchPipeline, resetPipelineBackend } = usePipelineStore();
   const { activeProject, activePipeline, clearActiveProject, startPipeline, fetchPipelineStatus } = useProjectStore();
 
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [selectedTool, setSelectedTool] = useState<string>("upload");
   const [activeTab, setActiveTab] = useState<"overview" | "commands" | "expected">("overview");
   const [running, setRunning] = useState(false);
 
@@ -342,7 +368,7 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
 
   useEffect(() => {
     if (activeProject) {
-        fetchPipeline(activeProject.id);
+      fetchPipeline(activeProject.id);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject]);
@@ -350,20 +376,20 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
   useEffect(() => {
     const currentStatus = activePipeline?.status;
     const prevStatus = prevStatusRef.current;
-    
+
     if (currentStatus === "COMPLETED" && prevStatus === "RUNNING") {
       useNotificationStore.getState().addNotification({
         title: "Analysis Complete",
-        message: "Firmware analysis pipeline has successfully finished.",
+        message: "Firmware analysis pipeline has successfully finished all 12 stages.",
         type: "success",
-        action: { label: "View Report", pageId: "reports" }
+        action: { label: "View Report", pageId: "reports" },
       });
 
       if (onNavigate) {
         const t = setTimeout(() => {
           onNavigate("reports");
         }, 1500);
-        
+
         prevStatusRef.current = currentStatus;
         return () => clearTimeout(t);
       }
@@ -372,10 +398,10 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
         title: "Analysis Failed",
         message: "The firmware analysis pipeline encountered an error.",
         type: "error",
-        action: { label: "Open Simulator", pageId: "pipeline" }
+        action: { label: "Open Simulator", pageId: "pipeline" },
       });
     }
-    
+
     prevStatusRef.current = currentStatus;
   }, [activePipeline?.status, onNavigate]);
 
@@ -392,42 +418,391 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
 
   const handleReset = () => {
     if (activeProject) clearActiveProject();
-    setSelectedTool(null);
+    setSelectedTool("upload");
   };
 
-  const details = selectedTool ? STAGE_DETAILS[selectedTool] : null;
-  const selectedStage = ALL_STAGES.find((s) => s.tool === selectedTool);
+  const details = selectedTool ? STAGE_DETAILS[selectedTool] : STAGE_DETAILS["upload"];
+  const selectedStage = ALL_STAGES.find((s) => s.tool === selectedTool) || ALL_STAGES[0];
 
-  const canRun = !!activeProject && activePipeline?.status !== "WAITING_UPLOAD" && activePipeline?.status !== "RUNNING" && !running;
+  const canRun =
+    !!activeProject &&
+    activePipeline?.status !== "WAITING_UPLOAD" &&
+    activePipeline?.status !== "RUNNING" &&
+    !running;
   const isPipelineRunning = running || activePipeline?.status === "RUNNING";
 
+  // Rows for the Serpentine Visual Diagram
+  const topRowStages = ALL_STAGES.slice(0, 6); // 1, 2, 3, 4, 5, 6 (Left to Right)
+  // Bottom row displayed left-to-right on screen: 12, 11, 10, 9, 8, 7 (so 7 sits directly under 6)
+  const bottomRowDisplayStages = [
+    ALL_STAGES[11], // 12
+    ALL_STAGES[10], // 11
+    ALL_STAGES[9],  // 10
+    ALL_STAGES[8],  // 9
+    ALL_STAGES[7],  // 8
+    ALL_STAGES[6],  // 7
+  ];
+
+  // Helper to check if a stage is completed
+  const isCompleted = (tool: string) => nodeMap[tool]?.status === "completed";
+  const isStageRunning = (tool: string) => nodeMap[tool]?.status === "running";
+
   return (
-    <div className="animate-fade-in" style={{ display: "flex", gap: 24, height: "calc(100vh - 116px)" }}>
+    <div
+      className="animate-fade-in"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        height: "calc(100vh - 116px)",
+      }}
+    >
+      {/* ─────────── 12-Stage Visual Workflow Diagram (Serpentine) ─────────── */}
+      <div
+        className="card"
+        style={{
+          padding: "16px 20px",
+          background: "var(--bg-card)",
+          borderRadius: "var(--radius-lg, 12px)",
+          border: "1px solid var(--border-subtle)",
+          flexShrink: 0,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 14,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: "rgba(99, 102, 241, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--accent-blue, #6366f1)",
+              }}
+            >
+              <Workflow size={16} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em" }}>
+                Firmware Analysis Pipeline Architecture
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                12-Stage Serpentine Execution Flow · Click any stage to inspect documentation & outputs
+              </div>
+            </div>
+          </div>
 
-      {/* Left Column: Upload + Stage List */}
-      <div style={{ width: 300, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)" }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#2563eb" }} /> Ingestion
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#16a34a", marginLeft: 6 }} /> Analysis & Crypto
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#d97706", marginLeft: 6 }} /> Dynamic & Fuzzing
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#64748b", marginLeft: 6 }} /> Reporting
+            </div>
+            {isPipelineRunning && (
+              <span className="badge badge-running" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Loader size={10} className="animate-spin" /> LIVE EXECUTING
+              </span>
+            )}
+          </div>
+        </div>
 
-        {/* Upload Component if not running/completed */}
-        {!isPipelineRunning && activePipeline?.status !== "COMPLETED" && activePipeline?.status !== "FAILED" && (
-           <div className="card" style={{ padding: 16, overflow: "hidden", flexShrink: 0 }}>
-             <h3 style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
-               <UploadIcon size={14} /> Firmware Setup
-             </h3>
-             <UploadComponent />
-           </div>
-        )}
+        {/* ─────────── Row 1: Stages 1 to 6 (Left to Right) ─────────── */}
+        <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 6 }}>
+          {topRowStages.map((stage, idx) => {
+            const status = nodeMap[stage.tool]?.status ?? "idle";
+            const running = status === "running";
+            const completed = status === "completed";
+            const selected = selectedTool === stage.tool;
+            const theme = STAGE_THEMES[stage.group];
+            const nextArrowActive = completed;
 
-        {/* Start / Reset Actions */}
-        <div style={{ display: "flex", gap: 8 }}>
+            return (
+              <React.Fragment key={stage.tool}>
+                <div
+                  onClick={() => setSelectedTool(stage.tool)}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    height: 66,
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: running
+                      ? "2px solid #f59e0b"
+                      : selected
+                      ? `2px solid ${theme.border}`
+                      : `2px solid ${theme.border}`,
+                    background: running
+                      ? "rgba(245, 158, 11, 0.12)"
+                      : selected
+                      ? theme.bg
+                      : theme.bg,
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    transition: "all 0.2s ease",
+                    boxShadow: running
+                      ? "0 0 12px rgba(245, 158, 11, 0.4)"
+                      : selected
+                      ? `0 0 10px ${theme.border}44`
+                      : "none",
+                    position: "relative",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 4 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        lineHeight: 1.25,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {stage.label}
+                    </div>
+                    {statusIcon(status, 12)}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontFamily: "var(--font-mono)",
+                        color: theme.text,
+                        fontWeight: 600,
+                      }}
+                    >
+                      [{stage.tool}]
+                    </span>
+                    {running && (
+                      <span style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, letterSpacing: "0.04em" }}>
+                        RUNNING
+                      </span>
+                    )}
+                    {completed && (
+                      <span style={{ fontSize: 9, color: "#22c55e", fontWeight: 700 }}>
+                        DONE
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {idx < topRowStages.length - 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <svg width="18" height="16" viewBox="0 0 20 16">
+                      <line
+                        x1="2"
+                        y1="8"
+                        x2="14"
+                        y2="8"
+                        stroke={nextArrowActive ? "#22c55e" : "var(--border-strong, #64748b)"}
+                        strokeWidth="2.5"
+                      />
+                      <polygon
+                        points="12,4 18,8 12,12"
+                        fill={nextArrowActive ? "#22c55e" : "var(--border-strong, #64748b)"}
+                      />
+                    </svg>
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {/* ─────────── Connector between Stage 6 and Stage 7 (Down Arrow on Right) ─────────── */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            paddingRight: "calc((100% - 90px) / 12 - 2px)",
+            height: 22,
+            alignItems: "center",
+          }}
+        >
+          <svg width="16" height="22" viewBox="0 0 16 22">
+            <line
+              x1="8"
+              y1="2"
+              x2="8"
+              y2="15"
+              stroke={isCompleted("trufflehog") ? "#22c55e" : "var(--border-strong, #64748b)"}
+              strokeWidth="2.5"
+            />
+            <polygon
+              points="4,13 8,20 12,13"
+              fill={isCompleted("trufflehog") ? "#22c55e" : "var(--border-strong, #64748b)"}
+            />
+          </svg>
+        </div>
+
+        {/* ─────────── Row 2: Stages 12 to 7 (Right to Left flow on screen) ─────────── */}
+        <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 6 }}>
+          {bottomRowDisplayStages.map((stage, idx) => {
+            const status = nodeMap[stage.tool]?.status ?? "idle";
+            const running = status === "running";
+            const completed = status === "completed";
+            const selected = selectedTool === stage.tool;
+            const theme = STAGE_THEMES[stage.group];
+
+            // In Row 2, flow is 7 -> 8 -> 9 -> 10 -> 11 -> 12 (arrows point LEFT).
+            // For card at index `idx` (which is stage N), the arrow to its right comes from stage N-1 (display index idx+1).
+            const sourceStage = bottomRowDisplayStages[idx + 1];
+            const leftArrowActive = sourceStage ? isCompleted(sourceStage.tool) : false;
+
+            return (
+              <React.Fragment key={stage.tool}>
+                <div
+                  onClick={() => setSelectedTool(stage.tool)}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    height: 66,
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: running
+                      ? "2px solid #f59e0b"
+                      : selected
+                      ? `2px solid ${theme.border}`
+                      : `2px solid ${theme.border}`,
+                    background: running
+                      ? "rgba(245, 158, 11, 0.12)"
+                      : selected
+                      ? theme.bg
+                      : theme.bg,
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    transition: "all 0.2s ease",
+                    boxShadow: running
+                      ? "0 0 12px rgba(245, 158, 11, 0.4)"
+                      : selected
+                      ? `0 0 10px ${theme.border}44`
+                      : "none",
+                    position: "relative",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 4 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        lineHeight: 1.25,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {stage.label}
+                    </div>
+                    {statusIcon(status, 12)}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontFamily: "var(--font-mono)",
+                        color: theme.text,
+                        fontWeight: 600,
+                      }}
+                    >
+                      [{stage.tool}]
+                    </span>
+                    {running && (
+                      <span style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, letterSpacing: "0.04em" }}>
+                        RUNNING
+                      </span>
+                    )}
+                    {completed && (
+                      <span style={{ fontSize: 9, color: "#22c55e", fontWeight: 700 }}>
+                        DONE
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {idx < bottomRowDisplayStages.length - 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {/* Arrow points LEFT from stage N-1 to stage N */}
+                    <svg width="18" height="16" viewBox="0 0 20 16">
+                      <line
+                        x1="18"
+                        y1="8"
+                        x2="6"
+                        y2="8"
+                        stroke={leftArrowActive ? "#22c55e" : "var(--border-strong, #64748b)"}
+                        strokeWidth="2.5"
+                      />
+                      <polygon
+                        points="8,4 2,8 8,12"
+                        fill={leftArrowActive ? "#22c55e" : "var(--border-strong, #64748b)"}
+                      />
+                    </svg>
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─────────── Lower Work Area: Controls & Selected Stage Details ─────────── */}
+      <div style={{ flex: 1, minHeight: 0, display: "flex", gap: 16 }}>
+        {/* Left Column: Quick Controls & Compact Stage List */}
+        <div style={{ width: 280, display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Upload Component if not running/completed */}
+          {!isPipelineRunning && activePipeline?.status !== "COMPLETED" && activePipeline?.status !== "FAILED" && (
+            <div className="card" style={{ padding: 14, overflow: "hidden", flexShrink: 0 }}>
+              <h3
+                style={{
+                  fontSize: 13,
+                  color: "var(--text-muted)",
+                  marginBottom: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontWeight: 600,
+                }}
+              >
+                <UploadIcon size={13} /> Firmware Setup
+              </h3>
+              <UploadComponent />
+            </div>
+          )}
+
+          {/* Start / Reset Actions */}
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <button
               className="btn btn-primary"
-              style={{ flex: 1, justifyContent: "center", opacity: canRun ? 1 : 0.5, cursor: canRun ? "pointer" : "not-allowed" }}
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                opacity: canRun ? 1 : 0.5,
+                cursor: canRun ? "pointer" : "not-allowed",
+              }}
               disabled={!canRun}
               onClick={handleRun}
             >
               {isPipelineRunning ? (
                 <>
-                  <Loader size={14} className="animate-spin" /> Running...
+                  <Loader size={14} className="animate-spin" /> Running Pipeline...
                 </>
               ) : (
                 <>
@@ -439,42 +814,68 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
               className="btn btn-secondary"
               onClick={handleReset}
               disabled={isPipelineRunning || !activeProject}
-              style={{ opacity: (isPipelineRunning || !activeProject) ? 0.5 : 1, padding: "8px 16px" }}
+              style={{
+                opacity: isPipelineRunning || !activeProject ? 0.5 : 1,
+                padding: "8px 14px",
+              }}
             >
               Reset
             </button>
-        </div>
-
-        {/* Stage List */}
-        <div
-          className="card"
-          style={{ padding: 0, flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}
-        >
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
-            <div className="card-title" style={{ marginBottom: 0 }}>
-              <Cpu size={13} /> Pipeline Stages
-            </div>
           </div>
-          <div style={{ overflow: "auto", flex: 1, padding: "8px 8px" }}>
-            {ALL_STAGES.map((s, i) => {
-              const node = nodeMap[s.tool];
-              const status = node?.status ?? "idle";
-              const progress = node?.progress ?? 0;
-              const isSelected = selectedTool === s.tool;
 
-              return (
-                <div key={s.tool}>
+          {/* Compact Stage List */}
+          <div
+            className="card"
+            style={{
+              padding: 0,
+              flex: 1,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 14px",
+                borderBottom: "1px solid var(--border-subtle)",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div className="card-title" style={{ marginBottom: 0, fontSize: 12 }}>
+                <Cpu size={13} /> Stage Progress
+              </div>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                {Object.values(nodeMap).filter((n) => n.status === "completed").length} / 12
+              </span>
+            </div>
+
+            <div style={{ overflow: "auto", flex: 1, padding: "6px" }}>
+              {ALL_STAGES.map((s) => {
+                const node = nodeMap[s.tool];
+                const status = node?.status ?? "idle";
+                const isSelected = selectedTool === s.tool;
+
+                return (
                   <div
+                    key={s.tool}
                     className={`stage-card status-${status} ${isSelected ? "selected" : ""}`}
-                    style={{ padding: "10px 14px", marginBottom: 0 }}
+                    style={{
+                      padding: "8px 10px",
+                      marginBottom: 4,
+                      borderRadius: 8,
+                      cursor: "pointer",
+                    }}
                     onClick={() => setSelectedTool(s.tool)}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>{s.icon}</span>
+                      <span style={{ fontSize: 13 }}>{s.icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: 600,
                             color: isSelected ? "var(--accent-blue)" : "var(--text-primary)",
                             whiteSpace: "nowrap",
@@ -482,68 +883,43 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {s.stage}
+                          {s.label}
                         </div>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: "var(--text-muted)",
+                            fontFamily: "var(--font-mono)",
+                          }}
+                        >
                           {s.tool}
                         </div>
                       </div>
-                      {statusIcon(status, 13)}
+                      {statusIcon(status, 12)}
                     </div>
-                    {status === "running" && (
-                      <div className="progress-track" style={{ marginTop: 6 }}>
-                        <div
-                          className="progress-bar progress-bar-amber"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    )}
-                    {status === "completed" && (
-                      <div className="progress-track" style={{ marginTop: 6 }}>
-                        <div className="progress-bar progress-bar-green" style={{ width: "100%" }} />
-                      </div>
-                    )}
                   </div>
-                  {i < ALL_STAGES.length - 1 && (
-                    <div className="connector-arrow" style={{ padding: "2px 0", height: 16 }}>
-                      <ChevronDown size={10} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Column: Stage Detail */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {!selectedTool ? (
+        {/* Right Column: Stage Detail Documentation */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           <div
             className="card"
             style={{
+              padding: 0,
+              overflow: "hidden",
               flex: 1,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔬</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-              Select a Pipeline Stage
-            </div>
-            <div style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 380 }}>
-              Click any stage card on the left to see its complete documentation — purpose, internal workings, commands, and expected outputs.
-            </div>
-          </div>
-        ) : (
-          <div className="card" style={{ padding: 0, overflow: "hidden", flex: 1, display: "flex", flexDirection: "column" }}>
             {/* Detail Header */}
             <div
               style={{
-                padding: "18px 24px",
+                padding: "16px 20px",
                 borderBottom: "1px solid var(--border-subtle)",
                 background: "rgba(99,120,255,0.04)",
                 flexShrink: 0,
@@ -552,15 +928,15 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
               <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     borderRadius: "var(--radius-md)",
                     background: "rgba(99,120,255,0.12)",
                     border: "1px solid rgba(99,120,255,0.25)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 22,
+                    fontSize: 20,
                     flexShrink: 0,
                   }}
                 >
@@ -568,12 +944,12 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }}>
-                      {selectedStage?.stage}
+                    <h2 style={{ fontSize: 17, fontWeight: 800, color: "var(--text-primary)" }}>
+                      {selectedStage?.label}
                     </h2>
                     <span
                       style={{
-                        fontSize: 12,
+                        fontSize: 11,
                         fontFamily: "var(--font-mono)",
                         color: "var(--accent-cyan)",
                         background: "rgba(34,211,238,0.1)",
@@ -584,13 +960,11 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                     >
                       {selectedTool}
                     </span>
-                    <span
-                      className={statusClass(nodeMap[selectedTool]?.status ?? "idle")}
-                    >
+                    <span className={statusClass(nodeMap[selectedTool]?.status ?? "idle")}>
                       {nodeMap[selectedTool]?.status?.toUpperCase() ?? "IDLE"}
                     </span>
                   </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                     {details?.tags.map((t) => (
                       <span
                         key={t}
@@ -615,7 +989,14 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
             </div>
 
             {/* Tabs */}
-            <div className="tabs" style={{ padding: "0 24px", flexShrink: 0, background: "var(--bg-primary)" }}>
+            <div
+              className="tabs"
+              style={{
+                padding: "0 20px",
+                flexShrink: 0,
+                background: "var(--bg-primary)",
+              }}
+            >
               <button
                 className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
                 onClick={() => setActiveTab("overview")}
@@ -637,15 +1018,23 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
             </div>
 
             {/* Tab Content */}
-            <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
               {activeTab === "overview" && details && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {/* Purpose */}
                   <section>
-                    <h4 style={{ color: "var(--accent-cyan)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                    <h4
+                      style={{
+                        color: "var(--accent-cyan)",
+                        fontSize: 11,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        marginBottom: 6,
+                      }}
+                    >
                       🎯 Purpose
                     </h4>
-                    <p style={{ color: "var(--text-primary)", lineHeight: 1.7, fontSize: 14 }}>
+                    <p style={{ color: "var(--text-primary)", lineHeight: 1.6, fontSize: 13 }}>
                       {details.purpose}
                     </p>
                   </section>
@@ -654,16 +1043,24 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                     {/* Input */}
                     <section
                       style={{
-                        padding: 16,
+                        padding: 14,
                         background: "rgba(34,211,238,0.05)",
                         border: "1px solid rgba(34,211,238,0.15)",
                         borderRadius: "var(--radius-md)",
                       }}
                     >
-                      <h4 style={{ color: "var(--accent-cyan)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                      <h4
+                        style={{
+                          color: "var(--accent-cyan)",
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
                         📥 Input
                       </h4>
-                      <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.6 }}>
+                      <p style={{ color: "var(--text-secondary)", fontSize: 12, lineHeight: 1.6 }}>
                         {details.input}
                       </p>
                     </section>
@@ -671,16 +1068,24 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                     {/* Output */}
                     <section
                       style={{
-                        padding: 16,
+                        padding: 14,
                         background: "rgba(168,85,247,0.05)",
                         border: "1px solid rgba(168,85,247,0.15)",
                         borderRadius: "var(--radius-md)",
                       }}
                     >
-                      <h4 style={{ color: "var(--accent-purple)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                      <h4
+                        style={{
+                          color: "var(--accent-purple)",
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
                         📤 Output
                       </h4>
-                      <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.6 }}>
+                      <p style={{ color: "var(--text-secondary)", fontSize: 12, lineHeight: 1.6 }}>
                         {details.output}
                       </p>
                     </section>
@@ -689,40 +1094,56 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                   {/* Why Required */}
                   <section
                     style={{
-                      padding: 16,
+                      padding: 14,
                       background: "rgba(245,158,11,0.05)",
                       border: "1px solid rgba(245,158,11,0.2)",
                       borderRadius: "var(--radius-md)",
                     }}
                   >
-                    <h4 style={{ color: "var(--accent-amber)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                    <h4
+                      style={{
+                        color: "var(--accent-amber)",
+                        fontSize: 11,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        marginBottom: 6,
+                      }}
+                    >
                       ❓ Why This Stage Is Required
                     </h4>
-                    <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
+                    <p style={{ color: "var(--text-secondary)", fontSize: 12, lineHeight: 1.6 }}>
                       {details.why}
                     </p>
                   </section>
 
                   {/* Internal Working */}
                   <section>
-                    <h4 style={{ color: "var(--accent-purple)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                    <h4
+                      style={{
+                        color: "var(--accent-purple)",
+                        fontSize: 11,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        marginBottom: 6,
+                      }}
+                    >
                       ⚙️ Internal Working
                     </h4>
-                    <p style={{ color: "var(--text-primary)", fontSize: 13, lineHeight: 1.8 }}>
+                    <p style={{ color: "var(--text-primary)", fontSize: 12, lineHeight: 1.7 }}>
                       {details.internalWorking}
                     </p>
                   </section>
 
-                  {/* CVSS */}
+                  {/* CVSS Impact if present */}
                   {details.cvssImpact && (
                     <section
                       style={{
-                        padding: 14,
+                        padding: 12,
                         background: "rgba(239,68,68,0.06)",
                         border: "1px solid rgba(239,68,68,0.2)",
                         borderRadius: "var(--radius-md)",
                         fontFamily: "var(--font-mono)",
-                        fontSize: 12,
+                        fontSize: 11,
                         color: "var(--text-code)",
                       }}
                     >
@@ -740,7 +1161,7 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                       background: "rgba(99,120,255,0.06)",
                       border: "1px solid rgba(99,120,255,0.15)",
                       borderRadius: "var(--radius-sm)",
-                      fontSize: 13,
+                      fontSize: 12,
                       color: "var(--text-secondary)",
                     }}
                   >
@@ -753,8 +1174,8 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
               )}
 
               {activeTab === "commands" && details && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <p style={{ color: "var(--text-secondary)", fontSize: 12 }}>
                     Click any command to copy it to your clipboard.
                   </p>
                   {details.commands.map((c, i) => (
@@ -764,10 +1185,18 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                       style={{ padding: 0, overflow: "hidden", cursor: "pointer" }}
                       onClick={() => navigator.clipboard?.writeText(c.cmd)}
                     >
-                      <div className="code-block" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border-subtle)" }}>
+                      <div
+                        className="code-block"
+                        style={{
+                          borderRadius: 0,
+                          border: "none",
+                          borderBottom: "1px solid var(--border-subtle)",
+                          fontSize: 12,
+                        }}
+                      >
                         $ {c.cmd}
                       </div>
-                      <div style={{ padding: "10px 16px", fontSize: 12, color: "var(--text-secondary)" }}>
+                      <div style={{ padding: "8px 14px", fontSize: 11, color: "var(--text-secondary)" }}>
                         {c.desc}
                       </div>
                     </div>
@@ -776,7 +1205,7 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
               )}
 
               {activeTab === "expected" && details && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div className="terminal">
                     <div className="terminal-header">
                       <div className="terminal-dot terminal-dot-red" />
@@ -786,24 +1215,30 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
                     </div>
                     <div className="terminal-body">
                       <div className="terminal-line log-system">$ {selectedTool} --run [target]</div>
-                      <div className="terminal-line log-system">FAWS Analysis Engine v1.0.0 · Stage: {selectedStage?.stage}</div>
-                      <div className="terminal-line" style={{ color: "var(--text-muted)" }}>─────────────────────────────────────────</div>
+                      <div className="terminal-line log-system">
+                        FAWS Analysis Engine v1.0.0 · Stage: {selectedStage?.label}
+                      </div>
+                      <div className="terminal-line" style={{ color: "var(--text-muted)" }}>
+                        ─────────────────────────────────────────
+                      </div>
                       <div className="terminal-line log-stdout">{details.expectedResults}</div>
-                      <div className="terminal-line" style={{ color: "var(--text-muted)" }}>─────────────────────────────────────────</div>
+                      <div className="terminal-line" style={{ color: "var(--text-muted)" }}>
+                        ─────────────────────────────────────────
+                      </div>
                       <div className="terminal-line log-success">✓ Stage completed successfully.</div>
                     </div>
                   </div>
                   <div
                     style={{
-                      padding: 16,
+                      padding: 14,
                       background: "rgba(34,197,94,0.05)",
                       border: "1px solid rgba(34,197,94,0.15)",
                       borderRadius: "var(--radius-md)",
-                      fontSize: 13,
+                      fontSize: 12,
                       color: "var(--text-secondary)",
                     }}
                   >
-                    <div style={{ color: "var(--accent-green)", fontWeight: 600, marginBottom: 6 }}>
+                    <div style={{ color: "var(--accent-green)", fontWeight: 600, marginBottom: 4 }}>
                       ✓ Expected Results Summary
                     </div>
                     {details.expectedResults}
@@ -812,7 +1247,7 @@ export default function PipelineSimulator({ onNavigate }: { onNavigate?: (page: 
               )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -44,17 +44,18 @@ app.add_middleware(
 
 # Define pipeline workflow stages in chronological order
 PIPELINE_STAGES = [
-    {"stage": "Upload & Ingestion", "tool": "upload", "desc": "Upload Smart Meter Firmware"},
-    {"stage": "Extraction", "tool": "binwalk", "desc": "Extract embedded filesystem"},
-    {"stage": "Cryptographic Analysis", "tool": "entropy", "desc": "Entropy + crypto detection"},
-    {"stage": "Identification", "tool": "strings", "desc": "Extract hardcoded keys and URLs"},
-    {"stage": "YARA Analysis", "tool": "yara", "desc": "YARA signature scanning"},
-    {"stage": "Symbol Analysis", "tool": "symbol_analysis", "desc": "Identify suspicious API symbols"},
-    {"stage": "Reverse Engineering", "tool": "ghidra", "desc": "Ghidra Headless Decompilation"},
-    {"stage": "Protocol Analysis", "tool": "obis_mapper", "desc": "DLMS OBIS Code Mapping"},
-    {"stage": "Protocol Analysis", "tool": "security_suite", "desc": "DLMS Security Suite Verification"},
-    {"stage": "Risk Scoring", "tool": "scorecard", "desc": "CVSS scoring"},
-    {"stage": "Report Generation", "tool": "pdf_report", "desc": "Generate PDF Vulnerability Report"}
+    {"stage": "Upload & Ingestion",      "tool": "upload",          "desc": "Upload Smart Meter Firmware"},
+    {"stage": "Identification",          "tool": "strings",         "desc": "Extract hardcoded keys and URLs"},
+    {"stage": "Extraction",              "tool": "binwalk",         "desc": "Extract embedded filesystem"},
+    {"stage": "Static Analysis",         "tool": "cutter",          "desc": "Visual static analysis via Cutter/Radare2"},
+    {"stage": "Reverse Engineering",     "tool": "ghidra",          "desc": "Ghidra Headless Decompilation"},
+    {"stage": "Secret Detection",        "tool": "trufflehog",      "desc": "Hardcoded secrets & credential scanning"},
+    {"stage": "Cryptographic Analysis",  "tool": "entropy",         "desc": "Entropy + crypto detection"},
+    {"stage": "Protocol Analysis",       "tool": "wireshark",       "desc": "DLMS/COSEM network protocol analysis"},
+    {"stage": "Symbolic Execution",      "tool": "angr",            "desc": "Path exploration & exploit generation"},
+    {"stage": "Fuzzing",                 "tool": "afl++",           "desc": "Coverage-guided fuzzing with AFL++"},
+    {"stage": "Risk Scoring",            "tool": "scorecard",       "desc": "CVSS scoring & risk assessment"},
+    {"stage": "Report Generation",       "tool": "pdf_report",      "desc": "Generate PDF Vulnerability Report"},
 ]
 
 @app.get("/")
@@ -125,7 +126,9 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     stages_completed_count = 0
     if session:
         completed_tools = db.query(models.ToolRun).filter(models.ToolRun.session_id == session.id, models.ToolRun.exit_code == 0).count()
-        stages_completed_count = min(completed_tools + 1, 12) if session.status != "WAITING_UPLOAD" else 0
+        # Count upload as completed if firmware has been uploaded (status is not WAITING_UPLOAD)
+        upload_completed = 1 if session.status not in ("WAITING_UPLOAD",) else 0
+        stages_completed_count = min(completed_tools + upload_completed, len(PIPELINE_STAGES)) if session.status != "WAITING_UPLOAD" else 0
         
     # Pull real findings from logs
     real_findings = []
@@ -250,6 +253,27 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                             desc = f"High entropy regions were detected, suggesting encrypted or compressed data. {title}. If custom encryption is used, it may be vulnerable to cryptanalysis."
                             poc = f"$ binwalk -E firmware.bin\nHigh entropy section found: {title}"
                             remediation = "1. Ensure standard, well-vetted cryptographic libraries are used.\n2. Verify that entropy is not a result of obfuscation intended to hide malicious payloads."
+                        elif tool_name == "cutter":
+                            cvss = 7.2
+                            severity = "high"
+                            cwe = "CWE-119"
+                            desc = f"Visual static analysis and disassembly identified potentially unsafe control flow or memory handling: {title}."
+                            poc = f"$ r2 -q -c 'aaa; pdf @ main' firmware.bin\nDetected: {title}"
+                            remediation = "1. Review decompiled assembly around suspicious branch.\n2. Replace unsafe calls with bounds-checked alternatives."
+                        elif tool_name == "wireshark":
+                            cvss = 8.2
+                            severity = "high"
+                            cwe = "CWE-319"
+                            desc = f"Protocol dissection detected insecure DLMS/COSEM network communications: {title}."
+                            poc = f"$ tshark -r capture.pcap -Y dlms\nFlagged: {title}"
+                            remediation = "1. Enforce High-Level Security (HLS) with GMAC authentication.\n2. Disable unauthenticated association modes (Security Suite 0)."
+                        elif tool_name == "angr":
+                            cvss = 9.8
+                            severity = "critical"
+                            cwe = "CWE-287"
+                            desc = f"Symbolic execution solved constraints reaching authentication bypass or state corruption: {title}."
+                            poc = f"$ python3 angr_solve.py --target dlms_parser\nSatisfying input constraint discovered: {title}"
+                            remediation = "1. Patch logic flaw identified by the SMT solver.\n2. Add state transition guards to prevent unauthorized reachability."
                         elif tool_name == "afl++":
                             cvss = 8.8
                             severity = "high"
@@ -293,29 +317,38 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
     
     for stage_def in PIPELINE_STAGES:
         stage_name = stage_def["stage"]
-        # UI expects short names for charts
+        tool_name = stage_def["tool"]
+        
+        # Complete short names mapping for all 12 pipeline stages
         short_names = {
-            "Upload & Ingestion": "Upload", "Identification": "ID", "Extraction": "Extract",
-            "Static & Credential Analysis": "Static", "Reverse Engineering": "RE",
-            "Cryptographic Analysis": "Crypto", "Network Analysis": "Network",
-            "Dynamic Analysis": "Fuzzing", "Symbolic Execution": "Symbolic",
-            "Risk Scoring": "Risk", "Report Generation": "Report"
+            "Upload & Ingestion":     "Upload",
+            "Identification":         "ID",
+            "Extraction":             "Extract",
+            "Static Analysis":        "Static",
+            "Reverse Engineering":    "RE",
+            "Secret Detection":       "Secrets",
+            "Cryptographic Analysis": "Crypto",
+            "Protocol Analysis":      "Protocol",
+            "Symbolic Execution":     "Symbolic",
+            "Fuzzing":                "Fuzzing",
+            "Risk Scoring":           "Risk",
+            "Report Generation":      "Report",
         }
         short_name = short_names.get(stage_name, stage_name.split()[0])
         
-        # We need to map tool_name to vulnerabilities since stage names might overlap (e.g. Cutter and Trufflehog both are Static & Credential Analysis)
-        tool_name = stage_def["tool"]
+        # Count real vulnerabilities found by this specific tool
         issues = sum(1 for f in real_findings if f.get("tool") == tool_name and f.get("severity") in ["critical", "high", "medium", "low"])
         
-        # To avoid duplicates in vulnerabilities array if multiple tools use the same stage name
+        # Merge into vulnerabilities array (aggregate tools sharing the same short_name, e.g. obis_mapper + security_suite both map to "Protocol")
         existing_vuln = next((v for v in pipeline_vulnerabilities if v["name"] == short_name), None)
         if existing_vuln:
             existing_vuln["issues"] += issues
         else:
             pipeline_vulnerabilities.append({"name": short_name, "issues": issues})
         
-        # timeline
+        # Calculate real execution time from DB
         mins = 0.0
+        secs = 0.0
         if session:
             runs = db.query(models.ToolRun).filter(
                 models.ToolRun.session_id == session.id,
@@ -326,17 +359,18 @@ def get_project_dashboard(project_id: int, db: Session = Depends(get_db)):
                 if valid_runs:
                     min_start = min(r.started_at for r in valid_runs)
                     max_end = max(r.ended_at for r in valid_runs)
-                    mins = round((max_end - min_start).total_seconds() / 60.0, 2)
+                    total_secs = (max_end - min_start).total_seconds()
+                    secs = round(total_secs, 2)
+                    mins = round(total_secs / 60.0, 2)
         
         # Merge by short_name so the chart doesn't show multiple bars for the same stage
         existing_timeline = next((t for t in pipeline_timeline if t["stage"] == short_name), None)
         if existing_timeline:
-            # We don't add them naively; but if different tools mapped to same short_name, 
-            # ideally we'd track global min/max for short_name.
-            # But usually it's 1-to-1 or the tool duration dominates. We'll take max of durations for now.
-            existing_timeline["mins"] = max(existing_timeline["mins"], mins or 0.1)
+            # For tools sharing a stage name (e.g. Protocol), sum the durations
+            existing_timeline["mins"] = round(existing_timeline["mins"] + mins, 2)
+            existing_timeline["secs"] = round(existing_timeline["secs"] + secs, 2)
         else:
-            pipeline_timeline.append({"stage": short_name, "mins": mins or 0.1})
+            pipeline_timeline.append({"stage": short_name, "mins": mins, "secs": secs})
         
     from .obis_parser import OBISParser
     obis_mappings = []
@@ -655,72 +689,60 @@ def reset_pipeline(project_id: int, db: Session = Depends(get_db)):
 from pydantic import BaseModel
 import subprocess
 import os
+from app.services.sandbox_service import TOOL_REGISTRY_DOCS, execute_sandbox_command
 
-
+class SandboxCommandRequest(BaseModel):
+    command: str
+    tool: str = "binwalk"
 
 @app.get("/api/tools")
 def list_tools():
-    tools_list = []
     all_stages_tools = [
         "upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog", 
-        "entropy", "wireshark", "afl++", "angr", "yara", "symbol_analysis", "scorecard", "pdf_report"
+        "entropy", "wireshark", "angr", "afl++", "yara", "symbol_analysis", "scorecard", "pdf_report"
     ]
+    tools_list = []
     for t in all_stages_tools:
-        if t == "yara":
+        if t in TOOL_REGISTRY_DOCS:
+            info = TOOL_REGISTRY_DOCS[t]
             tools_list.append({
                 "name": t,
-                "version": "4.3.2",
-                "docs": {
-                    "purpose": "YARA Rule Set Editor/Viewer: Scans the extracted firmware for known threat signatures, crypto materials, and bad coding patterns using explicit rule sets.",
-                    "input": "Extracted firmware files or memory dumps.",
-                    "output": "Matching YARA rules and offsets.",
-                    "workflow": "Runs concurrently with Static Analysis to flag known bad patterns.",
-                    "commands": [
-                        {"command": "yara -r rules/dlms_crypto.yar _flash.bin.extracted/", "explanation": "Scan extracted filesystem for DLMS crypto keys"},
-                        {"command": "yara -r rules/hardcoded_passwords.yar _flash.bin.extracted/", "explanation": "Scan for default admin credentials"}
-                    ],
-                    "common_errors": ["Syntax error in rule file"],
-                    "troubleshooting": "Validate YARA rules with 'yara -c'. Ensure the rules directory is accessible.",
-                    "best_practices": "Keep rule sets updated with latest threat intel. Group rules by CVE or component.",
-                    "references": ["YARA Documentation", "DLMS Security Suite Signatures"]
-                }
-            })
-        elif t == "symbol_analysis":
-            tools_list.append({
-                "name": t,
-                "version": "1.2.0",
-                "docs": {
-                    "purpose": "Symbol Analysis: Parses ELF symbol tables (.symtab / .dynsym) to identify dangerous functions, backdoor keywords, and object-oriented C++ classes.",
-                    "input": "Extracted ELF binary containing unstripped symbols.",
-                    "output": "JSON list of identified symbols tagged with CWEs.",
-                    "workflow": "Runs dynamically alongside Static Analysis after firmware extraction.",
-                    "commands": [
-                        {"command": "readelf -s _flash.bin.extracted/app", "explanation": "List all symbols in ELF"},
-                        {"command": "nm -D _flash.bin.extracted/app", "explanation": "List dynamic symbols"}
-                    ],
-                    "common_errors": ["Binary is stripped (no symbols found)"],
-                    "troubleshooting": "Check if binary is stripped using the 'file' command. If stripped, rely on Ghidra/Cutter.",
-                    "best_practices": "Use symbol analysis before deeper disassembly to quickly map out the program structure.",
-                    "references": ["readelf manual", "nm manual"]
-                }
+                "version": info["version"],
+                "docs": info["docs"]
             })
         else:
             tools_list.append({
                 "name": t,
-                "version": "1.0",
+                "version": "1.0.0",
                 "docs": {
-                    "purpose": f"Documentation for tool: {t}",
-                    "input": "Target firmware binary",
-                    "output": "Analysis log and generated artifacts",
-                    "workflow": "Standard stage of cybersecurity pipeline",
-                    "commands": [{"command": f"{t} --help", "explanation": "Help command"}],
-                    "common_errors": ["Binary not found in PATH"],
-                    "troubleshooting": "Ensure binary is installed and executable.",
-                    "best_practices": "Check configurations.",
-                    "references": ["FAWS Wiki"]
+                    "purpose": f"Automated analysis module for: {t}",
+                    "input": "Smart meter firmware binary",
+                    "output": "Structured analysis telemetry and artifacts",
+                    "workflow": "Active stage in the 12-stage analysis pipeline",
+                    "commands": [
+                        {"command": f"{t} --help", "explanation": "Display module documentation and parameters"},
+                        {"command": f"{t} --target firmware.bin", "explanation": f"Execute {t} on active firmware image"}
+                    ],
+                    "common_errors": ["Module initialization timeout"],
+                    "troubleshooting": "Verify firmware image is uploaded and accessible.",
+                    "best_practices": "Review logs in the Sandbox Console.",
+                    "references": ["FAWS Security Architecture Specification"]
                 }
             })
     return tools_list
+
+@app.post("/api/projects/{project_id}/sandbox")
+def run_sandbox_command(
+    project_id: int,
+    payload: SandboxCommandRequest,
+    db: Session = Depends(get_db)
+):
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    result = execute_sandbox_command(project, payload.command, payload.tool, db)
+    return result
 
 @app.get("/api/projects/{project_id}/logs")
 def get_project_logs(project_id: int, db: Session = Depends(get_db)):

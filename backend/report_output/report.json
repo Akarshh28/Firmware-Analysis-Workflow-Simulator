@@ -1,0 +1,94 @@
+{
+  "generated_at": "2026-08-18T05:37:17.808310+00:00",
+  "total_files_processed": 1,
+  "files": [
+    {
+      "path": "backend/tests/fixtures/synthetic_dlms_variant1.bin",
+      "file_type": "data",
+      "extraction_status": "ok: unrecognized/non-executable file type ('data') - not a known archive format, so treated as a raw leaf for entropy/string/YARA analysis. Symbol/disassembly stage will likely report 'no symbols' for this file, which is expected.",
+      "entropy_analysis": {
+        "success": true,
+        "error": null,
+        "windows_scanned": 1,
+        "flagged_regions": [],
+        "verdict": "clean"
+      },
+      "string_scan": {
+        "success": true,
+        "error": null,
+        "total_strings": 10,
+        "matches": {
+          "dlms_cosem": [
+            "OBIS mapped: 1.0.1.8.0.255",
+            "OBIS mapped: 0.0.96.1.0.255",
+            "COSEM Application Layer",
+            "DLMS Protocol handler initialized..."
+          ]
+        }
+      },
+      "yara_scan": {
+        "success": true,
+        "error": null,
+        "matches": [
+          {
+            "rule": "mbedTLS_Library_Identification",
+            "cwe": "CWE-000",
+            "severity": "info",
+            "description": "Identifies mbedTLS / PolarSSL cryptographic library usage (Informational)",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_Literal_Strings",
+            "cwe": null,
+            "severity": "info",
+            "description": "Firmware contains explicit DLMS or COSEM literal strings",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_OBIS_Code_Known",
+            "cwe": null,
+            "severity": "high",
+            "description": "OBIS code 0.0.96.1.0.255 found \u2014 Meter serial number",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_OBIS_Code_Known",
+            "cwe": null,
+            "severity": "high",
+            "description": "OBIS code 1.0.1.8.0.255 found \u2014 Active energy import (A+) total",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_OBIS_Code_Pattern",
+            "cwe": null,
+            "severity": "info",
+            "description": "Binary contains OBIS-code-shaped strings (A.B.C.D.E.F), the DLMS/COSEM object naming scheme",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_Security_Suite_Indicators",
+            "cwe": null,
+            "severity": "info",
+            "description": "Binary references DLMS Security Suite mechanisms (AES-GCM, ECDSA) used for authenticated/encrypted DLMS sessions",
+            "action": null
+          },
+          {
+            "rule": "DLMS_COSEM_Confirmed_Implementation",
+            "cwe": null,
+            "severity": "info",
+            "description": "High-confidence verdict: firmware genuinely implements DLMS/COSEM (not just a shared ACSE layer)",
+            "action": "Proceed to Phase 3 protocol-specific testing (OBIS mapping, security suite verification, APDU fuzzing)"
+          }
+        ]
+      },
+      "symbol_analysis": {
+        "success": false,
+        "error": "objdump -t failed: objdump: backend/tests/fixtures/synthetic_dlms_variant1.bin: File format not recognized",
+        "objdump_used": "objdump",
+        "total_symbols": 0,
+        "flagged_symbols": []
+      },
+      "protocol_verdict": "DLMS/COSEM confirmed"
+    }
+  ]
+}

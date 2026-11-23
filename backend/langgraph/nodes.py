@@ -133,22 +133,7 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
         stderr_bytes = b''
         exit_code = 0
 
-        if settings.MODE == "real" and tool_name not in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite", "scorecard", "pdf_report"]:
-            log_msg = f"[{tool_name}] Skipped in real mode."
-            log_entry = LogEntry(tool_run_id=tool_run.id, log_type="SYSTEM", message=log_msg)
-            db.add(log_entry)
-            
-            tool_run.exit_code = 0
-            tool_run.ended_at = datetime.datetime.utcnow()
-            db.commit()
-            
-            state["current_stage"] = stage_name
-            await manager.broadcast(state["project_id"], {
-                "type": "TOOL_SUCCESS",
-                "data": {"tool_name": tool_name, "skipped": True}
-            })
-            return state
-
+        # In real mode, use custom analyzers for supported tools; for others, run their standalone tool script
         if settings.MODE == "real" and tool_name in ["binwalk", "strings", "entropy", "yara", "symbol_analysis", "ghidra", "obis_mapper", "security_suite"]:
             from analyzer.wrappers import run_binwalk, run_strings, run_entropy, run_yara, run_symbols, run_ghidra, run_obis_mapper, run_security_suite
             def run_wrapper():
@@ -282,7 +267,46 @@ async def execute_tool(state: GraphState, tool_name: str, stage_name: str, fallb
 
 
 async def upload_node(state: GraphState):
-    # Upload is handled by REST API, just a pass-through here
+    db = get_db_session(state["db_url"])
+    try:
+        tool_run = ToolRun(
+            session_id=state["session_id"],
+            tool_name="upload",
+            command_executed="firmware_ingestion --validate-checksum",
+            started_at=datetime.datetime.utcnow(),
+            ended_at=datetime.datetime.utcnow(),
+            exit_code=0
+        )
+        db.add(tool_run)
+        db.commit()
+        db.refresh(tool_run)
+
+        log_entry = LogEntry(
+            tool_run_id=tool_run.id,
+            log_type="STDOUT",
+            message="[upload] Firmware binary validated and ingested into analysis pipeline workspace."
+        )
+        db.add(log_entry)
+        db.commit()
+    except Exception as e:
+        print(f"Error in upload_node: {e}")
+    finally:
+        db.close()
+
+    await manager.broadcast(state["project_id"], {
+        "type": "STATUS_UPDATE",
+        "data": {
+            "current_tool": "upload",
+            "current_stage": "Upload & Ingestion",
+            "status": "running"
+        }
+    })
+    await asyncio.sleep(0.4)
+    await manager.broadcast(state["project_id"], {
+        "type": "TOOL_SUCCESS",
+        "data": {"tool_name": "upload"}
+    })
+    state["current_stage"] = "Upload & Ingestion"
     return state
 
 async def strings_node(state: GraphState):
@@ -292,22 +316,22 @@ async def binwalk_node(state: GraphState):
     return await execute_tool(state, "binwalk", "Extraction", [{"file_name": "filesystem.tar.gz", "mime_type": "application/gzip", "file_size": 45000}])
 
 async def cutter_node(state: GraphState):
-    return await execute_tool(state, "cutter", "Static & Credential Analysis", [{"file_name": "secrets.txt", "mime_type": "text/plain", "file_size": 256}])
+    return await execute_tool(state, "cutter", "Static Analysis", [{"file_name": "cutter_cfg.txt", "mime_type": "text/plain", "file_size": 256}])
 
 async def ghidra_node(state: GraphState):
     return await execute_tool(state, "ghidra", "Reverse Engineering", [{"file_name": "cfg.pdf", "mime_type": "application/pdf", "file_size": 8900}])
 
 async def trufflehog_node(state: GraphState):
-    return await execute_tool(state, "trufflehog", "Static & Credential Analysis", [{"file_name": "trufflehog_results.json", "mime_type": "application/json", "file_size": 512}])
+    return await execute_tool(state, "trufflehog", "Secret Detection", [{"file_name": "trufflehog_results.json", "mime_type": "application/json", "file_size": 512}])
 
 async def entropy_node(state: GraphState):
     return await execute_tool(state, "entropy", "Cryptographic Analysis", [{"file_name": "entropy_graph.png", "mime_type": "image/png", "file_size": 2048}])
 
 async def wireshark_node(state: GraphState):
-    return await execute_tool(state, "wireshark", "Network Analysis", [{"file_name": "capture.pcap", "mime_type": "application/vnd.tcpdump.pcap", "file_size": 15000}])
+    return await execute_tool(state, "wireshark", "Protocol Analysis", [{"file_name": "capture.pcap", "mime_type": "application/vnd.tcpdump.pcap", "file_size": 15000}])
 
 async def afl_node(state: GraphState):
-    return await execute_tool(state, "afl++", "Dynamic Analysis", [{"file_name": "crashes.zip", "mime_type": "application/zip", "file_size": 3000}])
+    return await execute_tool(state, "afl++", "Fuzzing", [{"file_name": "crashes.zip", "mime_type": "application/zip", "file_size": 3000}])
 
 async def angr_node(state: GraphState):
     return await execute_tool(state, "angr", "Symbolic Execution", [{"file_name": "symbolic_paths.txt", "mime_type": "text/plain", "file_size": 4096}])

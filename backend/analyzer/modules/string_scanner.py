@@ -1,7 +1,7 @@
 import re
 import subprocess
 
-from config import KEYWORD_CATEGORIES
+from analyzer.config import KEYWORD_CATEGORIES
 
 _ACCEPTABLE_BOUNDARY_CHARS = set(' \t_./:\\-,()[]"\'@')
 

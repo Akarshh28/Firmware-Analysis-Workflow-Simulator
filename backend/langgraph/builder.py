@@ -36,18 +36,14 @@ def create_firmware_analysis_graph():
         return "continue"
 
     workflow.set_entry_point("upload")
-    
-    from app.config import settings
-    if settings.MODE == "real":
-        stages = [
-            "upload", "binwalk", "entropy", "strings", "yara", "symbol_analysis", "ghidra", 
-            "obis_mapper", "security_suite", "scorecard", "pdf_report"
-        ]
-    else:
-        stages = [
-            "upload", "binwalk", "entropy", "strings", "yara", "symbol_analysis", "ghidra", 
-            "obis_mapper", "security_suite", "scorecard", "pdf_report"
-        ]
+
+    # Execution order matches the pipeline diagram (image):
+    # 1→upload  2→strings  3→binwalk  4→cutter  5→ghidra  6→trufflehog
+    # 7→entropy  8→wireshark  9→angr  10→afl++  11→scorecard  12→pdf_report
+    stages = [
+        "upload", "strings", "binwalk", "cutter", "ghidra", "trufflehog",
+        "entropy", "wireshark", "angr", "afl++", "scorecard", "pdf_report"
+    ]
               
     for i in range(len(stages) - 1):
         workflow.add_conditional_edges(

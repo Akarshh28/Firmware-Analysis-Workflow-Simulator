@@ -40,10 +40,10 @@ class SecuritySuitePlugin(BaseToolPlugin):
                 "[Security Suite] Analyzing binary for cryptographic constants...",
                 f"[Security Suite] AES/GCM detected: {has_aes}",
                 f"[Security Suite] ECDSA/P-256 detected: {has_ecdsa}",
-                f"[Security Suite] Enforced DLMS Security Suite: Suite {suite}"
+                f"[Security Suite] AES/ECDSA-related strings found in binary (does not confirm actual Security Suite {suite} enforcement)"
             ]
             if suite == 0:
-                logs.append("    - WARNING: Suite 0 (No cryptography / plaintext) detected. High Risk!")
+                logs[-1] = "[Security Suite] No AES/ECDSA-related strings found in binary. It may be using Suite 0 (Plaintext), but this is a naive string check, not a confirmed enforcement verification."
                 
             return ToolOutput(
                 success=True,
@@ -67,7 +67,7 @@ class SecuritySuitePlugin(BaseToolPlugin):
             "[Security Suite] Analyzing binary for cryptographic constants...",
             "[Security Suite] AES/GCM detected: True",
             "[Security Suite] ECDSA/P-256 detected: False",
-            "[Security Suite] Enforced DLMS Security Suite: Suite 1"
+            "[Security Suite] AES/ECDSA-related strings found in binary (does not confirm actual Security Suite 1 enforcement)"
         ]
         return ToolOutput(
             success=True,

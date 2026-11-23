@@ -4,7 +4,7 @@ yara_scanner.py - Wraps the bundled YARA ruleset (Phase 2, Pattern Matching step
 
 import os
 import glob
-from modules.obis_registry import lookup_obis_meaning
+from analyzer.modules.obis_registry import lookup_obis_meaning
 
 RULES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "yara_rules")
 

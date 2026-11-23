@@ -314,7 +314,7 @@ def run_security_suite(file_path: str, project_id: int) -> dict:
             
     if not is_firmware_dlms:
         findings.append({
-            "description": "Security Suite Verification: Not identified as a DLMS/COSEM binary. Skipping validation.",
+            "description": "Security Suite String Check: Not identified as a DLMS/COSEM binary. Skipping string check.",
             "severity": "info",
             "cwe": "CWE-000",
             "category": "crypto",
@@ -338,15 +338,15 @@ def run_security_suite(file_path: str, project_id: int) -> dict:
                         
                     if suite == 0:
                         findings.append({
-                            "description": f"Security Suite Verification: DLMS binary lacks strong crypto constants (AES/ECDSA). It may be using Suite 0 (Plaintext), but requires dynamic verification.",
-                            "severity": "medium",
+                            "description": f"No AES/ECDSA-related strings found in binary. It may be using Suite 0 (Plaintext), but this is a naive string check.",
+                            "severity": "info",
                             "cwe": "CWE-319",
                             "category": "weak_crypto",
                             "file": os.path.basename(leaf)
                         })
                     else:
                         findings.append({
-                            "description": f"Security Suite Verification: DLMS binary enforces Security Suite {suite}.",
+                            "description": f"AES/ECDSA-related strings found in binary (does not confirm actual Security Suite {suite} enforcement).",
                             "severity": "info",
                             "cwe": "CWE-000",
                             "category": "crypto",

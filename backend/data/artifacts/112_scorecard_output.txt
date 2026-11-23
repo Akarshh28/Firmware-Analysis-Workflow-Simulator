@@ -1,0 +1,4 @@
+Starting Risk Scorecard Generation on project 112...
+Found 1 finding(s).
+[!] RiskScore: Calculated Aggregate Risk Score: 56/100 based on 8 unique findings
+Scan complete.
